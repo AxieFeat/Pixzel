@@ -1,0 +1,22 @@
+{
+  "recordedUtc": "2026-10-24T05:27:03.7478445Z",
+  "pixzelKotlinFiles": 132,
+  "arcKotlinFiles": 57,
+  "optionalSemicolonsRemoved": 2299,
+  "wildcardImportsRemaining": 0,
+  "kotlinStructuralComparisonFiles": 188,
+  "kotlinStructuralDifferences": 0,
+  "shaderLiteralFiles": 1,
+  "vertexTokensPreserved": 110,
+  "fragmentTokensPreserved": 589,
+  "surroundingShaderKotlinPreserved": true,
+  "independentBuildSeconds": 36,
+  "finalCompositeBuildSeconds": 26,
+  "finalArcBuildSeconds": 17,
+  "jupiterMethods": 125,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "arcCommit": "e5d04a8de4eec543e67eff7778d37f88ae29d824",
+  "deliverySha256": "db5923ec0dde2bd20b16d8152af25b59a4514ba66dd5fb52969e943a14d6a597"
+}

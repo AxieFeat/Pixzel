@@ -1,0 +1,2 @@
+# Preserve verified bytes, including CRLF overlays and patch context space lines.
+docs/delivery/** -text -whitespace

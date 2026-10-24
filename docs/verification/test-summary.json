@@ -1,0 +1,43 @@
+{
+  "recordedUtc": "2026-10-24T05:27:03.7333966Z",
+  "arcBaseline": "419619a2ec7147e76d9b696af823d0ecdeb3e684",
+  "suites": [
+    {
+      "module": "pixzel-common",
+      "tests": 109,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "pixzel-test",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "pixzel-samples",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "pixzel-arc",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "arc-font-native",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "totalMethods": 125,
+  "arcImplementation": "e5d04a8de4eec543e67eff7778d37f88ae29d824"
+}

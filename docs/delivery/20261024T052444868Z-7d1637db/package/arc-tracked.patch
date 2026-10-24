@@ -1,0 +1,3324 @@
+diff --git a/arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt b/arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt
+index 67fd5f60c7464281f2e61c479b42e94f9a08cb54..b617f007723e5b0fee3f516494e3460707aff868 100644
+--- a/arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt
++++ b/arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt
+@@ -18,8 +18,12 @@ internal class NativeDrawBuffer(
+     override val bufferSize: Int,
+ ) : DrawBuffer {
+ 
+-    override var byteBuffer: ByteBuffer = MemoryUtil.memAlloc(bufferSize * BYTES_PER_FLOAT)
++    override var byteBuffer: ByteBuffer = MemoryUtil.memAlloc(Math.multiplyExact(bufferSize.also {
++        require(it >= 0) { "Draw buffer capacity must be nonnegative" }
++    }, BYTES_PER_FLOAT))
+     private var baseAddress: Long = MemoryUtil.memAddress(byteBuffer)
++    private val tempVector = Vector3f()
++    private var closed = false
+ 
+     override var vertexCount = 0
+ 
+@@ -52,7 +56,10 @@ internal class NativeDrawBuffer(
+     }
+ 
+     override fun cleanup() {
++        if (closed) return
+         MemoryUtil.memFree(byteBuffer)
++        closed = true
++        baseAddress = 0
+     }
+ 
+     override fun addVertex(x: Float, y: Float, z: Float): NativeDrawBuffer {
+@@ -113,6 +120,7 @@ internal class NativeDrawBuffer(
+      * Get address for some element.
+      */
+     private fun beginElement(element: VertexFormatElement): Int {
++        check(!closed) { "Draw buffer is closed" }
+         check(elementsToFill > 0) {
+             "Can not begin element: ${element.name}, all elements already configured!"
+         }
+@@ -130,10 +138,14 @@ internal class NativeDrawBuffer(
+     }
+ 
+     private fun endWriting(): NativeDrawBuffer {
+-        endVertex()
++        check(!closed) { "Draw buffer is closed" }
++        if (needEnding) {
++            endVertex()
++            needEnding = false
++        }
+ 
+         byteBuffer.position(0)
+-        byteBuffer.limit(this.bufferSize * 4)
++        byteBuffer.limit(activeBytes)
+ 
+         return this
+     }
+@@ -155,7 +167,7 @@ internal class NativeDrawBuffer(
+     }
+ 
+     private fun nextVertexFormatIndex() {
+-        if(elementsToFill <= 0) return
++        if (elementsToFill <= 0) return
+ 
+         elementsToFill--
+ 
+@@ -170,11 +182,11 @@ internal class NativeDrawBuffer(
+      * Return elements, that yet not completed in the current vertex.
+      */
+     private fun leftElements(): List<VertexFormatElement> {
+-        if(elementsToFill <= 0) return emptyList()
++        if (elementsToFill <= 0) return emptyList()
+ 
+         val result = mutableListOf<VertexFormatElement>()
+ 
+-        for(index in vertexFormatIndex..<vertexFormatIndex + elementsToFill) {
++        for (index in vertexFormatIndex..<vertexFormatIndex + elementsToFill) {
+             result.add(format.getElement(index))
+         }
+ 
+@@ -183,13 +195,16 @@ internal class NativeDrawBuffer(
+ 
+     private fun ensureCapacity(offset: Int, size: Int) {
+         if (offset + size > byteBuffer.capacity()) {
+-            throw DrawBufferOverflowException("DrawBuffer overflow!" +
+-                    " Required ${(offset + size)} bytes," +
+-                    " but capacity is only ${byteBuffer.capacity()} bytes.")
++            throw DrawBufferOverflowException(
++                "DrawBuffer overflow!" +
++                        " Required ${(offset + size)} bytes," +
++                        " but capacity is only ${byteBuffer.capacity()} bytes."
++            )
+         }
+     }
+ 
+     override fun clear() {
++        check(!closed) { "Draw buffer is closed" }
+         byteBuffer.clear()
+ 
+         needEnding = false
+@@ -212,9 +227,9 @@ internal class NativeDrawBuffer(
+         MemoryUtil.memPutInt(
+             addr,
+             (alpha shl COLOR_ALPHA_SHIFT) or
+-            (blue shl COLOR_BLUE_SHIFT) or
+-            (green shl COLOR_GREEN_SHIFT) or
+-            (red shl COLOR_RED_SHIFT)
++                    (blue shl COLOR_BLUE_SHIFT) or
++                    (green shl COLOR_GREEN_SHIFT) or
++                    (red shl COLOR_RED_SHIFT)
+         )
+     }
+ 
+@@ -238,6 +253,7 @@ internal class NativeDrawBuffer(
+     ) : RuntimeException(message)
+ 
+     object Factory : DrawBuffer.Factory {
++
+         override fun create(mode: DrawerMode, format: VertexFormat, bufferSize: Int): DrawBuffer {
+             return NativeDrawBuffer(mode, format, bufferSize)
+         }
+@@ -245,10 +261,6 @@ internal class NativeDrawBuffer(
+ 
+     companion object {
+ 
+-        // Temp vector for transformation via matrix in addVertex() function
+-        @JvmStatic
+-        private val tempVector = Vector3f()
+-
+         private const val BYTES_PER_FLOAT = 4
+         private const val COLOR_ALPHA_SHIFT = 24
+         private const val COLOR_BLUE_SHIFT = 16
+diff --git a/arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt b/arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt
+index f8664e718d5e1158790c4906da7692d18fcc5349..e6f6646d68873a329cff91e234e95fe3833e4297 100644
+--- a/arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt
++++ b/arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt
+@@ -36,7 +36,8 @@ interface DrawBuffer : VertexConsumer, Cleanable {
+     /**
+      * Size of buffer.
+      *
+-     * The buffer size actually allows you to say: "How many vertices and their data can be stored here".
++     * Legacy allocation units: native storage contains bufferSize * 4 bytes, not bufferSize vertices.
++     * Use [activeBytes] and the vertex format stride when sizing uploads.
+      */
+     val bufferSize: Int
+ 
+@@ -50,6 +51,9 @@ interface DrawBuffer : VertexConsumer, Cleanable {
+      */
+     val vertexCount: Int
+ 
++    /** Initialized bytes occupied by complete vertices; independent from allocation capacity. */
++    val activeBytes: Int get() = Math.multiplyExact(vertexCount, format.nextOffset)
++
+     /**
+      * Represents the drawing mode used for rendering operations within the buffer.
+      */
+diff --git a/arc-core/src/main/kotlin/arc/graphics/RenderContext.kt b/arc-core/src/main/kotlin/arc/graphics/RenderContext.kt
+index fdc6d966387c2c40af5bdd3528afc4ba9cdc3b8c..56eb19d82c8b1e8c1e8f22641b4931e48ccc636e 100644
+--- a/arc-core/src/main/kotlin/arc/graphics/RenderContext.kt
++++ b/arc-core/src/main/kotlin/arc/graphics/RenderContext.kt
+@@ -8,6 +8,44 @@ import arc.texture.Texture
+  */
+ interface RenderContext {
+ 
++    /** Current native-context generation, or zero when no tracked context is current. */
++    val resourceGeneration: Long get() = 0L
++
++    val capabilities: RenderCapabilities get() = RenderCapabilities()
++
++    /**
++     * Saves the current native graphics state without clearing or presenting. Close in LIFO order on the same thread.
++     * Restores target, viewport/scissor, pipeline, textures/samplers, vertex/buffer bindings and raster state even
++     * after drawing throws. Raw graphics work belongs inside this scope; native state is sampled once at entry.
++     * Null [textureUnits] captures all units. Supplying a set reduces driver queries and declares every texture
++     * unit the pass may modify; the previously active unit is also preserved. Arc texture binding uses unit zero.
++     */
++    fun beginScopedPass(textureUnits: Set<Int>? = null): AutoCloseable = unsupportedRenderOperation("Scoped render passes")
++
++    fun setScissor(rectangle: PixelRect?): Unit = unsupportedRenderOperation("Scissor")
++    fun setBlend(state: BlendState): Unit = unsupportedRenderOperation("Typed blending")
++    fun setDepth(state: DepthState): Unit = unsupportedRenderOperation("Typed depth state")
++    fun setCull(mode: CullMode): Unit = unsupportedRenderOperation("Typed culling")
++    fun setRaster(state: RasterState): Unit = unsupportedRenderOperation("Typed raster state")
++    fun setColorWrite(mask: ColorWriteMask) = colorMask(mask.red, mask.green, mask.blue, mask.alpha)
++    fun setStencil(state: StencilState): Unit = unsupportedRenderOperation("Stencil masks")
++
++    fun createSampler(sampling: TextureSampling): TextureSampler = unsupportedRenderOperation("Texture samplers")
++    fun bindSampler(sampler: TextureSampler?, unit: Int = 0): Unit = unsupportedRenderOperation("Texture samplers")
++
++    /** Copies tightly packed top-to-bottom RGBA8 bytes. Caller retains the bytes; the returned texture is owned. */
++    fun createRgbaTexture(width: Int, height: Int, rgba: ByteArray): Texture = unsupportedRenderOperation("RGBA textures")
++
++    fun createRenderTarget(width: Int, height: Int, depthStencil: Boolean = false): RenderTarget =
++        unsupportedRenderOperation("Render targets")
++
++    /** Selects the target without clearing it. Null selects the default window framebuffer. */
++    fun bindTarget(target: RenderTarget?): Unit = unsupportedRenderOperation("Render targets")
++
++    /** Explicitly clears the bound target, respecting scissor/write masks. Requested depth/stencil values are 1/0. */
++    fun clearTarget(red: Float, green: Float, blue: Float, alpha: Float, depth: Boolean = false, stencil: Boolean = false): Unit =
++        unsupportedRenderOperation("Typed target clear")
++
+     /**
+      * Shader in the current context.
+      */
+@@ -160,3 +198,6 @@ interface RenderContext {
+      */
+     fun blendFunc(sourceFactor: Int, destFactor: Int)
+ }
++
++private fun unsupportedRenderOperation(operation: String): Nothing =
++    throw UnsupportedOperationException("$operation are unavailable in this render context")
+diff --git a/arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt b/arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt
+index 32788299097f4530b3876053fab42a4d14fc0e28..a9a273096725fe5cf7aa7ef2fa772abbad48bcd7 100644
+--- a/arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt
++++ b/arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt
+@@ -2,6 +2,7 @@ package arc.graphics.vertex
+ 
+ import arc.Arc.single
+ import arc.annotations.TypeFactory
++import arc.graphics.ContextResource
+ import arc.graphics.DrawBuffer
+ import arc.graphics.DrawerMode
+ import arc.util.pattern.Bindable
+@@ -14,7 +15,7 @@ import java.nio.ByteBuffer
+  *
+  * @sample arc.sample.meshSample
+  */
+-interface VertexBuffer : Bindable, Cleanable {
++interface VertexBuffer : Bindable, Cleanable, ContextResource {
+ 
+     /**
+      * ID of this buffer in a Render system.
+@@ -41,10 +42,13 @@ interface VertexBuffer : Bindable, Cleanable {
+      */
+     val vertices: Int
+ 
++    /** Initialized GPU bytes drawn by this buffer. [size] is allocation capacity in bytes. */
++    val activeBytes: Int get() = Math.multiplyExact(vertices, format.nextOffset)
++
+     /**
+      * Store some [ByteBuffer] in this vertex buffer (It will overwrite old values).
+      *
+-     * @param buffer Buffer for writing it this vertex buffer instance.
++     * @param buffer Direct input buffer; active bytes start at its current position. Position/limit are unchanged.
+      * @param vertices Count of vertices in the buffer.
+      */
+     fun write(buffer: ByteBuffer, vertices: Int)
+diff --git a/arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt b/arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt
+index d53ea94584e854ad02f4d57fd0ee1b1137130f78..e81ff66a7abfbdf50aadfa643db56aafb65b39ed 100644
+--- a/arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt
++++ b/arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt
+@@ -72,7 +72,9 @@ interface FrameBuffer {
+     fun cleanup()
+ 
+     /**
+-     * Render this frame buffer.
++     * Composite this framebuffer onto the default window target without clearing its color/depth.
++     * The current shader supplies the material. The previous graphics state and target are restored afterward.
++     * Callers that previously relied on an implicit clear must clear explicitly before this operation.
+      *
+      * @param width Viewport width.
+      * @param height Viewport height.
+diff --git a/arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt b/arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt
+index cb683f6ae1f6658a2d04082facf45df5166365a5..b8a375c1c42247c7493d9147e46f18c3326b8b2f 100644
+--- a/arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt
++++ b/arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt
+@@ -3,6 +3,7 @@ package arc.shader
+ import arc.Arc.single
+ import arc.annotations.TypeFactory
+ import arc.asset.StringAsset
++import arc.graphics.ContextResource
+ import arc.util.pattern.Bindable
+ import arc.util.pattern.Cleanable
+ import org.jetbrains.annotations.ApiStatus
+@@ -17,7 +18,7 @@ import org.joml.Vector4f
+  *
+  * @sample arc.sample.shaderInstanceSample
+  */
+-interface ShaderInstance : Bindable, Cleanable {
++interface ShaderInstance : Bindable, Cleanable, ContextResource {
+ 
+     /**
+      * ID of this shader in a render system.
+diff --git a/arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt b/arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt
+index 67ca39bcb47ee736288843ade396abd9b6727c62..707719d9276c8ef1a559edfc189a75edce614bda 100644
+--- a/arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt
++++ b/arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt
+@@ -2,6 +2,7 @@ package arc.shader
+ 
+ import arc.Arc.single
+ import arc.annotations.TypeFactory
++import arc.graphics.ContextResource
+ import arc.util.pattern.Bindable
+ import arc.util.pattern.Cleanable
+ import org.jetbrains.annotations.ApiStatus
+@@ -96,7 +97,7 @@ import kotlin.jvm.Throws
+  * shader.uploadUniformBuffer("Lights", buffer) // <- Upload our buffer to shader via uniform name.
+  * ```
+  */
+-interface UniformBuffer : Cleanable, Bindable {
++interface UniformBuffer : Cleanable, Bindable, ContextResource {
+ 
+     /**
+      * ID of this buffer in a render system.
+diff --git a/arc-core/src/main/kotlin/arc/texture/TextureLike.kt b/arc-core/src/main/kotlin/arc/texture/TextureLike.kt
+index 885ec891415d257ceb763c7b9e4d7c6a8a4d221c..58cf168007020f09a047f0f577660203cb9e2885 100644
+--- a/arc-core/src/main/kotlin/arc/texture/TextureLike.kt
++++ b/arc-core/src/main/kotlin/arc/texture/TextureLike.kt
+@@ -1,12 +1,13 @@
+ package arc.texture
+ 
++import arc.graphics.ContextResource
+ import arc.util.pattern.Bindable
+ import arc.util.pattern.Cleanable
+ 
+ /**
+  * This interface represents a general texture.
+  */
+-interface TextureLike : Bindable, Cleanable {
++interface TextureLike : Bindable, Cleanable, ContextResource {
+ 
+     /**
+      * ID of this texture in a render system.
+diff --git a/arc-core/src/main/kotlin/arc/window/Window.kt b/arc-core/src/main/kotlin/arc/window/Window.kt
+index 5b622363fa6c66940c3adf2d8e2464f06eed1fb3..ff9e676e0e1cb282cca6e0febc9577a4eee56066 100644
+--- a/arc-core/src/main/kotlin/arc/window/Window.kt
++++ b/arc-core/src/main/kotlin/arc/window/Window.kt
+@@ -10,6 +10,17 @@ import org.joml.Vector2i
+  */
+ interface Window {
+ 
++    /** Logical cursor/window units and framebuffer pixels are deliberately separate. */
++    val metrics: WindowMetrics
++        get() = WindowMetrics(width, height, width, height, focused = isFocus)
++
++    val events: WindowEvents
++        get() = throw UnsupportedOperationException("This window does not provide ordered events")
++
++    fun setCursor(shape: CursorShape) {
++        throw UnsupportedOperationException("Cursor shapes are not supported by this window")
++    }
++
+     /**
+      * Represents the unique native handle identifier for the window.
+      */
+diff --git a/arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputEngine.kt b/arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputEngine.kt
+index 4096e2eb9cd2058fa305ea9aa6a59536f6376e5d..b6dd32cbaf92a658d1e14fd44f0d6b93675f2a8c 100644
+--- a/arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputEngine.kt
++++ b/arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputEngine.kt
+@@ -10,6 +10,10 @@ import org.jetbrains.annotations.ApiStatus
+  */
+ interface InputEngine {
+ 
++    /** Unmasked physical polling is an explicit opt-in, unsuitable for gameplay behind UI. */
++    val physicalKeyboard: KeyboardInput get() = keyboard
++    val physicalMouse: MouseInput get() = mouse
++
+     /**
+      * Mouse input in this engine.
+      */
+diff --git a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/GlfwInputEngine.kt b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/GlfwInputEngine.kt
+index 57ef4f298dfca3af529ba49014f324fcf4371a0e..cab9fc7aaa316d984aba5f61602a1aa65e2578a2 100644
+--- a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/GlfwInputEngine.kt
++++ b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/GlfwInputEngine.kt
+@@ -1,12 +1,18 @@
+ package arc.input
+ 
+ import arc.input.keyboard.GlfwKeyboardInput
+-import arc.input.keyboard.GlfwKeyboardInput.isPressed
+ import arc.input.keyboard.KeyboardInput
+ import arc.input.mouse.GlfwMouseInput
+ import arc.input.mouse.MouseInput
++import arc.window.KeyAction
++import arc.window.KeyboardEvent
++import arc.window.PointerButton
++import arc.window.PointerMotion
++import arc.window.PointerWheel
+ import arc.window.Window
+ import org.lwjgl.glfw.GLFW.GLFW_PRESS
++import org.lwjgl.glfw.GLFW.glfwGetKey
++import org.lwjgl.glfw.GLFW.glfwGetMouseButton
+ import org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback
+ import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
+ import org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback
+@@ -16,16 +22,31 @@ import java.util.concurrent.Executors
+ @Suppress("unused")
+ object GlfwInputEngine : InputEngine {
+ 
+-    internal val executor = Executors.newFixedThreadPool(4)
++    private val executor by lazy { Executors.newFixedThreadPool(4) { r -> Thread(r, "arc-input-legacy").apply { isDaemon = true } } }
++    var legacyAsyncBindings: Boolean = false
++    internal fun executeBinding(action: () -> Unit) {
++        if (legacyAsyncBindings) executor.submit(action) else action()
++    }
++
++    private var subscription: AutoCloseable? = null
+ 
+     private var window: Window? = null
+ 
+     override val mouse: MouseInput
+         get() = GlfwMouseInput
+ 
+-    override  val keyboard: KeyboardInput
++    override val keyboard: KeyboardInput
+         get() = GlfwKeyboardInput
+ 
++    override val physicalKeyboard: KeyboardInput = object : KeyboardInput by GlfwKeyboardInput {
++        override fun isPressed(key: KeyCode) = window?.let { glfwGetKey(it.handle, key.id) == GLFW_PRESS } ?: false
++        override fun isReleased(key: KeyCode) = !isPressed(key)
++    }
++    override val physicalMouse: MouseInput = object : MouseInput by GlfwMouseInput {
++        override fun isPressed(key: KeyCode) = window?.let { glfwGetMouseButton(it.handle, key.id) == GLFW_PRESS } ?: false
++        override fun isReleased(key: KeyCode) = !isPressed(key)
++    }
++
+     /**
+      * Hook `arc-input-glfw` to some window. You can hook only if window is initialized.
+      *
+@@ -33,17 +54,36 @@ object GlfwInputEngine : InputEngine {
+      */
+     @JvmStatic
+     fun hook(window: Window) {
++        subscription?.close()
+         this.window = window
+ 
+         GlfwMouseInput.window = window
+         GlfwKeyboardInput.window = window
+ 
+-        val handle = window.handle
++        subscription = window.events.subscribe(priority = -100) { event ->
++            when (event) {
++                is KeyboardEvent -> if (event.action != KeyAction.REPEAT) GlfwKeyboardInput.keyUpdate(
++                    KeyCode.fromId(event.physicalCode), event.action == KeyAction.PRESS
++                )
++
++                is PointerButton -> if (event.action != KeyAction.REPEAT) GlfwMouseInput.keyUpdate(
++                    KeyCode.fromId(event.button), event.action == KeyAction.PRESS
++                )
+ 
+-        glfwSetKeyCallback(handle, ::onKey)
+-        glfwSetMouseButtonCallback(handle, ::onMouseButton)
+-        glfwSetCursorPosCallback(handle, ::onCursorMove)
+-        glfwSetScrollCallback(handle, ::onScroll)
++                is PointerMotion -> GlfwMouseInput.positionUpdate(event.x, event.y)
++                is PointerWheel -> GlfwMouseInput.scrollUpdate(event.deltaX, event.deltaY)
++            }
++            false
++        }
++    }
++
++    @JvmStatic
++    fun unhook() {
++        subscription?.close()
++        subscription = null
++        window = null
++        GlfwKeyboardInput.window = null
++        GlfwMouseInput.window = null
+     }
+ 
+     private fun onKey(handle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
+@@ -68,12 +108,12 @@ object GlfwInputEngine : InputEngine {
+ 
+     @JvmStatic
+     internal fun checkForAll(keys: Set<KeyCode>, pressed: Boolean): Boolean {
+-        if(!pressed) return false
++        if (!pressed) return false
+ 
+         var status = true
+ 
+         keys.forEach { key ->
+-            if(!isPressed(key)) {
++            if (!keyboard.isPressed(key) && !mouse.isPressed(key)) {
+                 status = false
+             }
+         }
+diff --git a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/keyboard/GlfwKeyboardInput.kt b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/keyboard/GlfwKeyboardInput.kt
+index eaee07500b96350b44fbd0293f1442dc1db86e50..baecc7f63fdfea599b32d4213e57090676d38c47 100644
+--- a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/keyboard/GlfwKeyboardInput.kt
++++ b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/keyboard/GlfwKeyboardInput.kt
+@@ -16,41 +16,31 @@ internal object GlfwKeyboardInput : KeyboardInput {
+     override val bindingProcessor: BindingProcessor = GlfwBindingProcessor()
+ 
+     override fun isPressed(key: KeyCode): Boolean {
+-        if(key.keyType != KeyType.KEY) return false
++        if (key.keyType != KeyType.KEY) return false
+ 
+-        try {
+-            if(GLFW.glfwGetKey(window!!.handle, key.id) == GLFW.GLFW_PRESS ||
+-                GLFW.glfwGetKey(window!!.handle, key.id) == GLFW.GLFW_REPEAT) return true
+-        } catch (ignore: Throwable) {}
+-
+-        return false
++        return window?.events?.gameplayKeyDown(key.id) ?: false
+     }
+ 
+     override fun isReleased(key: KeyCode): Boolean {
+-        if(key.keyType != KeyType.KEY) return false
+-
+-        try {
+-            if(GLFW.glfwGetKey(window!!.handle, key.id) == GLFW.GLFW_RELEASE ||
+-                GLFW.glfwGetKey(window!!.handle, key.id) == GLFW.GLFW_REPEAT) return true
+-        } catch (ignore: Throwable) {}
++        if (key.keyType != KeyType.KEY) return false
+ 
+-        return false
++        return !isPressed(key)
+     }
+ 
+     @Suppress("OptionalWhenBraces")
+     fun keyUpdate(key: KeyCode, pressed: Boolean) {
+-        if(key.keyType != KeyType.KEY) return
++        if (key.keyType != KeyType.KEY) return
+ 
+-        GlfwInputEngine.executor.submit {
++        GlfwInputEngine.executeBinding {
+             bindingProcessor.bindings.forEach { binding ->
+ 
+-                GlfwInputEngine.executor.submit {
++                GlfwInputEngine.executeBinding {
+                     when (binding) {
+                         is Binding if (
+                                 binding.key == key ||
+-                                binding.key == KeyCode.ANY ||
+-                                binding.key == KeyCode.ANY_KEY
+-                            ) -> {
++                                        binding.key == KeyCode.ANY ||
++                                        binding.key == KeyCode.ANY_KEY
++                                ) -> {
+ 
+                             if (pressed) {
+                                 binding.onPress(key)
+diff --git a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/mouse/GlfwMouseInput.kt b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/mouse/GlfwMouseInput.kt
+index fb6a7a890a8cbf9b3eb9ac3b2d478ad0aea4ba87..3f36a0b1ea23fc8651c3cdde05d86df3358ec1c7 100644
+--- a/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/mouse/GlfwMouseInput.kt
++++ b/arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/mouse/GlfwMouseInput.kt
+@@ -20,29 +20,15 @@ internal object GlfwMouseInput : MouseInput {
+     override var displayVec: Vector2f = Vector2f()
+ 
+     override fun isPressed(key: KeyCode): Boolean {
+-        if(key.keyType != KeyType.MOUSE) return false
++        if (key.keyType != KeyType.MOUSE) return false
+ 
+-        try {
+-            if(GLFW.glfwGetMouseButton(window!!.handle, key.id) == GLFW.GLFW_PRESS ||
+-                GLFW.glfwGetMouseButton(window!!.handle, key.id) == GLFW.GLFW_REPEAT) return true
+-        } catch (ignore: Throwable) {
+-            return false
+-        }
+-
+-        return false
++        return window?.events?.gameplayButtonDown(key.id) ?: false
+     }
+ 
+     override fun isReleased(key: KeyCode): Boolean {
+-        if(key.keyType != KeyType.MOUSE) return false
+-
+-        try {
+-            if(GLFW.glfwGetMouseButton(window!!.handle, key.id) == GLFW.GLFW_RELEASE ||
+-                GLFW.glfwGetMouseButton(window!!.handle, key.id) == GLFW.GLFW_REPEAT) return true
+-        } catch (ignore: Throwable) {
+-            return false
+-        }
++        if (key.keyType != KeyType.MOUSE) return false
+ 
+-        return false
++        return !isPressed(key)
+     }
+ 
+     override fun reset() {
+@@ -50,7 +36,7 @@ internal object GlfwMouseInput : MouseInput {
+     }
+ 
+     fun positionUpdate(x: Double, y: Double) {
+-        if(position.x == x.toFloat() && position.y == y.toFloat()) return
++        if (position.x == x.toFloat() && position.y == y.toFloat()) return
+ 
+         previousPosition = previousPosition.set(position.x, position.y)
+ 
+@@ -64,18 +50,18 @@ internal object GlfwMouseInput : MouseInput {
+ 
+     @Suppress("OptionalWhenBraces")
+     fun keyUpdate(key: KeyCode, pressed: Boolean) {
+-        if(key == KeyCode.MOUSE_SCROLL) return
++        if (key == KeyCode.MOUSE_SCROLL) return
+ 
+-        GlfwInputEngine.executor.submit {
++        GlfwInputEngine.executeBinding {
+             bindingProcessor.bindings.forEach { binding ->
+ 
+-                GlfwInputEngine.executor.submit {
++                GlfwInputEngine.executeBinding {
+                     when (binding) {
+                         is Binding if (
+                                 binding.key == key ||
+-                                binding.key == KeyCode.ANY ||
+-                                binding.key == KeyCode.ANY_MOUSE
+-                            ) -> {
++                                        binding.key == KeyCode.ANY ||
++                                        binding.key == KeyCode.ANY_MOUSE
++                                ) -> {
+ 
+                             if (pressed) {
+                                 binding.onPress(key)
+@@ -97,16 +83,16 @@ internal object GlfwMouseInput : MouseInput {
+ 
+     @Suppress("OptionalWhenBraces")
+     fun scrollUpdate(xOffset: Double, yOffset: Double) {
+-        GlfwInputEngine.executor.submit {
++        GlfwInputEngine.executeBinding {
+             bindingProcessor.bindings.forEach { binding ->
+ 
+-                GlfwInputEngine.executor.submit {
++                GlfwInputEngine.executeBinding {
+                     when (binding) {
+                         is MouseBinding if (
+                                 binding.key == KeyCode.MOUSE_SCROLL ||
+-                                binding.key == KeyCode.ANY ||
+-                                binding.key == KeyCode.ANY_MOUSE
+-                            ) -> {
++                                        binding.key == KeyCode.ANY ||
++                                        binding.key == KeyCode.ANY_MOUSE
++                                ) -> {
+ 
+                             binding.onScroll(xOffset, yOffset)
+                         }
+diff --git a/backend/render/arc-opengl/build.gradle.kts b/backend/render/arc-opengl/build.gradle.kts
+index c784e1f9bb4deef18d154f795c404979005ce0ef..bfd052b869717339c9cd0603a020ce1c04772b0b 100644
+--- a/backend/render/arc-opengl/build.gradle.kts
++++ b/backend/render/arc-opengl/build.gradle.kts
+@@ -4,6 +4,14 @@ plugins {
+     id("arc.ksp")
+ }
+ 
++tasks.register<JavaExec>("graphicsRegression") {
++    group = "verification"
++    description = "Checks scoped state, preserved targets, exact stencil clipping and streaming on hidden OpenGL"
++    dependsOn(tasks.testClasses)
++    classpath = sourceSets.test.get().runtimeClasspath
++    mainClass.set("arc.gl.graphics.GraphicsRegression")
++}
++
+ dependencies {
+     api(projects.arcCommon)
+     implementation(projects.arcGlfw)
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/GlApplication.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/GlApplication.kt
+index 6eb9d93dcf28f45ba03047fb4ab74adcf5c316ea..4c84fadfe6444c4a26844539c3aeef46d23a68a4 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/GlApplication.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/GlApplication.kt
+@@ -31,7 +31,8 @@ internal object GlApplication : AbstractApplication() {
+ 
+     override val window: GlfwGlWindow
+         get() = checkNotNull(_window) {
+-            "Window is not initialized yet. Accessing it before Application.init() is not allowed." }
++            "Window is not initialized yet. Accessing it before Application.init() is not allowed."
++        }
+     override val renderContext: RenderContext
+         get() = checkNotNull(_renderSystem) {
+             "RenderSystem is not initialized yet. Accessing it before Application.init() is not allowed."
+@@ -92,7 +93,11 @@ internal object GlApplication : AbstractApplication() {
+     }
+ 
+     override fun close() {
+-        window.close()
++        try {
++            window.close()
++        } finally {
++            GL.setCapabilities(null)
++        }
+     }
+ 
+     internal object Provider : Application.Provider {
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/OpenGL.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/OpenGL.kt
+index 566b25fbf21582e81731cfdd34e13d6b929b594c..e6c3bcd598f9b2722ad345aa64e320040736a6a1 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/OpenGL.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/OpenGL.kt
+@@ -1,10 +1,25 @@
+ package arc.gl
+ 
++import arc.gl.graphics.GlRenderContext
++import arc.graphics.RenderContext
++import org.lwjgl.opengl.GL
++
+ /**
+  * This object represents OpenGL implementation of engine.
+  */
+ object OpenGL {
+ 
++    /**
++     * Render services for an externally owned current OpenGL context after GL.createCapabilities().
++     * The caller owns polling/presentation and context lifetime; Application's beginFrame/endFrame are not used.
++     * Arc's existing OpenGL provider supports one active context per render thread.
++     */
++    @JvmStatic
++    fun currentRenderContext(): RenderContext {
++        GL.getCapabilities()
++        return GlRenderContext
++    }
++
+     /**
+      * Preload OpenGL implementations.
+      */
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderContext.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderContext.kt
+index 2d7b853f3bde177a0a43612bb26350c31961ff3a..1231324253e43e51c11bddb9f8da7ed2277cfae1 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderContext.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderContext.kt
+@@ -1,33 +1,256 @@
+ package arc.gl.graphics
+ 
+ import arc.gl.GlApplication
++import arc.graphics.BlendState
++import arc.graphics.ColorWriteMask
++import arc.graphics.CullMode
++import arc.graphics.DepthState
+ import arc.graphics.Drawer
+ import arc.graphics.EmptyShaderInstance
++import arc.graphics.PixelRect
++import arc.graphics.PolygonMode
++import arc.graphics.RasterState
++import arc.graphics.RenderCapabilities
+ import arc.graphics.RenderContext
++import arc.graphics.RenderTarget
++import arc.graphics.StencilState
++import arc.graphics.TextureSampler
++import arc.graphics.TextureSampling
+ import arc.shader.ShaderInstance
+ import arc.texture.EmptyTexture
+ import arc.texture.Texture
+ import org.lwjgl.opengl.ARBImaging.glBlendEquation
++import org.lwjgl.opengl.GL11.GL_BACK
+ import org.lwjgl.opengl.GL11.GL_BLEND
+ import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
++import org.lwjgl.opengl.GL11.GL_COLOR_LOGIC_OP
+ import org.lwjgl.opengl.GL11.GL_CULL_FACE
+ import org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT
+ import org.lwjgl.opengl.GL11.GL_DEPTH_TEST
++import org.lwjgl.opengl.GL11.GL_FILL
++import org.lwjgl.opengl.GL11.GL_FRONT
++import org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK
++import org.lwjgl.opengl.GL11.GL_LINE
++import org.lwjgl.opengl.GL11.GL_MAX_TEXTURE_SIZE
++import org.lwjgl.opengl.GL11.GL_POINT
++import org.lwjgl.opengl.GL11.GL_SCISSOR_TEST
++import org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT
++import org.lwjgl.opengl.GL11.GL_STENCIL_TEST
+ import org.lwjgl.opengl.GL11.GL_TEXTURE_2D
+ import org.lwjgl.opengl.GL11.glBlendFunc
+ import org.lwjgl.opengl.GL11.glClear
+ import org.lwjgl.opengl.GL11.glClearColor
++import org.lwjgl.opengl.GL11.glClearDepth
++import org.lwjgl.opengl.GL11.glClearStencil
+ import org.lwjgl.opengl.GL11.glColorMask
++import org.lwjgl.opengl.GL11.glCullFace
++import org.lwjgl.opengl.GL11.glDepthFunc
+ import org.lwjgl.opengl.GL11.glDepthMask
+ import org.lwjgl.opengl.GL11.glDisable
+ import org.lwjgl.opengl.GL11.glEnable
++import org.lwjgl.opengl.GL11.glGetInteger
++import org.lwjgl.opengl.GL11.glPolygonMode
++import org.lwjgl.opengl.GL11.glScissor
++import org.lwjgl.opengl.GL11.glStencilFunc
++import org.lwjgl.opengl.GL11.glStencilMask
++import org.lwjgl.opengl.GL11.glStencilOp
+ import org.lwjgl.opengl.GL11.glViewport
++import org.lwjgl.opengl.GL13.GL_SAMPLE_ALPHA_TO_COVERAGE
++import org.lwjgl.opengl.GL13.GL_SAMPLE_COVERAGE
+ import org.lwjgl.opengl.GL14.glBlendFuncSeparate
++import org.lwjgl.opengl.GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS
++import org.lwjgl.opengl.GL20.glBlendEquationSeparate
++import org.lwjgl.opengl.GL30.GL_CLIP_DISTANCE0
++import org.lwjgl.opengl.GL30.GL_FRAMEBUFFER
++import org.lwjgl.opengl.GL30.GL_MAX_CLIP_DISTANCES
++import org.lwjgl.opengl.GL30.GL_RASTERIZER_DISCARD
++import org.lwjgl.opengl.GL30.glBindFramebuffer
++import org.lwjgl.opengl.GL32.GL_SAMPLE_MASK
++import org.lwjgl.opengl.GL33.glBindSampler
+ 
+ internal object GlRenderContext : RenderContext {
+ 
+-    override var shader: ShaderInstance = EmptyShaderInstance
+-    override var texture: Texture = EmptyTexture
++    override val resourceGeneration get() = GlContextIdentity.current()
++
++    private var capabilityGeneration = 0L
++    private var maximumTextureDimension: Int? = null
++    override val capabilities: RenderCapabilities
++        get() {
++            val generation = resourceGeneration
++            if (generation != capabilityGeneration) {
++                capabilityGeneration = generation
++                maximumTextureDimension = if (generation == 0L) null else glGetInteger(GL_MAX_TEXTURE_SIZE)
++            }
++            return RenderCapabilities(
++                scopedPass = true, scissor = true, typedState = true, renderTargets = true, stencilMasks = true,
++                maxTextureDimension = maximumTextureDimension,
++            )
++        }
++    private val passes = ArrayDeque<AutoCloseable>()
++    private var textureUnitGeneration = 0L
++    private var textureUnitCount = 0
++    private val textureUnitLimit: Int
++        get() {
++            val generation = resourceGeneration
++            check(generation != 0L) { "A graphics context must be current" }
++            if (generation != textureUnitGeneration) {
++                textureUnitCount = glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
++                textureUnitGeneration = generation
++            }
++            return textureUnitCount
++        }
++
++    override fun beginScopedPass(textureUnits: Set<Int>?): AutoCloseable {
++        val owner = Thread.currentThread()
++        val generation = resourceGeneration
++        check(generation != 0L) { "A graphics context must be current before opening a render pass" }
++        val savedShader = shader
++        val savedTexture = texture
++        val state = GlRenderStateSnapshot(textureUnits)
++        var closed = false
++        val pass = object : AutoCloseable {
++            override fun close() {
++                if (closed) return
++                check(Thread.currentThread() === owner) { "A render pass must close on its creating thread" }
++                check(passes.lastOrNull() === this) { "Render passes must close in reverse creation order" }
++                try {
++                    check(resourceGeneration == generation) { "The graphics context changed inside an open render pass; its snapshot was discarded" }
++                    state.restore()
++                    shader = savedShader
++                    texture = savedTexture
++                } finally {
++                    passes.removeLast()
++                    closed = true
++                }
++            }
++        }
++        passes.addLast(pass)
++        return pass
++    }
++
++    override fun setScissor(rectangle: PixelRect?) {
++        glToggle(GL_SCISSOR_TEST, rectangle != null)
++        rectangle?.let { glScissor(it.x, it.y, it.width, it.height) }
++    }
++
++    private var clipGeneration = 0L
++    private var clipCount = 0
++    override fun setRaster(state: RasterState) {
++        if (clipGeneration != resourceGeneration) {
++            check(resourceGeneration != 0L) { "An OpenGL context must be current" }
++            clipCount = glGetInteger(GL_MAX_CLIP_DISTANCES)
++            clipGeneration = resourceGeneration
++        }
++        require(state.clipDistances.all { it < clipCount }) { "Clip distance exceeds the context limit $clipCount" }
++        glPolygonMode(
++            GL_FRONT_AND_BACK, when (state.polygonMode) {
++                PolygonMode.FILL -> GL_FILL
++                PolygonMode.LINE -> GL_LINE
++                PolygonMode.POINT -> GL_POINT
++            }
++        )
++        glToggle(GL_RASTERIZER_DISCARD, state.discard)
++        glToggle(GL_COLOR_LOGIC_OP, state.logicOperation)
++        glToggle(GL_SAMPLE_ALPHA_TO_COVERAGE, state.alphaToCoverage)
++        glToggle(GL_SAMPLE_COVERAGE, state.sampleCoverage)
++        glToggle(GL_SAMPLE_MASK, state.sampleMask)
++        for (index in 0 until clipCount) glToggle(GL_CLIP_DISTANCE0 + index, index in state.clipDistances)
++    }
++
++    override fun setBlend(state: BlendState) {
++        glToggle(GL_BLEND, state.enabled)
++        glBlendFuncSeparate(
++            state.sourceColor.glValue(), state.destinationColor.glValue(),
++            state.sourceAlpha.glValue(), state.destinationAlpha.glValue()
++        )
++        glBlendEquationSeparate(state.colorEquation.glValue(), state.alphaEquation.glValue())
++    }
++
++    override fun setDepth(state: DepthState) {
++        glToggle(GL_DEPTH_TEST, state.testEnabled)
++        glDepthMask(state.writeEnabled)
++        glDepthFunc(state.comparison.glValue())
++    }
++
++    override fun setCull(mode: CullMode) {
++        glToggle(GL_CULL_FACE, mode != CullMode.NONE)
++        if (mode != CullMode.NONE) glCullFace(
++            when (mode) {
++                CullMode.FRONT -> GL_FRONT
++                CullMode.BACK -> GL_BACK
++                CullMode.FRONT_AND_BACK -> GL_FRONT_AND_BACK
++                CullMode.NONE -> error("Disabled culling has no face")
++            }
++        )
++    }
++
++    override fun setColorWrite(mask: ColorWriteMask) = colorMask(mask.red, mask.green, mask.blue, mask.alpha)
++
++    override fun setStencil(state: StencilState) {
++        glToggle(GL_STENCIL_TEST, state.enabled)
++        glStencilFunc(state.comparison.glValue(), state.reference, state.compareMask)
++        glStencilMask(state.writeMask)
++        glStencilOp(state.stencilFail.glValue(), state.depthFail.glValue(), state.pass.glValue())
++    }
++
++    override fun createRenderTarget(width: Int, height: Int, depthStencil: Boolean): RenderTarget =
++        GlRenderTarget(width, height, depthStencil)
++
++    override fun createSampler(sampling: TextureSampling): TextureSampler = GlTextureSampler(sampling)
++    override fun createRgbaTexture(width: Int, height: Int, rgba: ByteArray): Texture = GlRgbaTexture(width, height, rgba)
++
++    override fun bindSampler(sampler: TextureSampler?, unit: Int) {
++        require(sampler == null || sampler is GlTextureSampler) { "Sampler belongs to a different backend" }
++        require(unit in 0 until textureUnitLimit) { "Invalid texture unit $unit" }
++        glBindSampler(unit, sampler?.let { (it as GlTextureSampler).checkedId() } ?: 0)
++    }
++
++    override fun bindTarget(target: RenderTarget?) {
++        require(target == null || target is GlRenderTarget) { "Render target belongs to a different backend" }
++        if (target == null) glBindFramebuffer(GL_FRAMEBUFFER, 0)
++        else target.bind()
++    }
++
++    override fun clearTarget(red: Float, green: Float, blue: Float, alpha: Float, depth: Boolean, stencil: Boolean) {
++        clearColor(red, green, blue, alpha)
++        if (depth) glClearDepth(1.0)
++        if (stencil) glClearStencil(0)
++        glClear(
++            GL_COLOR_BUFFER_BIT or (if (depth) GL_DEPTH_BUFFER_BIT else 0) or
++                    (if (stencil) GL_STENCIL_BUFFER_BIT else 0)
++        )
++    }
++
++    private var bindingsGeneration = 0L
++    private var currentShader: ShaderInstance = EmptyShaderInstance
++    private var currentTexture: Texture = EmptyTexture
++    private fun synchronizeBindings() {
++        val generation = resourceGeneration
++        if (generation != bindingsGeneration) {
++            bindingsGeneration = generation
++            currentShader = EmptyShaderInstance
++            currentTexture = EmptyTexture
++        }
++    }
++
++    override var shader: ShaderInstance
++        get() {
++            synchronizeBindings()
++            return currentShader
++        }
++        set(value) {
++            synchronizeBindings()
++            currentShader = value
++        }
++    override var texture: Texture
++        get() {
++            synchronizeBindings()
++            return currentTexture
++        }
++        set(value) {
++            synchronizeBindings()
++            currentTexture = value
++        }
+ 
+     override val drawer: Drawer = GlDrawer
+ 
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlVertexUploader.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlVertexUploader.kt
+index ca3f4b28daa675f7ee0bcb30f4f7759ebb8aa79e..44c0af6bed04d23165ee8fd10c164480bdfe4353 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlVertexUploader.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlVertexUploader.kt
+@@ -5,6 +5,7 @@ import arc.graphics.vertex.VertexBuffer
+ import arc.graphics.vertex.VertexType
+ import org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray
+ import org.lwjgl.opengl.ARBVertexArrayObject.glGenVertexArrays
++import org.lwjgl.opengl.GL
+ import org.lwjgl.opengl.GL11.GL_FLOAT
+ import org.lwjgl.opengl.GL11.GL_INT
+ import org.lwjgl.opengl.GL11.GL_SHORT
+@@ -14,23 +15,36 @@ import org.lwjgl.opengl.GL20.glDisableVertexAttribArray
+ import org.lwjgl.opengl.GL20.glEnableVertexAttribArray
+ import org.lwjgl.opengl.GL20.glVertexAttribPointer
+ import org.lwjgl.opengl.GL30.glVertexAttribIPointer
++import org.lwjgl.opengl.GLCapabilities
++import java.util.WeakHashMap
+ 
+ internal object GlVertexUploader {
+ 
+-    private val vao = glGenVertexArrays()
++    private val arrays = WeakHashMap<GLCapabilities, Int>()
++    private var vao = 0
++    private var generation = 0L
++    private fun currentVertexArray(): Int {
++        val current = GlContextIdentity.current()
++        check(current != 0L) { "An OpenGL context must be current" }
++        if (current != generation) {
++            generation = current
++            vao = arrays.getOrPut(GL.getCapabilities()) { glGenVertexArrays() }
++        }
++        return vao
++    }
+ 
+     @JvmStatic
+     @Throws(RuntimeException::class)
+     fun draw(vertexBuffer: VertexBuffer) {
+         if (vertexBuffer.vertices == 0) return
+ 
+-        if(vertexBuffer is VertexArrayBuffer) {
++        if (vertexBuffer is VertexArrayBuffer) {
+             vertexBuffer.bind()
+             glDrawArrays(vertexBuffer.mode.id, 0, vertexBuffer.vertices)
+             return
+         }
+ 
+-        glBindVertexArray(vao)
++        glBindVertexArray(currentVertexArray())
+ 
+         vertexBuffer.bind()
+ 
+@@ -41,10 +55,13 @@ internal object GlVertexUploader {
+             when (element.type) {
+                 VertexType.FLOAT ->
+                     glVertexAttribPointer(index, element.count, GL_FLOAT, false, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.UINT, VertexType.INT ->
+                     glVertexAttribIPointer(index, element.count, GL_INT, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.USHORT, VertexType.SHORT ->
+                     glVertexAttribPointer(index, element.count, GL_SHORT, false, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.UBYTE, VertexType.BYTE ->
+                     glVertexAttribPointer(index, element.count, GL_UNSIGNED_BYTE, true, vertexBuffer.format.nextOffset, offset.toLong())
+             }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexArrayBuffer.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexArrayBuffer.kt
+index 8941f5d88466128bb47ab8355f4f5aa379bedec8..d0f25c6f4463d8d88be1325e1b8d51675f1642ea 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexArrayBuffer.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexArrayBuffer.kt
+@@ -1,121 +1,88 @@
+ package arc.gl.graphics.vertex
+ 
++import arc.gl.graphics.GlContextResource
++import arc.gl.graphics.GlRenderContext
+ import arc.graphics.DrawerMode
+ import arc.graphics.vertex.VertexArrayBuffer
+ import arc.graphics.vertex.VertexFormat
+ import arc.graphics.vertex.VertexType
+-import org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray
+-import org.lwjgl.opengl.ARBVertexArrayObject.glDeleteVertexArrays
+-import org.lwjgl.opengl.ARBVertexArrayObject.glGenVertexArrays
++import java.nio.ByteBuffer
+ import org.lwjgl.opengl.GL11.GL_FLOAT
+ import org.lwjgl.opengl.GL11.GL_INT
+ import org.lwjgl.opengl.GL11.GL_SHORT
+ import org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE
+-import org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER
+-import org.lwjgl.opengl.GL15.GL_STREAM_DRAW
+-import org.lwjgl.opengl.GL15.glBindBuffer
+-import org.lwjgl.opengl.GL15.glBufferData
+-import org.lwjgl.opengl.GL15.glDeleteBuffers
+-import org.lwjgl.opengl.GL15.glGenBuffers
+-import org.lwjgl.opengl.GL15.glUnmapBuffer
+ import org.lwjgl.opengl.GL20.glEnableVertexAttribArray
+ import org.lwjgl.opengl.GL20.glVertexAttribPointer
+-import org.lwjgl.opengl.GL30.GL_MAP_UNSYNCHRONIZED_BIT
+-import org.lwjgl.opengl.GL30.GL_MAP_WRITE_BIT
+-import org.lwjgl.opengl.GL30.glMapBufferRange
++import org.lwjgl.opengl.GL30.glBindVertexArray
++import org.lwjgl.opengl.GL30.glDeleteVertexArrays
++import org.lwjgl.opengl.GL30.glGenVertexArrays
+ import org.lwjgl.opengl.GL30.glVertexAttribIPointer
+-import org.lwjgl.system.MemoryUtil
+-import java.nio.ByteBuffer
+ 
+ internal class GlVertexArrayBuffer(
+     override val mode: DrawerMode,
+     override val format: VertexFormat,
+-    private val buffer: ByteBuffer,
+-    override var vertices: Int,
+-    override val size: Int = buffer.capacity(),
+-) : VertexArrayBuffer {
++    buffer: ByteBuffer,
++    vertices: Int,
++) : GlContextResource(), VertexArrayBuffer {
+ 
+-    override var id: Int = glGenBuffers()
+-    override var bindingId: Int = glGenVertexArrays()
++    private val data = GlVertexBuffer(mode, format, buffer, vertices)
++    override val id get() = data.id
++    override val size get() = data.size
++    override val vertices get() = data.vertices
++    override var bindingId = glGenVertexArrays()
++        private set
+ 
+     init {
+-        bind()
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, id)
+-        glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_STREAM_DRAW)
+-        setupVertexAttributes()
+-
+-        unbind()
+-
+-        write(buffer, vertices)
++        try {
++            GlRenderContext.beginScopedPass(emptySet()).use {
++                bind()
++                data.bind()
++                var offset = 0
++                format.elements.forEachIndexed { index, element ->
++                    glEnableVertexAttribArray(index)
++                    when (element.type) {
++                        VertexType.FLOAT -> glVertexAttribPointer(index, element.count, GL_FLOAT, false, format.nextOffset, offset.toLong())
++                        VertexType.UINT, VertexType.INT -> glVertexAttribIPointer(index, element.count, GL_INT, format.nextOffset, offset.toLong())
++                        VertexType.USHORT, VertexType.SHORT -> glVertexAttribPointer(
++                            index, element.count, GL_SHORT, false, format.nextOffset, offset.toLong()
++                        )
++
++                        VertexType.UBYTE, VertexType.BYTE -> glVertexAttribPointer(
++                            index, element.count, GL_UNSIGNED_BYTE, true, format.nextOffset, offset.toLong()
++                        )
++                    }
++                    offset += element.size
++                }
++            }
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(bindingId >= 0) { "Vertex array is closed" }
+         glBindVertexArray(bindingId)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindVertexArray(0)
+     }
+ 
+-    private fun setupVertexAttributes() {
+-        var offset = 0
+-
+-        for ((index, element) in format.elements.withIndex()) {
+-            glEnableVertexAttribArray(index)
+-
+-            when (element.type) {
+-                VertexType.FLOAT ->
+-                    glVertexAttribPointer(index, element.count, GL_FLOAT, false, format.nextOffset, offset.toLong())
+-                VertexType.UINT, VertexType.INT ->
+-                    glVertexAttribIPointer(index, element.count, GL_INT, format.nextOffset, offset.toLong())
+-                VertexType.USHORT, VertexType.SHORT ->
+-                    glVertexAttribPointer(index, element.count, GL_SHORT, false, format.nextOffset, offset.toLong())
+-                VertexType.UBYTE, VertexType.BYTE ->
+-                    glVertexAttribPointer(index, element.count, GL_UNSIGNED_BYTE, true, format.nextOffset, offset.toLong())
+-            }
+-
+-            offset += element.size
+-        }
+-    }
+-
+-    override fun write(buffer: ByteBuffer, vertices: Int) {
+-        this.vertices = vertices
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, id)
+-
+-        val ptr = glMapBufferRange(
+-            GL_ARRAY_BUFFER, 0, buffer.capacity().toLong(),
+-            GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT
+-        )
+-
+-        if (ptr != null) {
+-            MemoryUtil.memCopy(
+-                MemoryUtil.memAddress(buffer),
+-                MemoryUtil.memAddress(ptr),
+-                buffer.capacity().toLong()
+-            )
+-            glUnmapBuffer(GL_ARRAY_BUFFER)
+-        }
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+-    }
+-
++    override fun write(buffer: ByteBuffer, vertices: Int) = data.write(buffer, vertices)
+     override fun cleanup() {
+         if (bindingId >= 0) {
+-            glDeleteVertexArrays(bindingId)
++            if (isCurrentContext()) glDeleteVertexArrays(bindingId)
+             bindingId = -1
+         }
+-        if (id >= 0) {
+-            glDeleteBuffers(id)
+-            id = -1
+-        }
++        data.cleanup()
+     }
+ 
+     object Factory : VertexArrayBuffer.Factory {
+ 
+-        override fun create(mode: DrawerMode, format: VertexFormat, buffer: ByteBuffer, vertices: Int): VertexArrayBuffer {
+-            return GlVertexArrayBuffer(mode, format, buffer, vertices)
+-        }
++        override fun create(mode: DrawerMode, format: VertexFormat, buffer: ByteBuffer, vertices: Int): VertexArrayBuffer =
++            GlVertexArrayBuffer(mode, format, buffer, vertices)
+     }
+ }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexBuffer.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexBuffer.kt
+index 4afe458d85d61e1896dea4a9d4d81a40d070a038..dbbf1f6b13322c31d7828498d4fb2a2d5e8dd4fb 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexBuffer.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexBuffer.kt
+@@ -1,72 +1,76 @@
+ package arc.gl.graphics.vertex
+ 
++import arc.gl.graphics.GlContextResource
+ import arc.graphics.DrawerMode
+ import arc.graphics.vertex.VertexBuffer
+ import arc.graphics.vertex.VertexFormat
+-import org.lwjgl.opengl.ARBMapBufferRange.GL_MAP_UNSYNCHRONIZED_BIT
+-import org.lwjgl.opengl.ARBMapBufferRange.GL_MAP_WRITE_BIT
+-import org.lwjgl.opengl.ARBMapBufferRange.glMapBufferRange
++import org.lwjgl.opengl.GL11.glGetInteger
+ import org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER
+-import org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW
++import org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER_BINDING
++import org.lwjgl.opengl.GL15.GL_STREAM_DRAW
+ import org.lwjgl.opengl.GL15.glBindBuffer
+ import org.lwjgl.opengl.GL15.glBufferData
++import org.lwjgl.opengl.GL15.glBufferSubData
+ import org.lwjgl.opengl.GL15.glDeleteBuffers
+ import org.lwjgl.opengl.GL15.glGenBuffers
+-import org.lwjgl.opengl.GL15.glUnmapBuffer
+-import org.lwjgl.system.MemoryUtil
+ import java.nio.ByteBuffer
+ 
+ internal class GlVertexBuffer(
+     override val mode: DrawerMode,
+     override val format: VertexFormat,
+-    private val buffer: ByteBuffer,
++    buffer: ByteBuffer,
+     override var vertices: Int,
+-    override val size: Int = buffer.capacity(),
+-) : VertexBuffer {
++    override var size: Int = buffer.remaining(),
++) : GlContextResource(), VertexBuffer {
+ 
+     override var id: Int = glGenBuffers()
+ 
+     init {
+-        bind()
+-        glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
+-        unbind()
+-
+-        write(buffer, vertices)
++        try {
++            write(buffer, vertices)
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id >= 0) { "Vertex buffer is closed" }
+         glBindBuffer(GL_ARRAY_BUFFER, id)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindBuffer(GL_ARRAY_BUFFER, 0)
+     }
+ 
+     override fun write(buffer: ByteBuffer, vertices: Int) {
+-        this.vertices = vertices
+-
+-        bind()
+-
+-        val ptr = glMapBufferRange(
+-            GL_ARRAY_BUFFER, 0, buffer.capacity().toLong(),
+-            GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT
+-        )
+-
+-        if (ptr != null) {
+-            MemoryUtil.memCopy(
+-                MemoryUtil.memAddress(buffer),
+-                MemoryUtil.memAddress(ptr),
+-                buffer.capacity().toLong()
+-            )
+-            glUnmapBuffer(GL_ARRAY_BUFFER)
++        requireCurrentContext()
++        check(id >= 0) { "Vertex buffer is closed" }
++        require(vertices >= 0) { "Vertex count must be nonnegative" }
++        val bytes = Math.multiplyExact(vertices, format.nextOffset)
++        require(buffer.isDirect) { "Vertex upload requires a direct buffer" }
++        require(bytes <= buffer.remaining()) { "Vertex data requires $bytes initialized bytes, only ${buffer.remaining()} remain" }
++        if (bytes > size) size = maxOf(bytes, (size.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
++        val previous = glGetInteger(GL_ARRAY_BUFFER_BINDING)
++        try {
++            bind()
++            // Orphan storage before writing. The driver retains the old allocation while in-flight draws need it.
++            glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_STREAM_DRAW)
++            if (bytes > 0) {
++                val active = buffer.duplicate().limit(buffer.position() + bytes)
++                glBufferSubData(GL_ARRAY_BUFFER, 0, active)
++            }
++            this.vertices = vertices
++        } finally {
++            glBindBuffer(GL_ARRAY_BUFFER, previous)
+         }
+-
+-        unbind()
+     }
+ 
+     override fun cleanup() {
+-        if(id >= 0) {
+-            glDeleteBuffers(id)
++        if (id >= 0) {
++            if (isCurrentContext()) glDeleteBuffers(id)
+             id = -1
+         }
+     }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlFrameBuffer.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlFrameBuffer.kt
+index 62001044dd1459893468b9e5d8eb066eb7d3d159..13c8f52114ac8b94aea0d02af7e60ee0b1c943b1 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlFrameBuffer.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlFrameBuffer.kt
+@@ -1,176 +1,103 @@
+ package arc.gl.shader
+ 
+-import arc.gl.graphics.GlDrawer
++import arc.gl.graphics.GlRenderContext
+ import arc.graphics.DrawBuffer
+ import arc.graphics.DrawerMode
++import arc.graphics.TextureSampling
+ import arc.graphics.vertex.VertexFormat
+ import arc.graphics.vertex.VertexFormatElement
+ import arc.shader.FrameBuffer
+ import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
+ import org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT
+-import org.lwjgl.opengl.GL11.GL_LINEAR
+-import org.lwjgl.opengl.GL11.GL_RGBA
+-import org.lwjgl.opengl.GL11.GL_TEXTURE_2D
+-import org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER
+-import org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER
+-import org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE
+-import org.lwjgl.opengl.GL11.glBindTexture
+ import org.lwjgl.opengl.GL11.glClear
+-import org.lwjgl.opengl.GL11.glClearColor
+-import org.lwjgl.opengl.GL11.glDeleteTextures
+-import org.lwjgl.opengl.GL11.glGenTextures
+-import org.lwjgl.opengl.GL11.glTexImage2D
+-import org.lwjgl.opengl.GL11.glTexParameteri
+-import org.lwjgl.opengl.GL11.glViewport
+-import org.lwjgl.opengl.GL13.GL_TEXTURE0
+-import org.lwjgl.opengl.GL13.glActiveTexture
+-import org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT24
+-import org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0
+-import org.lwjgl.opengl.GL30.GL_DEPTH_ATTACHMENT
+-import org.lwjgl.opengl.GL30.GL_FRAMEBUFFER
+-import org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_COMPLETE
+-import org.lwjgl.opengl.GL30.GL_RENDERBUFFER
+-import org.lwjgl.opengl.GL30.glBindFramebuffer
+-import org.lwjgl.opengl.GL30.glBindRenderbuffer
+-import org.lwjgl.opengl.GL30.glCheckFramebufferStatus
+-import org.lwjgl.opengl.GL30.glDeleteFramebuffers
+-import org.lwjgl.opengl.GL30.glDeleteRenderbuffers
+-import org.lwjgl.opengl.GL30.glFramebufferRenderbuffer
+-import org.lwjgl.opengl.GL30.glFramebufferTexture2D
+-import org.lwjgl.opengl.GL30.glGenFramebuffers
+-import org.lwjgl.opengl.GL30.glGenRenderbuffers
+-import org.lwjgl.opengl.GL30.glRenderbufferStorage
+-import org.lwjgl.system.MemoryUtil
+ 
+-internal class GlFrameBuffer(
+-    override var width: Int,
+-    override var height: Int,
+-    override val isUseDepth: Boolean
+-) : FrameBuffer {
++/** Legacy facade backed by the scoped target contract. render composites without clearing the destination. */
++internal class GlFrameBuffer(width: Int, height: Int, override val isUseDepth: Boolean) : FrameBuffer {
+ 
+-    private var fboId: Int = 0
+-    private var textureId: Int = 0
+-    private var depthBufferId: Int = 0
+-
+-    override val textureWidth: Int = width
+-    override val textureHeight: Int = height
+-
+-    init {
+-        createFramebuffer(width, height)
++    private val context = GlRenderContext
++    private val target = context.createRenderTarget(width, height, isUseDepth)
++    private val sampler = lazy { context.createSampler(TextureSampling.LINEAR) }
++    private val geometry = lazy {
++        val format = VertexFormat.builder().add(VertexFormatElement.POSITION).add(VertexFormatElement.UV).build()
++        DrawBuffer.of(DrawerMode.TRIANGLES, format, 30).use {
++            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
++            it.addVertex(-1f, -1f, 0f).setTexture(0f, 0f)
++            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
++            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
++            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
++            it.addVertex(1f, 1f, 0f).setTexture(1f, 1f)
++            it.build()
++        }
+     }
+-
++    private var closed = false
++    override val width get() = target.width
++    override val height get() = target.height
++    override val textureWidth get() = target.width
++    override val textureHeight get() = target.height
+     override fun bind(viewport: Boolean) {
+-        glBindFramebuffer(GL_FRAMEBUFFER, fboId)
+-        if (viewport) {
+-            glViewport(0, 0, width, height)
+-        }
++        checkOpen()
++        context.bindTarget(target)
++        if (viewport) context.setViewport(0, 0, width, height)
+     }
+ 
+     override fun unbind() {
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
++        checkOpen()
++        context.bindTarget(null)
+     }
+ 
+     override fun bindTexture() {
+-        glActiveTexture(GL_TEXTURE0)
+-        glBindTexture(GL_TEXTURE_2D, textureId)
++        checkOpen()
++        context.bindTexture(target.colorTexture)
+     }
+ 
+     override fun unbindTexture() {
+-        glBindTexture(GL_TEXTURE_2D, 0)
++        checkOpen()
++        target.colorTexture.unbind()
+     }
+ 
+     override fun setColor(red: Float, green: Float, blue: Float, alpha: Float) {
+-        glClearColor(red, green, blue, alpha)
+-    }
+-
+-    override fun cleanup() {
+-        glDeleteFramebuffers(fboId)
+-        glDeleteTextures(textureId)
+-        if (isUseDepth) {
+-            glDeleteRenderbuffers(depthBufferId)
+-        }
++        checkOpen()
++        context.clearColor(red, green, blue, alpha)
+     }
+ 
+     override fun render(width: Int, height: Int) {
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+-        glViewport(0, 0, width, height)
+-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+-
+-        bindTexture()
+-
+-        GlDrawer.draw(buffer)
+-
+-        unbindTexture()
++        checkOpen()
++        require(width >= 0 && height >= 0)
++        if (width == 0 || height == 0) return
++        context.beginScopedPass(setOf(0)).use {
++            context.bindTarget(null)
++            context.setViewport(0, 0, width, height)
++            context.bindTexture(target.colorTexture)
++            context.bindSampler(sampler.value)
++            context.drawer.draw(geometry.value)
++        }
+     }
+ 
+     override fun resize(width: Int, height: Int): Boolean {
+-        if (width != this.width || height != this.height) {
+-            this.width = width
+-            this.height = height
+-            createFramebuffer(width, height)
+-            return true
+-        }
+-        return false
++        checkOpen()
++        return target.resize(width, height)
+     }
+ 
+     override fun clear() {
+-        glClear(GL_COLOR_BUFFER_BIT or (if (isUseDepth) GL_DEPTH_BUFFER_BIT else 0))
++        checkOpen()
++        glClear(GL_COLOR_BUFFER_BIT or if (isUseDepth) GL_DEPTH_BUFFER_BIT else 0)
+     }
+ 
+-    private fun createFramebuffer(width: Int, height: Int) {
+-        cleanup()
+-
+-        fboId = glGenFramebuffers()
+-        glBindFramebuffer(GL_FRAMEBUFFER, fboId)
+-
+-        textureId = glGenTextures()
+-        glBindTexture(GL_TEXTURE_2D, textureId)
+-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, MemoryUtil.NULL)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0)
+-
+-        depthBufferId = if (isUseDepth) {
+-            val rbo = glGenRenderbuffers()
+-            glBindRenderbuffer(GL_RENDERBUFFER, rbo)
+-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height)
+-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)
+-            rbo
+-        } else {
+-            0
+-        }
+-
+-        check(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+-            "Framebuffer is not complete!"
+-        }
+-
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
++    override fun cleanup() {
++        if (closed) return
++        if (geometry.isInitialized()) geometry.value.cleanup()
++        if (sampler.isInitialized()) sampler.value.cleanup()
++        target.cleanup()
++        closed = true
+     }
+ 
+-    companion object {
+-
+-        private val vertexFormat = VertexFormat.builder()
+-            .add(VertexFormatElement.POSITION)
+-            .add(VertexFormatElement.UV)
+-            .build()
+-
+-        private val buffer = DrawBuffer.of(DrawerMode.TRIANGLES, vertexFormat, 256).use {
+-            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
+-            it.addVertex(-1f, -1f, 0f).setTexture(0f, 0f)
+-            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
+-
+-            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
+-            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
+-            it.addVertex(1f, 1f, 0f).setTexture(1f, 1f)
+-
+-            it.build()
+-        }
++    private fun checkOpen() {
++        check(!closed) { "Framebuffer is closed" }
++        check(context.resourceGeneration == target.resourceGeneration) { "Framebuffer belongs to a stale or missing context" }
+     }
+ 
+     object Factory : FrameBuffer.Factory {
+ 
+-        override fun create(width: Int, height: Int, useDepth: Boolean): FrameBuffer {
+-            return GlFrameBuffer(width, height, useDepth)
+-        }
++        override fun create(width: Int, height: Int, useDepth: Boolean): FrameBuffer = GlFrameBuffer(width, height, useDepth)
+     }
+ }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlShaderInstance.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlShaderInstance.kt
+index 190fed3faab4e988e819debf1b365ce51a80b350..7adb30c4678ff2ea0a136f0396a470b3af6a066a 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlShaderInstance.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlShaderInstance.kt
+@@ -1,6 +1,7 @@
+ package arc.gl.shader
+ 
+ import arc.asset.StringAsset
++import arc.gl.graphics.GlContextResource
+ import arc.gl.graphics.GlRenderContext
+ import arc.graphics.EmptyShaderInstance
+ import arc.graphics.vertex.VertexType
+@@ -51,24 +52,37 @@ internal class GlShaderInstance(
+     override val vertex: String,
+     override val fragment: String,
+     override val settings: ShaderSettings
+-) : ShaderInstance {
++) : GlContextResource(), ShaderInstance {
+ 
+     override var id = 0
+     private var vertexShaderId = 0
+     private var fragmentShaderId = 0
+ 
+     private val providers = mutableListOf<UniformProvider>()
++    private val uniformLocations = mutableMapOf<String, Int>()
+ 
+     override fun compileShaders() {
++        requireCurrentContext()
++        cleanup()
+         id = glCreateProgram()
+-
+-        vertexShaderId = createShader(vertex, GL_VERTEX_SHADER)
+-        fragmentShaderId = createShader(fragment, GL_FRAGMENT_SHADER)
+-
+-        link()
++        try {
++            vertexShaderId = createShader(vertex, GL_VERTEX_SHADER)
++            fragmentShaderId = createShader(fragment, GL_FRAGMENT_SHADER)
++            link()
++        } catch (failure: Throwable) {
++            if (vertexShaderId != 0) glDeleteShader(vertexShaderId)
++            if (fragmentShaderId != 0) glDeleteShader(fragmentShaderId)
++            cleanup()
++            throw failure
++        } finally {
++            vertexShaderId = 0
++            fragmentShaderId = 0
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id != 0) { "Shader is not compiled or is closed" }
+         glUseProgram(id)
+         GlRenderContext.shader = this
+ 
+@@ -76,13 +90,18 @@ internal class GlShaderInstance(
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glUseProgram(0)
+ 
+         GlRenderContext.shader = EmptyShaderInstance
+     }
+ 
+     override fun cleanup() {
+-        glDeleteProgram(id)
++        if (id != 0) {
++            if (isCurrentContext()) glDeleteProgram(id)
++            id = 0
++        }
++        uniformLocations.clear()
+     }
+ 
+     override fun addProvider(provider: UniformProvider) {
+@@ -90,7 +109,7 @@ internal class GlShaderInstance(
+     }
+ 
+     override fun setUniform(name: String, value: Boolean) {
+-        setUniform(name, if(value) 1 else 0)
++        setUniform(name, if (value) 1 else 0)
+     }
+ 
+     override fun setUniform(name: String, value: Int) {
+@@ -144,6 +163,8 @@ internal class GlShaderInstance(
+     }
+ 
+     override fun uploadUniformBuffer(name: String, buffer: UniformBuffer) {
++        requireCurrentContext()
++        check(buffer.resourceGeneration == 0L || buffer.resourceGeneration == resourceGeneration) { "Uniform buffer belongs to an old context" }
+         val blockIndex = glGetUniformBlockIndex(id, name)
+         if (blockIndex != GL_INVALID_INDEX) {
+             glUniformBlockBinding(id, blockIndex, 0)
+@@ -152,9 +173,11 @@ internal class GlShaderInstance(
+     }
+ 
+     private fun uniform(name: String, value: Int.() -> Unit) {
+-        val location: Int = glGetUniformLocation(id, name)
++        requireCurrentContext()
++        check(id != 0) { "Shader is not compiled or is closed" }
++        val location: Int = uniformLocations.getOrPut(name) { glGetUniformLocation(id, name) }
+ 
+-        if(location != -1) {
++        if (location != -1) {
+             value.invoke(location)
+         }
+     }
+@@ -168,8 +191,10 @@ internal class GlShaderInstance(
+         glShaderSource(shaderId, shaderCode)
+         glCompileShader(shaderId)
+ 
+-        check(glGetShaderi(shaderId, GL_COMPILE_STATUS) != 0) {
+-            "Error compiling Shader code: ${glGetShaderInfoLog(shaderId, MAX_LOG_LENGTH)}"
++        if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
++            val message = glGetShaderInfoLog(shaderId, MAX_LOG_LENGTH)
++            glDeleteShader(shaderId)
++            error("Error compiling Shader code: $message")
+         }
+ 
+         glAttachShader(id, shaderId)
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlUniformBuffer.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlUniformBuffer.kt
+index d0007a2742f353e3ea9fbab8b52c5f2d21de0cb4..52af85335599cc7ff227d942f037afc8194f1136 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlUniformBuffer.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlUniformBuffer.kt
+@@ -1,63 +1,88 @@
+ package arc.gl.shader
+ 
++import arc.gl.graphics.GlContextResource
+ import arc.shader.UniformBuffer
+-import org.lwjgl.opengl.ARBUniformBufferObject.GL_UNIFORM_BUFFER
++import java.nio.ByteBuffer
++import org.lwjgl.opengl.GL11.glGetInteger
+ import org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW
+ import org.lwjgl.opengl.GL15.glBindBuffer
+ import org.lwjgl.opengl.GL15.glBufferData
+ import org.lwjgl.opengl.GL15.glBufferSubData
+ import org.lwjgl.opengl.GL15.glDeleteBuffers
+ import org.lwjgl.opengl.GL15.glGenBuffers
+-import org.lwjgl.system.MemoryUtil.memAlloc
+-import org.lwjgl.system.MemoryUtil.memFree
+-import java.nio.ByteBuffer
++import org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER
++import org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER_BINDING
++import org.lwjgl.system.MemoryUtil
+ 
+-internal class GlUniformBuffer(
+-    override val size: Int
+-) : UniformBuffer {
++internal class GlUniformBuffer(override val size: Int) : GlContextResource(), UniformBuffer {
+ 
+-    override val id: Int = glGenBuffers()
+-    private val cachedBuffer = memAlloc(size)
++    override var id = 0
++        private set
++    private val cachedBuffer = MemoryUtil.memAlloc(size.also { require(it >= 0) { "Uniform buffer size must be nonnegative" } })
++    private var closed = false
+ 
+     init {
+-        bind()
+-        glBufferData(GL_UNIFORM_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
+-        unbind()
++        id = glGenBuffers()
++        val previous = glGetInteger(GL_UNIFORM_BUFFER_BINDING)
++        try {
++            bind()
++            glBufferData(GL_UNIFORM_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        } finally {
++            glBindBuffer(GL_UNIFORM_BUFFER, previous)
++        }
+     }
+ 
+     override fun update(data: ByteBuffer) {
+-        require(data.remaining() <= size) { "Data size (${data.remaining()}) > buffer capacity ($size)"  }
+-
++        requireCurrentContext()
++        check(!closed) { "Uniform buffer is closed" }
++        require(data.remaining() <= size) { "Uniform update exceeds capacity $size" }
+         cachedBuffer.clear()
+-        cachedBuffer.put(data)
++        cachedBuffer.put(data.duplicate())
+         cachedBuffer.flip()
+-
+-        bind()
+-        glBufferSubData(GL_UNIFORM_BUFFER, 0, cachedBuffer)
+-        unbind()
++        val previous = glGetInteger(GL_UNIFORM_BUFFER_BINDING)
++        try {
++            bind()
++            glBufferSubData(GL_UNIFORM_BUFFER, 0, cachedBuffer)
++        } finally {
++            glBindBuffer(GL_UNIFORM_BUFFER, previous)
++        }
+     }
+ 
+     override fun update(size: Int, data: ByteBuffer.() -> Unit) {
+-        val buffer = memAlloc(size).apply(data).flip()
++        require(size in 0..this.size) { "Uniform update size exceeds capacity" }
++        val temporary = MemoryUtil.memAlloc(size)
+         try {
+-            update(buffer)
++            temporary.apply(data).flip()
++            update(temporary)
+         } finally {
+-            memFree(buffer)
++            MemoryUtil.memFree(temporary)
+         }
+     }
+ 
+-    override fun cleanup() {
+-        memFree(cachedBuffer)
+-        glDeleteBuffers(id)
++    override fun bind() {
++        requireCurrentContext()
++        check(!closed) { "Uniform buffer is closed" }
++        glBindBuffer(GL_UNIFORM_BUFFER, id)
++    }
++
++    override fun unbind() {
++        requireCurrentContext()
++        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+     }
+ 
+-    override fun bind() = glBindBuffer(GL_UNIFORM_BUFFER, id)
+-    override fun unbind() = glBindBuffer(GL_UNIFORM_BUFFER, 0)
++    override fun cleanup() {
++        if (closed) return
++        if (isCurrentContext()) glDeleteBuffers(id)
++        MemoryUtil.memFree(cachedBuffer)
++        id = 0
++        closed = true
++    }
+ 
+     object Factory : UniformBuffer.Factory {
+ 
+-        override fun create(size: Int): UniformBuffer {
+-            return GlUniformBuffer(size)
+-        }
++        override fun create(size: Int): UniformBuffer = GlUniformBuffer(size)
+     }
+ }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/texture/GlTexture.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/texture/GlTexture.kt
+index 1e55ee8b4ddf81d0d7c1d2f230bfa96b6add7689..0b605f2d06d0ad0b7da1a29034b95ac27efd45d8 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/texture/GlTexture.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/texture/GlTexture.kt
+@@ -1,5 +1,6 @@
+ package arc.gl.texture
+ 
++import arc.gl.graphics.GlContextResource
+ import arc.texture.Texture
+ import org.lwjgl.opengl.GL11.GL_NEAREST
+ import org.lwjgl.opengl.GL11.GL_TEXTURE_2D
+@@ -12,22 +13,27 @@ import org.lwjgl.opengl.GL11.glTexParameteri
+ import org.lwjgl.opengl.GL13.GL_TEXTURE0
+ import org.lwjgl.opengl.GL13.glActiveTexture
+ 
+-internal open class GlTexture : Texture {
++internal open class GlTexture : GlContextResource(), Texture {
+ 
+-    override val id: Int = glGenTextures()
++    final override var id: Int = glGenTextures()
++        private set
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id != 0) { "Texture is closed" }
+         glActiveTexture(GL_TEXTURE0)
+         glBindTexture(GL_TEXTURE_2D, id)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindTexture(GL_TEXTURE_2D, 0)
+     }
+ 
+     override fun cleanup() {
+-        glDeleteTextures(id)
++        if (id != 0) {
++            if (isCurrentContext()) glDeleteTextures(id)
++            id = 0
++        }
+     }
+ }
+diff --git a/backend/render/arc-opengl/src/main/kotlin/arc/gl/window/GlfwGlWindow.kt b/backend/render/arc-opengl/src/main/kotlin/arc/gl/window/GlfwGlWindow.kt
+index 9c87e66d560cb3a3fef98937df7250c1ec8a3360..77f9609b711f66655090843e7d022dfcaf751e96 100644
+--- a/backend/render/arc-opengl/src/main/kotlin/arc/gl/window/GlfwGlWindow.kt
++++ b/backend/render/arc-opengl/src/main/kotlin/arc/gl/window/GlfwGlWindow.kt
+@@ -30,6 +30,7 @@ internal class GlfwGlWindow(
+ 
+     fun pollEvents() {
+         GLFW.glfwPollEvents()
++        events.drainAutomatically()
+     }
+ 
+     fun swapBuffers() {
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/GlesApplication.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/GlesApplication.kt
+index 9aefdcbc0872ee2e290e29a83ff041060d72d707..7326a78e47b0c98d96929a9b9e0f8b6d64153929 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/GlesApplication.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/GlesApplication.kt
+@@ -30,7 +30,8 @@ internal object GlesApplication : AbstractApplication() {
+ 
+     override val window: EglGlesWindow
+         get() = checkNotNull(_window) {
+-            "Window is not initialized yet. Accessing it before Application.init() is not allowed." }
++            "Window is not initialized yet. Accessing it before Application.init() is not allowed."
++        }
+     override val renderContext: GlesRenderContext
+         get() = checkNotNull(_renderSystem) {
+             "RenderSystem is not initialized yet. Accessing it before Application.init() is not allowed."
+@@ -92,10 +93,15 @@ internal object GlesApplication : AbstractApplication() {
+     }
+ 
+     override fun close() {
+-        window.close()
++        try {
++            window.close()
++        } finally {
++            GLES.setCapabilities(null)
++        }
+     }
+ 
+     internal object Provider : Application.Provider {
++
+         override fun provide(): Application {
+             return GlesApplication
+         }
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderContext.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderContext.kt
+index 3de1e19169aa7da8e7a103b435194baff70bd95f..9b9096123e3b5e982be6a2ec369871234512dd18 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderContext.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderContext.kt
+@@ -1,33 +1,239 @@
+ package arc.gles.graphics
+ 
+ import arc.gles.GlesApplication
++import arc.graphics.BlendState
++import arc.graphics.ColorWriteMask
++import arc.graphics.CullMode
++import arc.graphics.DepthState
+ import arc.graphics.Drawer
+ import arc.graphics.EmptyShaderInstance
++import arc.graphics.PixelRect
++import arc.graphics.PolygonMode
++import arc.graphics.RasterState
++import arc.graphics.RenderCapabilities
+ import arc.graphics.RenderContext
++import arc.graphics.RenderTarget
++import arc.graphics.StencilState
++import arc.graphics.TextureSampler
++import arc.graphics.TextureSampling
+ import arc.shader.ShaderInstance
+ import arc.texture.EmptyTexture
+ import arc.texture.Texture
++import org.lwjgl.opengles.GLES.getCapabilities
++import org.lwjgl.opengles.GLES20.GL_BACK
+ import org.lwjgl.opengles.GLES20.GL_BLEND
+ import org.lwjgl.opengles.GLES20.GL_COLOR_BUFFER_BIT
+ import org.lwjgl.opengles.GLES20.GL_CULL_FACE
+ import org.lwjgl.opengles.GLES20.GL_DEPTH_BUFFER_BIT
+ import org.lwjgl.opengles.GLES20.GL_DEPTH_TEST
++import org.lwjgl.opengles.GLES20.GL_FRONT
++import org.lwjgl.opengles.GLES20.GL_FRONT_AND_BACK
++import org.lwjgl.opengles.GLES20.GL_MAX_TEXTURE_SIZE
++import org.lwjgl.opengles.GLES20.GL_SAMPLE_ALPHA_TO_COVERAGE
++import org.lwjgl.opengles.GLES20.GL_SAMPLE_COVERAGE
++import org.lwjgl.opengles.GLES20.GL_SCISSOR_TEST
++import org.lwjgl.opengles.GLES20.GL_STENCIL_BUFFER_BIT
++import org.lwjgl.opengles.GLES20.GL_STENCIL_TEST
+ import org.lwjgl.opengles.GLES20.GL_TEXTURE_2D
+ import org.lwjgl.opengles.GLES20.glBlendEquation
+ import org.lwjgl.opengles.GLES20.glBlendFunc
+ import org.lwjgl.opengles.GLES20.glBlendFuncSeparate
+ import org.lwjgl.opengles.GLES20.glClear
+ import org.lwjgl.opengles.GLES20.glClearColor
++import org.lwjgl.opengles.GLES20.glClearDepthf
++import org.lwjgl.opengles.GLES20.glClearStencil
+ import org.lwjgl.opengles.GLES20.glColorMask
++import org.lwjgl.opengles.GLES20.glCullFace
++import org.lwjgl.opengles.GLES20.glDepthFunc
+ import org.lwjgl.opengles.GLES20.glDepthMask
+ import org.lwjgl.opengles.GLES20.glDisable
+ import org.lwjgl.opengles.GLES20.glEnable
++import org.lwjgl.opengles.GLES20.glGetInteger
++import org.lwjgl.opengles.GLES20.glScissor
++import org.lwjgl.opengles.GLES20.glStencilFunc
++import org.lwjgl.opengles.GLES20.glStencilMask
++import org.lwjgl.opengles.GLES20.glStencilOp
+ import org.lwjgl.opengles.GLES20.glViewport
++import org.lwjgl.opengles.GLES30
++import org.lwjgl.opengles.GLES30.GL_FRAMEBUFFER
++import org.lwjgl.opengles.GLES30.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS
++import org.lwjgl.opengles.GLES30.GL_RASTERIZER_DISCARD
++import org.lwjgl.opengles.GLES30.glBindFramebuffer
++import org.lwjgl.opengles.GLES30.glBindSampler
++import org.lwjgl.opengles.GLES30.glBlendEquationSeparate
++import org.lwjgl.opengles.GLES31.GL_SAMPLE_MASK
+ 
+ internal object GlesRenderContext : RenderContext {
+ 
+-    override var shader: ShaderInstance = EmptyShaderInstance
+-    override var texture: Texture = EmptyTexture
++    override val resourceGeneration get() = GlesContextIdentity.current()
++
++    private var capabilityGeneration = 0L
++    private var maximumTextureDimension: Int? = null
++    override val capabilities: RenderCapabilities
++        get() {
++            val generation = resourceGeneration
++            if (generation != capabilityGeneration) {
++                capabilityGeneration = generation
++                maximumTextureDimension = if (generation == 0L) null else glGetInteger(GL_MAX_TEXTURE_SIZE)
++            }
++            return RenderCapabilities(
++                scopedPass = true, scissor = true, typedState = true, renderTargets = true, stencilMasks = true,
++                maxTextureDimension = maximumTextureDimension,
++            )
++        }
++    private val passes = ArrayDeque<AutoCloseable>()
++    private var textureUnitGeneration = 0L
++    private var textureUnitCount = 0
++    private val textureUnitLimit: Int
++        get() {
++            val generation = resourceGeneration
++            check(generation != 0L) { "A graphics context must be current" }
++            if (generation != textureUnitGeneration) {
++                textureUnitCount = glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
++                textureUnitGeneration = generation
++            }
++            return textureUnitCount
++        }
++
++    override fun beginScopedPass(textureUnits: Set<Int>?): AutoCloseable {
++        val owner = Thread.currentThread()
++        val generation = resourceGeneration
++        check(generation != 0L) { "A graphics context must be current before opening a render pass" }
++        val savedShader = shader
++        val savedTexture = texture
++        val state = GlesRenderStateSnapshot(textureUnits)
++        var closed = false
++        val pass = object : AutoCloseable {
++            override fun close() {
++                if (closed) return
++                check(Thread.currentThread() === owner) { "A render pass must close on its creating thread" }
++                check(passes.lastOrNull() === this) { "Render passes must close in reverse creation order" }
++                try {
++                    check(resourceGeneration == generation) { "The graphics context changed inside an open render pass; its snapshot was discarded" }
++                    state.restore()
++                    shader = savedShader
++                    texture = savedTexture
++                } finally {
++                    passes.removeLast()
++                    closed = true
++                }
++            }
++        }
++        passes.addLast(pass)
++        return pass
++    }
++
++    override fun setScissor(rectangle: PixelRect?) {
++        glesToggle(GL_SCISSOR_TEST, rectangle != null)
++        rectangle?.let { glScissor(it.x, it.y, it.width, it.height) }
++    }
++
++    override fun setRaster(state: RasterState) {
++        require(state.polygonMode == PolygonMode.FILL && !state.logicOperation && state.clipDistances.isEmpty()) {
++            "GLES raster state supports filled polygons without color logic operations or user clip distances"
++        }
++        val supportsMask = getCapabilities().GLES31
++        require(!state.sampleMask || supportsMask) { "Sample masks require GLES 3.1" }
++        glesToggle(GL_RASTERIZER_DISCARD, state.discard)
++        glesToggle(GL_SAMPLE_ALPHA_TO_COVERAGE, state.alphaToCoverage)
++        glesToggle(GL_SAMPLE_COVERAGE, state.sampleCoverage)
++        if (supportsMask) glesToggle(GL_SAMPLE_MASK, state.sampleMask)
++    }
++
++    override fun setBlend(state: BlendState) {
++        glesToggle(GL_BLEND, state.enabled)
++        GLES30.glBlendFuncSeparate(
++            state.sourceColor.glesValue(), state.destinationColor.glesValue(),
++            state.sourceAlpha.glesValue(), state.destinationAlpha.glesValue()
++        )
++        glBlendEquationSeparate(state.colorEquation.glesValue(), state.alphaEquation.glesValue())
++    }
++
++    override fun setDepth(state: DepthState) {
++        glesToggle(GL_DEPTH_TEST, state.testEnabled)
++        glDepthMask(state.writeEnabled)
++        glDepthFunc(state.comparison.glesValue())
++    }
++
++    override fun setCull(mode: CullMode) {
++        glesToggle(GL_CULL_FACE, mode != CullMode.NONE)
++        if (mode != CullMode.NONE) glCullFace(
++            when (mode) {
++                CullMode.FRONT -> GL_FRONT
++                CullMode.BACK -> GL_BACK
++                CullMode.FRONT_AND_BACK -> GL_FRONT_AND_BACK
++                CullMode.NONE -> error("Disabled culling has no face")
++            }
++        )
++    }
++
++    override fun setColorWrite(mask: ColorWriteMask) = colorMask(mask.red, mask.green, mask.blue, mask.alpha)
++
++    override fun setStencil(state: StencilState) {
++        glesToggle(GL_STENCIL_TEST, state.enabled)
++        glStencilFunc(state.comparison.glesValue(), state.reference, state.compareMask)
++        glStencilMask(state.writeMask)
++        glStencilOp(state.stencilFail.glesValue(), state.depthFail.glesValue(), state.pass.glesValue())
++    }
++
++    override fun createRenderTarget(width: Int, height: Int, depthStencil: Boolean): RenderTarget =
++        GlesRenderTarget(width, height, depthStencil)
++
++    override fun createSampler(sampling: TextureSampling): TextureSampler = GlesTextureSampler(sampling)
++    override fun createRgbaTexture(width: Int, height: Int, rgba: ByteArray): Texture = GlesRgbaTexture(width, height, rgba)
++
++    override fun bindSampler(sampler: TextureSampler?, unit: Int) {
++        require(sampler == null || sampler is GlesTextureSampler) { "Sampler belongs to a different backend" }
++        require(unit in 0 until textureUnitLimit) { "Invalid texture unit $unit" }
++        glBindSampler(unit, sampler?.let { (it as GlesTextureSampler).checkedId() } ?: 0)
++    }
++
++    override fun bindTarget(target: RenderTarget?) {
++        require(target == null || target is GlesRenderTarget) { "Render target belongs to a different backend" }
++        if (target == null) glBindFramebuffer(GL_FRAMEBUFFER, 0)
++        else target.bind()
++    }
++
++    override fun clearTarget(red: Float, green: Float, blue: Float, alpha: Float, depth: Boolean, stencil: Boolean) {
++        clearColor(red, green, blue, alpha)
++        if (depth) glClearDepthf(1f)
++        if (stencil) glClearStencil(0)
++        glClear(
++            GL_COLOR_BUFFER_BIT or (if (depth) GL_DEPTH_BUFFER_BIT else 0) or
++                    (if (stencil) GL_STENCIL_BUFFER_BIT else 0)
++        )
++    }
++
++    private var bindingsGeneration = 0L
++    private var currentShader: ShaderInstance = EmptyShaderInstance
++    private var currentTexture: Texture = EmptyTexture
++    private fun synchronizeBindings() {
++        val generation = resourceGeneration
++        if (generation != bindingsGeneration) {
++            bindingsGeneration = generation
++            currentShader = EmptyShaderInstance
++            currentTexture = EmptyTexture
++        }
++    }
++
++    override var shader: ShaderInstance
++        get() {
++            synchronizeBindings()
++            return currentShader
++        }
++        set(value) {
++            synchronizeBindings()
++            currentShader = value
++        }
++    override var texture: Texture
++        get() {
++            synchronizeBindings()
++            return currentTexture
++        }
++        set(value) {
++            synchronizeBindings()
++            currentTexture = value
++        }
+ 
+     override val drawer: Drawer = GlesDrawer
+ 
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesVertexUploader.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesVertexUploader.kt
+index 6808f4df9459bdb7ce11a9d3d9e36bb9145f409e..a118a7d7230c9997bdc77dad4b2dd14815e34362 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesVertexUploader.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesVertexUploader.kt
+@@ -3,6 +3,7 @@ package arc.gles.graphics
+ import arc.graphics.vertex.VertexArrayBuffer
+ import arc.graphics.vertex.VertexBuffer
+ import arc.graphics.vertex.VertexType
++import org.lwjgl.opengles.GLES
+ import org.lwjgl.opengles.GLES20.GL_FLOAT
+ import org.lwjgl.opengles.GLES20.GL_INT
+ import org.lwjgl.opengles.GLES20.GL_SHORT
+@@ -16,10 +17,23 @@ import org.lwjgl.opengles.GLES20.glVertexAttribPointer
+ import org.lwjgl.opengles.GLES30.glBindVertexArray
+ import org.lwjgl.opengles.GLES30.glGenVertexArrays
+ import org.lwjgl.opengles.GLES30.glVertexAttribIPointer
++import org.lwjgl.opengles.GLESCapabilities
++import java.util.WeakHashMap
+ 
+ internal object GlesVertexUploader {
+ 
+-    private val vao = glGenVertexArrays()
++    private val arrays = WeakHashMap<GLESCapabilities, Int>()
++    private var vao = 0
++    private var generation = 0L
++    private fun currentVertexArray(): Int {
++        val current = GlesContextIdentity.current()
++        check(current != 0L) { "A GLES context must be current" }
++        if (current != generation) {
++            generation = current
++            vao = arrays.getOrPut(GLES.getCapabilities()) { glGenVertexArrays() }
++        }
++        return vao
++    }
+ 
+     @JvmStatic
+     @Throws(RuntimeException::class)
+@@ -32,7 +46,7 @@ internal object GlesVertexUploader {
+             return
+         }
+ 
+-        glBindVertexArray(vao)
++        glBindVertexArray(currentVertexArray())
+         vertexBuffer.bind()
+ 
+         var offset = 0
+@@ -43,10 +57,13 @@ internal object GlesVertexUploader {
+             when (element.type) {
+                 VertexType.FLOAT ->
+                     glVertexAttribPointer(index, element.count, GL_FLOAT, false, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.UINT, VertexType.INT ->
+                     glVertexAttribIPointer(index, element.count, GL_INT, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.USHORT, VertexType.SHORT ->
+                     glVertexAttribPointer(index, element.count, GL_SHORT, false, vertexBuffer.format.nextOffset, offset.toLong())
++
+                 VertexType.UBYTE, VertexType.BYTE ->
+                     glVertexAttribPointer(index, element.count, GL_UNSIGNED_BYTE, true, vertexBuffer.format.nextOffset, offset.toLong())
+             }
+@@ -63,5 +80,3 @@ internal object GlesVertexUploader {
+         glUseProgram(0)
+     }
+ }
+-
+-
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexArrayBuffer.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexArrayBuffer.kt
+index 26221476da6da6642962f759f10bb199cd36ab71..1e4d320d8c60a884d0025cd6db867bcc53c4c3d5 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexArrayBuffer.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexArrayBuffer.kt
+@@ -1,120 +1,88 @@
+ package arc.gles.graphics.vertex
+ 
++import arc.gles.graphics.GlesContextResource
++import arc.gles.graphics.GlesRenderContext
+ import arc.graphics.DrawerMode
+ import arc.graphics.vertex.VertexArrayBuffer
+ import arc.graphics.vertex.VertexFormat
+ import arc.graphics.vertex.VertexType
+-import org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER
++import java.nio.ByteBuffer
+ import org.lwjgl.opengles.GLES20.GL_FLOAT
+ import org.lwjgl.opengles.GLES20.GL_INT
+ import org.lwjgl.opengles.GLES20.GL_SHORT
+-import org.lwjgl.opengles.GLES20.GL_STREAM_DRAW
+ import org.lwjgl.opengles.GLES20.GL_UNSIGNED_BYTE
+-import org.lwjgl.opengles.GLES20.glBindBuffer
+-import org.lwjgl.opengles.GLES20.glBufferData
+-import org.lwjgl.opengles.GLES20.glDeleteBuffers
+-import org.lwjgl.opengles.GLES20.glEnableVertexAttribArray
+-import org.lwjgl.opengles.GLES20.glGenBuffers
+-import org.lwjgl.opengles.GLES20.glVertexAttribPointer
+-import org.lwjgl.opengles.GLES30.GL_MAP_UNSYNCHRONIZED_BIT
+-import org.lwjgl.opengles.GLES30.GL_MAP_WRITE_BIT
+ import org.lwjgl.opengles.GLES30.glBindVertexArray
+ import org.lwjgl.opengles.GLES30.glDeleteVertexArrays
++import org.lwjgl.opengles.GLES30.glEnableVertexAttribArray
+ import org.lwjgl.opengles.GLES30.glGenVertexArrays
+-import org.lwjgl.opengles.GLES30.glMapBufferRange
+-import org.lwjgl.opengles.GLES30.glUnmapBuffer
+ import org.lwjgl.opengles.GLES30.glVertexAttribIPointer
+-import org.lwjgl.system.MemoryUtil
+-import java.nio.ByteBuffer
++import org.lwjgl.opengles.GLES30.glVertexAttribPointer
+ 
+ internal class GlesVertexArrayBuffer(
+     override val mode: DrawerMode,
+     override val format: VertexFormat,
+-    private val buffer: ByteBuffer,
+-    override var vertices: Int,
+-    override val size: Int = buffer.capacity(),
+-) : VertexArrayBuffer {
++    buffer: ByteBuffer,
++    vertices: Int,
++) : GlesContextResource(), VertexArrayBuffer {
+ 
+-    override var id: Int = glGenBuffers()
+-    override var bindingId: Int = glGenVertexArrays()
++    private val data = GlesVertexBuffer(mode, format, buffer, vertices)
++    override val id get() = data.id
++    override val size get() = data.size
++    override val vertices get() = data.vertices
++    override var bindingId = glGenVertexArrays()
++        private set
+ 
+     init {
+-        bind()
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, id)
+-        glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_STREAM_DRAW)
+-        setupVertexAttributes()
+-
+-        unbind()
+-
+-        write(buffer, vertices)
++        try {
++            GlesRenderContext.beginScopedPass(emptySet()).use {
++                bind()
++                data.bind()
++                var offset = 0
++                format.elements.forEachIndexed { index, element ->
++                    glEnableVertexAttribArray(index)
++                    when (element.type) {
++                        VertexType.FLOAT -> glVertexAttribPointer(index, element.count, GL_FLOAT, false, format.nextOffset, offset.toLong())
++                        VertexType.UINT, VertexType.INT -> glVertexAttribIPointer(index, element.count, GL_INT, format.nextOffset, offset.toLong())
++                        VertexType.USHORT, VertexType.SHORT -> glVertexAttribPointer(
++                            index, element.count, GL_SHORT, false, format.nextOffset, offset.toLong()
++                        )
++
++                        VertexType.UBYTE, VertexType.BYTE -> glVertexAttribPointer(
++                            index, element.count, GL_UNSIGNED_BYTE, true, format.nextOffset, offset.toLong()
++                        )
++                    }
++                    offset += element.size
++                }
++            }
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(bindingId >= 0) { "Vertex array is closed" }
+         glBindVertexArray(bindingId)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindVertexArray(0)
+     }
+ 
+-    private fun setupVertexAttributes() {
+-        var offset = 0
+-
+-        for ((index, element) in format.elements.withIndex()) {
+-            glEnableVertexAttribArray(index)
+-
+-            when (element.type) {
+-                VertexType.FLOAT ->
+-                    glVertexAttribPointer(index, element.count, GL_FLOAT, false, format.nextOffset, offset.toLong())
+-                VertexType.UINT, VertexType.INT ->
+-                    glVertexAttribIPointer(index, element.count, GL_INT, format.nextOffset, offset.toLong())
+-                VertexType.USHORT, VertexType.SHORT ->
+-                    glVertexAttribPointer(index, element.count, GL_SHORT, false, format.nextOffset, offset.toLong())
+-                VertexType.UBYTE, VertexType.BYTE ->
+-                    glVertexAttribPointer(index, element.count, GL_UNSIGNED_BYTE, true, format.nextOffset, offset.toLong())
+-            }
+-
+-            offset += element.size
+-        }
+-    }
+-
+-    override fun write(buffer: ByteBuffer, vertices: Int) {
+-        this.vertices = vertices
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, id)
+-
+-        val ptr = glMapBufferRange(
+-            GL_ARRAY_BUFFER, 0, buffer.capacity().toLong(),
+-            GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT
+-        )
+-
+-        if (ptr != null) {
+-            MemoryUtil.memCopy(
+-                MemoryUtil.memAddress(buffer),
+-                MemoryUtil.memAddress(ptr),
+-                buffer.capacity().toLong()
+-            )
+-            glUnmapBuffer(GL_ARRAY_BUFFER)
+-        }
+-
+-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+-    }
+-
++    override fun write(buffer: ByteBuffer, vertices: Int) = data.write(buffer, vertices)
+     override fun cleanup() {
+         if (bindingId >= 0) {
+-            glDeleteVertexArrays(bindingId)
++            if (isCurrentContext()) glDeleteVertexArrays(bindingId)
+             bindingId = -1
+         }
+-        if (id >= 0) {
+-            glDeleteBuffers(id)
+-            id = -1
+-        }
++        data.cleanup()
+     }
+ 
+     object Factory : VertexArrayBuffer.Factory {
+-        override fun create(mode: DrawerMode, format: VertexFormat, buffer: ByteBuffer, vertices: Int): VertexArrayBuffer {
+-            return GlesVertexArrayBuffer(mode, format, buffer, vertices)
+-        }
++
++        override fun create(mode: DrawerMode, format: VertexFormat, buffer: ByteBuffer, vertices: Int): VertexArrayBuffer =
++            GlesVertexArrayBuffer(mode, format, buffer, vertices)
+     }
+ }
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexBuffer.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexBuffer.kt
+index 4ab03ac416799952e87eaeceddf5df19c9ca758b..ad8fd1dacd415c66dd6dd5cc380934a4067544ae 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexBuffer.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexBuffer.kt
+@@ -1,82 +1,84 @@
+ package arc.gles.graphics.vertex
+ 
++import arc.gles.graphics.GlesContextResource
+ import arc.graphics.DrawerMode
+ import arc.graphics.vertex.VertexBuffer
+ import arc.graphics.vertex.VertexFormat
+ import org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER
+-import org.lwjgl.opengles.GLES20.GL_DYNAMIC_DRAW
++import org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER_BINDING
++import org.lwjgl.opengles.GLES20.GL_STREAM_DRAW
+ import org.lwjgl.opengles.GLES20.glBindBuffer
+ import org.lwjgl.opengles.GLES20.glBufferData
++import org.lwjgl.opengles.GLES20.glBufferSubData
+ import org.lwjgl.opengles.GLES20.glDeleteBuffers
+ import org.lwjgl.opengles.GLES20.glGenBuffers
+-import org.lwjgl.opengles.GLES30.GL_MAP_UNSYNCHRONIZED_BIT
+-import org.lwjgl.opengles.GLES30.GL_MAP_WRITE_BIT
+-import org.lwjgl.opengles.GLES30.glMapBufferRange
+-import org.lwjgl.opengles.GLES30.glUnmapBuffer
+-import org.lwjgl.system.MemoryUtil
++import org.lwjgl.opengles.GLES20.glGetInteger
+ import java.nio.ByteBuffer
+ 
+ internal class GlesVertexBuffer(
+     override val mode: DrawerMode,
+     override val format: VertexFormat,
+-    private val buffer: ByteBuffer,
++    buffer: ByteBuffer,
+     override var vertices: Int,
+-    override val size: Int = buffer.capacity(),
+-) : VertexBuffer {
++    override var size: Int = buffer.remaining(),
++) : GlesContextResource(), VertexBuffer {
+ 
+     override var id: Int = glGenBuffers()
+ 
+     init {
+-        bind()
+-        glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
+-        unbind()
+-
+-        write(buffer, vertices)
++        try {
++            write(buffer, vertices)
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id >= 0) { "Vertex buffer is closed" }
+         glBindBuffer(GL_ARRAY_BUFFER, id)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindBuffer(GL_ARRAY_BUFFER, 0)
+     }
+ 
+-
+-
+     override fun write(buffer: ByteBuffer, vertices: Int) {
+-        this.vertices = vertices
+-
+-        bind()
+-
+-        val ptr = glMapBufferRange(
+-            GL_ARRAY_BUFFER, 0, buffer.capacity().toLong(),
+-            GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT
+-        )
+-
+-        if (ptr != null) {
+-            MemoryUtil.memCopy(
+-                MemoryUtil.memAddress(buffer),
+-                MemoryUtil.memAddress(ptr),
+-                buffer.capacity().toLong()
+-            )
+-            glUnmapBuffer(GL_ARRAY_BUFFER)
++        requireCurrentContext()
++        check(id >= 0) { "Vertex buffer is closed" }
++        require(vertices >= 0) { "Vertex count must be nonnegative" }
++        val bytes = Math.multiplyExact(vertices, format.nextOffset)
++        require(buffer.isDirect) { "Vertex upload requires a direct buffer" }
++        require(bytes <= buffer.remaining()) { "Vertex data requires $bytes initialized bytes, only ${buffer.remaining()} remain" }
++        if (bytes > size) size = maxOf(bytes, (size.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
++        val previous = glGetInteger(GL_ARRAY_BUFFER_BINDING)
++        try {
++            bind()
++            // Orphan storage before writing. The driver retains the old allocation while in-flight draws need it.
++            glBufferData(GL_ARRAY_BUFFER, size.toLong(), GL_STREAM_DRAW)
++            if (bytes > 0) {
++                val active = buffer.duplicate().limit(buffer.position() + bytes)
++                glBufferSubData(GL_ARRAY_BUFFER, 0, active)
++            }
++            this.vertices = vertices
++        } finally {
++            glBindBuffer(GL_ARRAY_BUFFER, previous)
+         }
+-
+-        unbind()
+     }
+ 
+     override fun cleanup() {
+-        if(id >= 0) {
+-            glDeleteBuffers(id)
++        if (id >= 0) {
++            if (isCurrentContext()) glDeleteBuffers(id)
+             id = -1
+         }
+     }
+ 
+     object Factory : VertexBuffer.Factory {
++
+         override fun create(mode: DrawerMode, format: VertexFormat, buffer: ByteBuffer, vertices: Int): VertexBuffer {
+             return GlesVertexBuffer(mode, format, buffer, vertices)
+         }
+-
+     }
+ }
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesFrameBuffer.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesFrameBuffer.kt
+index 086c38c0b1d835d260d31415f0411a6242ccc090..950dda7020b5a41de9e50f1793b5d29eaf7982cb 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesFrameBuffer.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesFrameBuffer.kt
+@@ -1,174 +1,103 @@
+ package arc.gles.shader
+ 
+-import arc.gles.graphics.GlesDrawer
++import arc.gles.graphics.GlesRenderContext
+ import arc.graphics.DrawBuffer
+ import arc.graphics.DrawerMode
++import arc.graphics.TextureSampling
+ import arc.graphics.vertex.VertexFormat
+ import arc.graphics.vertex.VertexFormatElement
+ import arc.shader.FrameBuffer
+-import org.lwjgl.opengles.GLES20.GL_COLOR_ATTACHMENT0
+ import org.lwjgl.opengles.GLES20.GL_COLOR_BUFFER_BIT
+-import org.lwjgl.opengles.GLES20.GL_DEPTH_ATTACHMENT
+ import org.lwjgl.opengles.GLES20.GL_DEPTH_BUFFER_BIT
+-import org.lwjgl.opengles.GLES20.GL_FRAMEBUFFER
+-import org.lwjgl.opengles.GLES20.GL_FRAMEBUFFER_COMPLETE
+-import org.lwjgl.opengles.GLES20.GL_LINEAR
+-import org.lwjgl.opengles.GLES20.GL_RENDERBUFFER
+-import org.lwjgl.opengles.GLES20.GL_RGBA
+-import org.lwjgl.opengles.GLES20.GL_TEXTURE0
+-import org.lwjgl.opengles.GLES20.GL_TEXTURE_2D
+-import org.lwjgl.opengles.GLES20.GL_TEXTURE_MAG_FILTER
+-import org.lwjgl.opengles.GLES20.GL_TEXTURE_MIN_FILTER
+-import org.lwjgl.opengles.GLES20.GL_UNSIGNED_BYTE
+-import org.lwjgl.opengles.GLES20.glActiveTexture
+-import org.lwjgl.opengles.GLES20.glBindFramebuffer
+-import org.lwjgl.opengles.GLES20.glBindRenderbuffer
+-import org.lwjgl.opengles.GLES20.glBindTexture
+-import org.lwjgl.opengles.GLES20.glCheckFramebufferStatus
+ import org.lwjgl.opengles.GLES20.glClear
+-import org.lwjgl.opengles.GLES20.glClearColor
+-import org.lwjgl.opengles.GLES20.glDeleteFramebuffers
+-import org.lwjgl.opengles.GLES20.glDeleteRenderbuffers
+-import org.lwjgl.opengles.GLES20.glDeleteTextures
+-import org.lwjgl.opengles.GLES20.glFramebufferRenderbuffer
+-import org.lwjgl.opengles.GLES20.glFramebufferTexture2D
+-import org.lwjgl.opengles.GLES20.glGenFramebuffers
+-import org.lwjgl.opengles.GLES20.glGenRenderbuffers
+-import org.lwjgl.opengles.GLES20.glGenTextures
+-import org.lwjgl.opengles.GLES20.glRenderbufferStorage
+-import org.lwjgl.opengles.GLES20.glTexImage2D
+-import org.lwjgl.opengles.GLES20.glTexParameteri
+-import org.lwjgl.opengles.GLES20.glViewport
+-import org.lwjgl.opengles.GLES30.GL_DEPTH_COMPONENT24
+-import org.lwjgl.system.MemoryUtil
+ 
+-internal class GlesFrameBuffer(
+-    override var width: Int,
+-    override var height: Int,
+-    override val isUseDepth: Boolean
+-) : FrameBuffer {
++/** Legacy facade backed by the scoped target contract. render composites without clearing the destination. */
++internal class GlesFrameBuffer(width: Int, height: Int, override val isUseDepth: Boolean) : FrameBuffer {
+ 
+-    private var fboId: Int = 0
+-    private var textureId: Int = 0
+-    private var depthBufferId: Int = 0
+-
+-    override val textureWidth: Int = width
+-    override val textureHeight: Int = height
+-
+-    init {
+-        createFramebuffer(width, height)
++    private val context = GlesRenderContext
++    private val target = context.createRenderTarget(width, height, isUseDepth)
++    private val sampler = lazy { context.createSampler(TextureSampling.LINEAR) }
++    private val geometry = lazy {
++        val format = VertexFormat.builder().add(VertexFormatElement.POSITION).add(VertexFormatElement.UV).build()
++        DrawBuffer.of(DrawerMode.TRIANGLES, format, 30).use {
++            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
++            it.addVertex(-1f, -1f, 0f).setTexture(0f, 0f)
++            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
++            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
++            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
++            it.addVertex(1f, 1f, 0f).setTexture(1f, 1f)
++            it.build()
++        }
+     }
+-
++    private var closed = false
++    override val width get() = target.width
++    override val height get() = target.height
++    override val textureWidth get() = target.width
++    override val textureHeight get() = target.height
+     override fun bind(viewport: Boolean) {
+-        glBindFramebuffer(GL_FRAMEBUFFER, fboId)
+-        if (viewport) {
+-            glViewport(0, 0, width, height)
+-        }
++        checkOpen()
++        context.bindTarget(target)
++        if (viewport) context.setViewport(0, 0, width, height)
+     }
+ 
+     override fun unbind() {
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
++        checkOpen()
++        context.bindTarget(null)
+     }
+ 
+     override fun bindTexture() {
+-        glActiveTexture(GL_TEXTURE0)
+-        glBindTexture(GL_TEXTURE_2D, textureId)
++        checkOpen()
++        context.bindTexture(target.colorTexture)
+     }
+ 
+     override fun unbindTexture() {
+-        glBindTexture(GL_TEXTURE_2D, 0)
++        checkOpen()
++        target.colorTexture.unbind()
+     }
+ 
+     override fun setColor(red: Float, green: Float, blue: Float, alpha: Float) {
+-        glClearColor(red, green, blue, alpha)
+-    }
+-
+-    override fun cleanup() {
+-        glDeleteFramebuffers(fboId)
+-        glDeleteTextures(textureId)
+-        if (isUseDepth) {
+-            glDeleteRenderbuffers(depthBufferId)
+-        }
++        checkOpen()
++        context.clearColor(red, green, blue, alpha)
+     }
+ 
+     override fun render(width: Int, height: Int) {
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+-        glViewport(0, 0, width, height)
+-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+-
+-        bindTexture()
+-
+-        GlesDrawer.draw(buffer)
+-
+-        unbindTexture()
++        checkOpen()
++        require(width >= 0 && height >= 0)
++        if (width == 0 || height == 0) return
++        context.beginScopedPass(setOf(0)).use {
++            context.bindTarget(null)
++            context.setViewport(0, 0, width, height)
++            context.bindTexture(target.colorTexture)
++            context.bindSampler(sampler.value)
++            context.drawer.draw(geometry.value)
++        }
+     }
+ 
+     override fun resize(width: Int, height: Int): Boolean {
+-        if (width != this.width || height != this.height) {
+-            this.width = width
+-            this.height = height
+-            createFramebuffer(width, height)
+-            return true
+-        }
+-        return false
++        checkOpen()
++        return target.resize(width, height)
+     }
+ 
+     override fun clear() {
+-        glClear(GL_COLOR_BUFFER_BIT or (if (isUseDepth) GL_DEPTH_BUFFER_BIT else 0))
++        checkOpen()
++        glClear(GL_COLOR_BUFFER_BIT or if (isUseDepth) GL_DEPTH_BUFFER_BIT else 0)
+     }
+ 
+-    private fun createFramebuffer(width: Int, height: Int) {
+-        cleanup()
+-
+-        fboId = glGenFramebuffers()
+-        glBindFramebuffer(GL_FRAMEBUFFER, fboId)
+-
+-        textureId = glGenTextures()
+-        glBindTexture(GL_TEXTURE_2D, textureId)
+-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, MemoryUtil.NULL)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0)
+-
+-        depthBufferId = if (isUseDepth) {
+-            val rbo = glGenRenderbuffers()
+-            glBindRenderbuffer(GL_RENDERBUFFER, rbo)
+-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height)
+-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)
+-            rbo
+-        } else {
+-            0
+-        }
+-
+-        check(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+-            "Framebuffer is not complete!"
+-        }
+-
+-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
++    override fun cleanup() {
++        if (closed) return
++        if (geometry.isInitialized()) geometry.value.cleanup()
++        if (sampler.isInitialized()) sampler.value.cleanup()
++        target.cleanup()
++        closed = true
+     }
+ 
+-    companion object {
+-        private val vertexFormat = VertexFormat.builder()
+-            .add(VertexFormatElement.POSITION)
+-            .add(VertexFormatElement.UV)
+-            .build()
+-
+-        private val buffer = DrawBuffer.of(DrawerMode.TRIANGLES, vertexFormat, 256).use {
+-            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
+-            it.addVertex(-1f, -1f, 0f).setTexture(0f, 0f)
+-            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
+-
+-            it.addVertex(-1f, 1f, 0f).setTexture(0f, 1f)
+-            it.addVertex(1f, -1f, 0f).setTexture(1f, 0f)
+-            it.addVertex(1f, 1f, 0f).setTexture(1f, 1f)
+-
+-            it.build()
+-        }
++    private fun checkOpen() {
++        check(!closed) { "Framebuffer is closed" }
++        check(context.resourceGeneration == target.resourceGeneration) { "Framebuffer belongs to a stale or missing context" }
+     }
+ 
+     object Factory : FrameBuffer.Factory {
+-        override fun create(width: Int, height: Int, useDepth: Boolean): FrameBuffer {
+-            return GlesFrameBuffer(width, height, useDepth)
+-        }
++
++        override fun create(width: Int, height: Int, useDepth: Boolean): FrameBuffer = GlesFrameBuffer(width, height, useDepth)
+     }
+ }
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesShaderInstance.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesShaderInstance.kt
+index f5f469335f72a13a50f7beeb73fbb078b2eaa4e2..f8b18d1d2e70e316eb51512cae4c52263e633b07 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesShaderInstance.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesShaderInstance.kt
+@@ -1,6 +1,7 @@
+ package arc.gles.shader
+ 
+ import arc.asset.StringAsset
++import arc.gles.graphics.GlesContextResource
+ import arc.gles.graphics.GlesRenderContext
+ import arc.graphics.EmptyShaderInstance
+ import arc.graphics.vertex.VertexType
+@@ -51,24 +52,37 @@ internal class GlesShaderInstance(
+     override val vertex: String,
+     override val fragment: String,
+     override val settings: ShaderSettings
+-) : ShaderInstance {
++) : GlesContextResource(), ShaderInstance {
+ 
+     override var id = 0
+     private var vertexShaderId = 0
+     private var fragmentShaderId = 0
+ 
+     private val providers = mutableListOf<UniformProvider>()
++    private val uniformLocations = mutableMapOf<String, Int>()
+ 
+     override fun compileShaders() {
++        requireCurrentContext()
++        cleanup()
+         id = glCreateProgram()
+-
+-        vertexShaderId = createShader(vertex, GL_VERTEX_SHADER)
+-        fragmentShaderId = createShader(fragment, GL_FRAGMENT_SHADER)
+-
+-        link()
++        try {
++            vertexShaderId = createShader(vertex, GL_VERTEX_SHADER)
++            fragmentShaderId = createShader(fragment, GL_FRAGMENT_SHADER)
++            link()
++        } catch (failure: Throwable) {
++            if (vertexShaderId != 0) glDeleteShader(vertexShaderId)
++            if (fragmentShaderId != 0) glDeleteShader(fragmentShaderId)
++            cleanup()
++            throw failure
++        } finally {
++            vertexShaderId = 0
++            fragmentShaderId = 0
++        }
+     }
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id != 0) { "Shader is not compiled or is closed" }
+         glUseProgram(id)
+         GlesRenderContext.shader = this
+ 
+@@ -76,13 +90,18 @@ internal class GlesShaderInstance(
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glUseProgram(0)
+ 
+         GlesRenderContext.shader = EmptyShaderInstance
+     }
+ 
+     override fun cleanup() {
+-        glDeleteProgram(id)
++        if (id != 0) {
++            if (isCurrentContext()) glDeleteProgram(id)
++            id = 0
++        }
++        uniformLocations.clear()
+     }
+ 
+     override fun addProvider(provider: UniformProvider) {
+@@ -90,7 +109,7 @@ internal class GlesShaderInstance(
+     }
+ 
+     override fun setUniform(name: String, value: Boolean) {
+-        setUniform(name, if(value) 1 else 0)
++        setUniform(name, if (value) 1 else 0)
+     }
+ 
+     override fun setUniform(name: String, value: Int) {
+@@ -144,6 +163,8 @@ internal class GlesShaderInstance(
+     }
+ 
+     override fun uploadUniformBuffer(name: String, buffer: UniformBuffer) {
++        requireCurrentContext()
++        check(buffer.resourceGeneration == 0L || buffer.resourceGeneration == resourceGeneration) { "Uniform buffer belongs to an old context" }
+         val blockIndex = glGetUniformBlockIndex(id, name)
+         if (blockIndex != GL_INVALID_INDEX) {
+             glUniformBlockBinding(id, blockIndex, 0)
+@@ -152,9 +173,11 @@ internal class GlesShaderInstance(
+     }
+ 
+     private fun uniform(name: String, value: Int.() -> Unit) {
+-        val location: Int = glGetUniformLocation(id, name)
++        requireCurrentContext()
++        check(id != 0) { "Shader is not compiled or is closed" }
++        val location: Int = uniformLocations.getOrPut(name) { glGetUniformLocation(id, name) }
+ 
+-        if(location != -1) {
++        if (location != -1) {
+             value.invoke(location)
+         }
+     }
+@@ -168,8 +191,10 @@ internal class GlesShaderInstance(
+         glShaderSource(shaderId, shaderCode)
+         glCompileShader(shaderId)
+ 
+-        check(glGetShaderi(shaderId, GL_COMPILE_STATUS) != 0) {
+-            "Error compiling Shader code: ${glGetShaderInfoLog(shaderId, MAX_LOG_LENGTH)}"
++        if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
++            val message = glGetShaderInfoLog(shaderId, MAX_LOG_LENGTH)
++            glDeleteShader(shaderId)
++            error("Error compiling Shader code: $message")
+         }
+ 
+         glAttachShader(id, shaderId)
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt
+index d946d4fc1d2463bc09312364f8b73ccc98598923..4763bc0dfaee86df1a68132fd248b5c4feb9ff24 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt
+@@ -1,62 +1,88 @@
+ package arc.gles.shader
+ 
++import arc.gles.graphics.GlesContextResource
+ import arc.shader.UniformBuffer
+-import org.lwjgl.opengles.GLES20.GL_DYNAMIC_DRAW
+-import org.lwjgl.opengles.GLES20.glBindBuffer
+-import org.lwjgl.opengles.GLES20.glBufferData
+-import org.lwjgl.opengles.GLES20.glBufferSubData
+-import org.lwjgl.opengles.GLES20.glDeleteBuffers
+-import org.lwjgl.opengles.GLES20.glGenBuffers
+-import org.lwjgl.opengles.GLES30.GL_UNIFORM_BUFFER
+-import org.lwjgl.system.MemoryUtil.memAlloc
+-import org.lwjgl.system.MemoryUtil.memFree
+ import java.nio.ByteBuffer
++import org.lwjgl.opengles.GLES20.glGetInteger
++import org.lwjgl.opengles.GLES30.GL_DYNAMIC_DRAW
++import org.lwjgl.opengles.GLES30.GL_UNIFORM_BUFFER
++import org.lwjgl.opengles.GLES30.GL_UNIFORM_BUFFER_BINDING
++import org.lwjgl.opengles.GLES30.glBindBuffer
++import org.lwjgl.opengles.GLES30.glBufferData
++import org.lwjgl.opengles.GLES30.glBufferSubData
++import org.lwjgl.opengles.GLES30.glDeleteBuffers
++import org.lwjgl.opengles.GLES30.glGenBuffers
++import org.lwjgl.system.MemoryUtil
+ 
+-internal class GlesUniformBuffer(
+-    override val size: Int
+-) : UniformBuffer {
++internal class GlesUniformBuffer(override val size: Int) : GlesContextResource(), UniformBuffer {
+ 
+-    override val id: Int = glGenBuffers()
+-    private val cachedBuffer = memAlloc(size)
++    override var id = 0
++        private set
++    private val cachedBuffer = MemoryUtil.memAlloc(size.also { require(it >= 0) { "Uniform buffer size must be nonnegative" } })
++    private var closed = false
+ 
+     init {
+-        bind()
+-        glBufferData(GL_UNIFORM_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
+-        unbind()
++        id = glGenBuffers()
++        val previous = glGetInteger(GL_UNIFORM_BUFFER_BINDING)
++        try {
++            bind()
++            glBufferData(GL_UNIFORM_BUFFER, size.toLong(), GL_DYNAMIC_DRAW)
++        } catch (failure: Throwable) {
++            cleanup()
++            throw failure
++        } finally {
++            glBindBuffer(GL_UNIFORM_BUFFER, previous)
++        }
+     }
+ 
+     override fun update(data: ByteBuffer) {
+-        require(data.remaining() <= size) { "Data size (${data.remaining()}) > buffer capacity ($size)"  }
+-
++        requireCurrentContext()
++        check(!closed) { "Uniform buffer is closed" }
++        require(data.remaining() <= size) { "Uniform update exceeds capacity $size" }
+         cachedBuffer.clear()
+-        cachedBuffer.put(data)
++        cachedBuffer.put(data.duplicate())
+         cachedBuffer.flip()
+-
+-        bind()
+-        glBufferSubData(GL_UNIFORM_BUFFER, 0, cachedBuffer)
+-        unbind()
++        val previous = glGetInteger(GL_UNIFORM_BUFFER_BINDING)
++        try {
++            bind()
++            glBufferSubData(GL_UNIFORM_BUFFER, 0, cachedBuffer)
++        } finally {
++            glBindBuffer(GL_UNIFORM_BUFFER, previous)
++        }
+     }
+ 
+     override fun update(size: Int, data: ByteBuffer.() -> Unit) {
+-        val buffer = memAlloc(size).apply(data).flip()
++        require(size in 0..this.size) { "Uniform update size exceeds capacity" }
++        val temporary = MemoryUtil.memAlloc(size)
+         try {
+-            update(buffer)
++            temporary.apply(data).flip()
++            update(temporary)
+         } finally {
+-            memFree(buffer)
++            MemoryUtil.memFree(temporary)
+         }
+     }
+ 
+-    override fun cleanup() {
+-        memFree(cachedBuffer)
+-        glDeleteBuffers(id)
++    override fun bind() {
++        requireCurrentContext()
++        check(!closed) { "Uniform buffer is closed" }
++        glBindBuffer(GL_UNIFORM_BUFFER, id)
++    }
++
++    override fun unbind() {
++        requireCurrentContext()
++        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+     }
+ 
+-    override fun bind() = glBindBuffer(GL_UNIFORM_BUFFER, id)
+-    override fun unbind() = glBindBuffer(GL_UNIFORM_BUFFER, 0)
++    override fun cleanup() {
++        if (closed) return
++        if (isCurrentContext()) glDeleteBuffers(id)
++        MemoryUtil.memFree(cachedBuffer)
++        id = 0
++        closed = true
++    }
+ 
+     object Factory : UniformBuffer.Factory {
+-        override fun create(size: Int): UniformBuffer {
+-            return GlesUniformBuffer(size)
+-        }
++
++        override fun create(size: Int): UniformBuffer = GlesUniformBuffer(size)
+     }
+ }
+diff --git a/backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt b/backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt
+index 34edefec5002df18ac90f63f44f716a96e06c106..c121aa8372108e4a1ab158413d5b52e452a3094c 100644
+--- a/backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt
++++ b/backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt
+@@ -1,5 +1,6 @@
+ package arc.gles.texture
+ 
++import arc.gles.graphics.GlesContextResource
+ import arc.texture.Texture
+ import org.lwjgl.opengles.GLES20.GL_NEAREST
+ import org.lwjgl.opengles.GLES20.GL_TEXTURE0
+@@ -12,22 +13,27 @@ import org.lwjgl.opengles.GLES20.glDeleteTextures
+ import org.lwjgl.opengles.GLES20.glGenTextures
+ import org.lwjgl.opengles.GLES20.glTexParameteri
+ 
+-internal open class GlesTexture : Texture {
++internal open class GlesTexture : GlesContextResource(), Texture {
+ 
+-    override val id: Int = glGenTextures()
++    final override var id: Int = glGenTextures()
++        private set
+ 
+     override fun bind() {
++        requireCurrentContext()
++        check(id != 0) { "Texture is closed" }
+         glActiveTexture(GL_TEXTURE0)
+         glBindTexture(GL_TEXTURE_2D, id)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+     }
+ 
+     override fun unbind() {
++        requireCurrentContext()
+         glBindTexture(GL_TEXTURE_2D, 0)
+     }
+ 
+     override fun cleanup() {
+-        glDeleteTextures(id)
++        if (id != 0) {
++            if (isCurrentContext()) glDeleteTextures(id)
++            id = 0
++        }
+     }
+ }
+diff --git a/backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt b/backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt
+index f7ce8166e87a6fd15e2dd35765b71f97a4c9bc67..c75f35694b1b57928d6b1f96be0f17abbc2b5cbf 100644
+--- a/backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt
++++ b/backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt
+@@ -1,12 +1,27 @@
+ package arc.window.glfw
+ 
++import arc.window.CursorShape
++import arc.window.FocusEvent
++import arc.window.KeyAction
++import arc.window.KeyModifiers
++import arc.window.KeySymbol
++import arc.window.KeyboardEvent
++import arc.window.MetricsEvent
++import arc.window.PointerBoundary
++import arc.window.PointerButton
++import arc.window.PointerMotion
++import arc.window.PointerWheel
++import arc.window.UnicodeCommit
+ import arc.window.Window
+ import arc.window.WindowBackend
++import arc.window.WindowEvents
+ import arc.window.WindowException
+ import arc.window.WindowHandler
++import arc.window.WindowMetrics
+ import io.github.oshai.kotlinlogging.KLogger
+ import org.joml.Vector2i
+ import org.lwjgl.glfw.Callbacks
++import org.lwjgl.glfw.GLFW
+ import org.lwjgl.glfw.GLFW.GLFW_CURSOR
+ import org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED
+ import org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL
+@@ -59,6 +74,48 @@ abstract class AbstractGlfwWindow(
+     override var handle: Long = 0
+     override var position: Vector2i = Vector2i(0, 0)
+     override var isFocus: Boolean = true
++    override val events = WindowEvents()
++
++    init {
++        // Compatibility input is a lower-priority listener, so UI consumption also protects
++        // applications still using Window.handler for camera movement or scrolling.
++        events.subscribe(priority = Int.MIN_VALUE) { event ->
++            when (event) {
++                is PointerMotion -> handler.cursorMove(event.x, event.y)
++                is PointerWheel -> handler.scroll(event.deltaX, event.deltaY)
++                is PointerBoundary -> if (event.entered) handler.cursorEntered() else handler.cursorLeaved()
++            }
++            false
++        }
++    }
++
++    final override var metrics = WindowMetrics(width, height, width, height)
++        private set
++    private var cursorX = 0.0
++    private var cursorY = 0.0
++    private var closed = false
++    private val cursors = mutableMapOf<CursorShape, Long>()
++    override fun setCursor(shape: CursorShape) {
++        require(handle != 0L && !closed)
++        if (shape == CursorShape.DEFAULT) {
++            GLFW.glfwSetCursor(handle, 0L)
++            return
++        }
++        val cursor = cursors.getOrPut(shape) {
++            GLFW.glfwCreateStandardCursor(
++                when (shape) {
++                    CursorShape.POINTER -> GLFW.GLFW_HAND_CURSOR
++                    CursorShape.TEXT -> GLFW.GLFW_IBEAM_CURSOR
++                    CursorShape.CROSSHAIR -> GLFW.GLFW_CROSSHAIR_CURSOR
++                    CursorShape.RESIZE_HORIZONTAL -> GLFW.GLFW_HRESIZE_CURSOR
++                    CursorShape.RESIZE_VERTICAL -> GLFW.GLFW_VRESIZE_CURSOR
++                    else -> GLFW.GLFW_ARROW_CURSOR
++                }
++            )
++        }
++        check(cursor != 0L) { "Could not create cursor $shape" }
++        GLFW.glfwSetCursor(handle, cursor)
++    }
+ 
+     override var clipboardText: String
+         get() {
+@@ -82,10 +139,10 @@ abstract class AbstractGlfwWindow(
+ 
+     override var isHidden: Boolean = false
+         set(value) {
+-            if(value && !field) {
+-                glfwShowWindow(handle)
+-            } else if (!value && field) {
++            if (value && !field) {
+                 glfwHideWindow(handle)
++            } else if (!value && field) {
++                glfwShowWindow(handle)
+             }
+ 
+             field = value
+@@ -93,9 +150,9 @@ abstract class AbstractGlfwWindow(
+ 
+     override var isVsync: Boolean = true
+         set(value) {
+-            if(value && !field) {
++            if (value && !field) {
+                 glfwSwapInterval(GLFW_TRUE)
+-            } else if(!value && field) {
++            } else if (!value && field) {
+                 glfwSwapInterval(GLFW_FALSE)
+             }
+ 
+@@ -104,17 +161,17 @@ abstract class AbstractGlfwWindow(
+ 
+     override var isShowCursor: Boolean = true
+         set(value) {
+-            if(value && !field) {
++            if (value && !field) {
+                 glfwSetInputMode(
+                     handle,
+                     GLFW_CURSOR,
+-                    GLFW_CURSOR_DISABLED
++                    GLFW_CURSOR_NORMAL
+                 )
+-            } else if(!value && field) {
++            } else if (!value && field) {
+                 glfwSetInputMode(
+                     handle,
+                     GLFW_CURSOR,
+-                    GLFW_CURSOR_NORMAL
++                    GLFW_CURSOR_DISABLED
+                 )
+             }
+ 
+@@ -140,12 +197,29 @@ abstract class AbstractGlfwWindow(
+         glfwSetCursorEnterCallback(handle, ::onEnter)
+         glfwSetCursorPosCallback(handle, ::onCursorMove)
+         glfwSetScrollCallback(handle, ::onScroll)
++        GLFW.glfwSetWindowSizeCallback(handle) { _, _, _ -> refreshMetrics() }
++        GLFW.glfwSetWindowContentScaleCallback(handle) { _, _, _ -> refreshMetrics() }
++        GLFW.glfwSetWindowIconifyCallback(handle) { _, _ -> refreshMetrics() }
++        GLFW.glfwSetKeyCallback(handle) { _, key, scan, action, mods ->
++            events.enqueue(
++                KeyboardEvent(symbol(key), key, scan, keyAction(action), modifiers(mods), events.nextSequence(), System.nanoTime(), handle)
++            )
++        }
++        GLFW.glfwSetMouseButtonCallback(handle) { _, button, action, mods ->
++            events.enqueue(
++                PointerButton(button, keyAction(action), cursorX, cursorY, modifiers(mods), events.nextSequence(), System.nanoTime(), handle)
++            )
++        }
++        GLFW.glfwSetCharCallback(handle) { _, codepoint ->
++            events.enqueue(UnicodeCommit(String(Character.toChars(codepoint)), events.nextSequence(), System.nanoTime(), handle))
++        }
+ 
+         val arrWidth = IntArray(1)
+         val arrHeight = IntArray(1)
+         glfwGetFramebufferSize(handle, arrWidth, arrHeight)
+         width = arrWidth[0]
+         height = arrHeight[0]
++        refreshMetrics()
+ 
+         logger.atInfo {
+             message = "Initialized GLFW window"
+@@ -160,6 +234,11 @@ abstract class AbstractGlfwWindow(
+     }
+ 
+     override fun close() {
++        if (closed) return
++        closed = true
++        events.close()
++        cursors.values.forEach(GLFW::glfwDestroyCursor)
++        cursors.clear()
+         logger.info { "Closing GLFW window" }
+ 
+         Callbacks.glfwFreeCallbacks(handle)
+@@ -186,28 +265,84 @@ abstract class AbstractGlfwWindow(
+     }
+ 
+     private fun onCursorMove(handle: Long, x: Double, y: Double) {
+-        handler.cursorMove(x, y)
++        cursorX = x
++        cursorY = y
++        events.enqueue(PointerMotion(x, y, events.nextSequence(), System.nanoTime(), handle))
+     }
+ 
+     private fun onScroll(handle: Long, xOffset: Double, yOffset: Double) {
+-        handler.scroll(xOffset, yOffset)
++        events.enqueue(PointerWheel(cursorX, cursorY, xOffset, yOffset, events.nextSequence(), System.nanoTime(), handle))
+     }
+ 
+     private fun onResize(handle: Long, width: Int, height: Int) {
+         this.width = width
+         this.height = height
++        refreshMetrics()
+ 
+         handler.resize(width, height)
+     }
+ 
+     private fun onFocus(handle: Long, focus: Boolean) {
+         this.isFocus = focus
++        refreshMetrics()
++        events.enqueue(FocusEvent(focus, events.nextSequence(), System.nanoTime(), handle))
+ 
+         handler.focus(focus)
+     }
+ 
+     private fun onEnter(handle: Long, entered: Boolean) {
+-        if (entered) handler.cursorEntered() else handler.cursorLeaved()
++        events.enqueue(PointerBoundary(entered, events.nextSequence(), System.nanoTime(), handle))
++    }
++
++    private fun refreshMetrics() {
++        val w = IntArray(1)
++        val h = IntArray(1)
++        val fw = IntArray(1)
++        val fh = IntArray(1)
++        val sx = FloatArray(1)
++        val sy = FloatArray(1)
++        GLFW.glfwGetWindowSize(handle, w, h)
++        GLFW.glfwGetFramebufferSize(handle, fw, fh)
++        GLFW.glfwGetWindowContentScale(handle, sx, sy)
++        width = fw[0]
++        height = fh[0]
++        metrics = WindowMetrics(
++            w[0], h[0], fw[0], fh[0], sx[0], sy[0], isFocus, GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == GLFW.GLFW_TRUE,
++            metrics.generation + 1
++        )
++        events.enqueue(MetricsEvent(metrics, events.nextSequence(), System.nanoTime(), handle))
++    }
++
++    private fun keyAction(action: Int) = when (action) {
++        GLFW.GLFW_PRESS -> KeyAction.PRESS
++        GLFW.GLFW_REPEAT -> KeyAction.REPEAT
++        else -> KeyAction.RELEASE
++    }
++
++    private fun modifiers(mods: Int) = KeyModifiers(
++        mods and GLFW.GLFW_MOD_SHIFT != 0, mods and GLFW.GLFW_MOD_CONTROL != 0, mods and GLFW.GLFW_MOD_ALT != 0, mods and GLFW.GLFW_MOD_SUPER != 0
++    )
++
++    private fun symbol(key: Int) = when (key) {
++        GLFW.GLFW_KEY_TAB -> KeySymbol.TAB
++        GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> KeySymbol.ENTER
++        GLFW.GLFW_KEY_SPACE -> KeySymbol.SPACE
++        GLFW.GLFW_KEY_ESCAPE -> KeySymbol.ESCAPE
++        GLFW.GLFW_KEY_LEFT -> KeySymbol.LEFT
++        GLFW.GLFW_KEY_RIGHT -> KeySymbol.RIGHT
++        GLFW.GLFW_KEY_UP -> KeySymbol.UP
++        GLFW.GLFW_KEY_DOWN -> KeySymbol.DOWN
++        GLFW.GLFW_KEY_HOME -> KeySymbol.HOME
++        GLFW.GLFW_KEY_END -> KeySymbol.END
++        GLFW.GLFW_KEY_BACKSPACE -> KeySymbol.BACKSPACE
++        GLFW.GLFW_KEY_DELETE -> KeySymbol.DELETE
++        GLFW.GLFW_KEY_A -> KeySymbol.A
++        GLFW.GLFW_KEY_C -> KeySymbol.C
++        GLFW.GLFW_KEY_V -> KeySymbol.V
++        GLFW.GLFW_KEY_X -> KeySymbol.X
++        GLFW.GLFW_KEY_Y -> KeySymbol.Y
++        GLFW.GLFW_KEY_Z -> KeySymbol.Z
++        else -> KeySymbol.UNKNOWN
+     }
+ 
+     companion object {
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index b08a0960717a9ac10321fc4db58eb3fc10e7e673..29bfe1329af706e9c4df6874946231162c934623 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -32,6 +32,8 @@ lwjgl-lib = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
+ lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
+ lwjgl-egl = { group = "org.lwjgl", name = "lwjgl-egl", version.ref = "lwjgl" }
+ lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
++lwjgl-freetype = { group = "org.lwjgl", name = "lwjgl-freetype", version.ref = "lwjgl" }
++lwjgl-harfbuzz = { group = "org.lwjgl", name = "lwjgl-harfbuzz", version.ref = "lwjgl" }
+ lwjgl-vma = { group = "org.lwjgl", name = "lwjgl-vma", version.ref = "lwjgl" }
+ lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lwjgl" }
+ lwjgl-assimp = { group = "org.lwjgl", name = "lwjgl-assimp", version.ref = "lwjgl" }
+diff --git a/settings.gradle.kts b/settings.gradle.kts
+index 26b89cd8b7ad2ad4d2644ccd558b6c1d23604dd1..fe41d454eae582f9d08307994949057e55efb2d9 100644
+--- a/settings.gradle.kts
++++ b/settings.gradle.kts
+@@ -44,12 +44,12 @@ window("egl")
+ window("sdl")
+ 
+ project("extensions")
+-extension("font",         "core", "simple")
+-extension("model",        "core", "simple")
+-extension("display",      "core", "common", "opengl")
+-extension("audio",        "core", "openal")
+-extension("profiler",     "core", "simple")
+-extension("input",        "core", "glfw")
++extension("font", "core", "simple", "native")
++extension("model", "core", "simple")
++extension("display", "core", "common", "opengl")
++extension("audio", "core", "openal")
++extension("profiler", "core", "simple")
++extension("input", "core", "glfw")
+ 
+ project("demo")
+ 

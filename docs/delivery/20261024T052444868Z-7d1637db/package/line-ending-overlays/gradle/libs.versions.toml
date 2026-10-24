@@ -1,0 +1,52 @@
+metadata.format.version = "1.1"
+
+[versions]
+
+kotlin = "2.4.10"
+ksp = "2.3.10" # Not forget to keep in sync with kotlin version
+
+lwjgl = "3.4.2"
+gson = "2.14.0"
+annotations = "26.1.0"
+fastutil = "8.5.18"
+oshi = "7.4.0"
+joml = "1.10.9"
+commons-io = "2.22.0"
+detekt = "1.23.8"
+logging = "8.0.4"
+logback = "1.5.38"
+
+[libraries]
+
+annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+fastutil = { group = "it.unimi.dsi", name = "fastutil", version.ref = "fastutil" }
+ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
+joml = { group = "org.joml", name = "joml", version.ref = "joml" }
+oshi = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
+commonsIo = { group = "commons-io", name = "commons-io", version.ref = "commons-io" }
+logging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version.ref = "logging" }
+logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+
+lwjgl-lib = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
+lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
+lwjgl-egl = { group = "org.lwjgl", name = "lwjgl-egl", version.ref = "lwjgl" }
+lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
+lwjgl-freetype = { group = "org.lwjgl", name = "lwjgl-freetype", version.ref = "lwjgl" }
+lwjgl-harfbuzz = { group = "org.lwjgl", name = "lwjgl-harfbuzz", version.ref = "lwjgl" }
+lwjgl-vma = { group = "org.lwjgl", name = "lwjgl-vma", version.ref = "lwjgl" }
+lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lwjgl" }
+lwjgl-assimp = { group = "org.lwjgl", name = "lwjgl-assimp", version.ref = "lwjgl" }
+lwjgl-opengl = { group = "org.lwjgl", name = "lwjgl-opengl", version.ref = "lwjgl" }
+lwjgl-opengles = { group = "org.lwjgl", name = "lwjgl-opengles", version.ref = "lwjgl" }
+lwjgl-vulkan = { group = "org.lwjgl", name = "lwjgl-vulkan", version.ref = "lwjgl" }
+lwjgl-openal = { group = "org.lwjgl", name = "lwjgl-openal", version.ref = "lwjgl" }
+
+# Plugins
+plugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
+plugin-detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+
+[bundles]
+
+logging = ["logging", "logback"]

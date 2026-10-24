@@ -1,0 +1,550 @@
+{
+  "formatVersion": 1,
+  "baseline": "419619a2ec7147e76d9b696af823d0ecdeb3e684",
+  "sourceHead": "e5d04a8de4eec543e67eff7778d37f88ae29d824",
+  "generatedUtc": "2026-10-24T05:24:53.9318734Z",
+  "patchSha256": "eebff2600e0f0c01b4a9d5b32953edbd47ac6fb3f094917f337009a835f6550d",
+  "trackedFiles": 37,
+  "newFiles": 29,
+  "excludedChangedPaths": 0,
+  "excludedUntrackedPaths": 17,
+  "exclusions": [
+    ".idea/**",
+    "backend/render/arc-vulkan/src/main/kotlin/arc/vk/vk.kt",
+    "**/build/**",
+    "**/.gradle/**",
+    "**/.kotlin/**",
+    "**/out/**",
+    "**/.git/**"
+  ],
+  "files": [
+    {
+      "path": "arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt",
+      "kind": "tracked",
+      "bytes": 8220,
+      "sha256": "ab1e98ea1cae07207423f4c12c7ce1b63c9bb83f860091f4153862f4a397238c",
+      "canonicalSha256": "ab1e98ea1cae07207423f4c12c7ce1b63c9bb83f860091f4153862f4a397238c",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/ContextResource.kt",
+      "kind": "new",
+      "bytes": 207,
+      "sha256": "07dd01a569a64919299bd5c3083510815eda3ea280e7fa92a62a5cd1f4c5f646",
+      "canonicalSha256": "07dd01a569a64919299bd5c3083510815eda3ea280e7fa92a62a5cd1f4c5f646",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt",
+      "kind": "tracked",
+      "bytes": 3195,
+      "sha256": "2370d4a3ce07d227cce6b9d41f88c87411a21c3d8c27fe280fc2537614665f55",
+      "canonicalSha256": "2370d4a3ce07d227cce6b9d41f88c87411a21c3d8c27fe280fc2537614665f55",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/RenderContext.kt",
+      "kind": "tracked",
+      "bytes": 7492,
+      "sha256": "128df34bc97c480b39317e6a126c4520671c4c561c059088c26877d8d8077863",
+      "canonicalSha256": "128df34bc97c480b39317e6a126c4520671c4c561c059088c26877d8d8077863",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/RenderState.kt",
+      "kind": "new",
+      "bytes": 3717,
+      "sha256": "3feb2592fc0bd4b5ebf0cee3195bff1671fb8aae79269493e197d7bdf8091798",
+      "canonicalSha256": "3feb2592fc0bd4b5ebf0cee3195bff1671fb8aae79269493e197d7bdf8091798",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/RenderTarget.kt",
+      "kind": "new",
+      "bytes": 823,
+      "sha256": "731ec872edd21e93a61f83900b9bc442089548042638eaccfa2e83eecf680d83",
+      "canonicalSha256": "731ec872edd21e93a61f83900b9bc442089548042638eaccfa2e83eecf680d83",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/TextureSampler.kt",
+      "kind": "new",
+      "bytes": 244,
+      "sha256": "e0fa4647b88278b98761d3f7a5850a1a7ef3f8d2309af43440bbc9d008d1a5f5",
+      "canonicalSha256": "e0fa4647b88278b98761d3f7a5850a1a7ef3f8d2309af43440bbc9d008d1a5f5",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2430,
+      "sha256": "f3d6d8fa6f15139728609bf05641cccfad6f5aea47cf12a146fdf129578956f8",
+      "canonicalSha256": "f3d6d8fa6f15139728609bf05641cccfad6f5aea47cf12a146fdf129578956f8",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2764,
+      "sha256": "3ed2efd4183b507eeb512ab1b402fe112b1c943b9a329ba70da8eacb238fc4e3",
+      "canonicalSha256": "3ed2efd4183b507eeb512ab1b402fe112b1c943b9a329ba70da8eacb238fc4e3",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt",
+      "kind": "tracked",
+      "bytes": 3847,
+      "sha256": "247c1a7340fc776578b6b217647306f4a0cb019278d5c9b49522eceab82e0cbf",
+      "canonicalSha256": "247c1a7340fc776578b6b217647306f4a0cb019278d5c9b49522eceab82e0cbf",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt",
+      "kind": "tracked",
+      "bytes": 4380,
+      "sha256": "3b073ae2eee70a3b344a66220202d8075a3a5ccf29e509c252cebdd4f01c8aad",
+      "canonicalSha256": "3b073ae2eee70a3b344a66220202d8075a3a5ccf29e509c252cebdd4f01c8aad",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/texture/TextureLike.kt",
+      "kind": "tracked",
+      "bytes": 325,
+      "sha256": "09fae113944d3ba76bbcd7a0c7157a968a78bfeaf9a89feb586ba2e3ebc4a022",
+      "canonicalSha256": "09fae113944d3ba76bbcd7a0c7157a968a78bfeaf9a89feb586ba2e3ebc4a022",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/window/Window.kt",
+      "kind": "tracked",
+      "bytes": 3719,
+      "sha256": "237ffd63c8db3bb94e8139b182a5895cd4bdacfcfdf03c11ee6b0ff839c49528",
+      "canonicalSha256": "237ffd63c8db3bb94e8139b182a5895cd4bdacfcfdf03c11ee6b0ff839c49528",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-core/src/main/kotlin/arc/window/WindowEvents.kt",
+      "kind": "new",
+      "bytes": 8300,
+      "sha256": "0c7ef54221b040700fe471b09207e762a3e1f741ceac6c90d0e61595d6f01b26",
+      "canonicalSha256": "0c7ef54221b040700fe471b09207e762a3e1f741ceac6c90d0e61595d6f01b26",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-core/src/main/kotlin/arc/font/FontProvider.kt",
+      "kind": "new",
+      "bytes": 2038,
+      "sha256": "3a1b05134805b090debcbc06b0b83b768a4de915916be9f2996ad952ba3ad1bf",
+      "canonicalSha256": "3a1b05134805b090debcbc06b0b83b768a4de915916be9f2996ad952ba3ad1bf",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/build.gradle.kts",
+      "kind": "new",
+      "bytes": 374,
+      "sha256": "dd73bc9652900d3b9966af17fe0b80449cfb4f66226df0d6d0ce8403514bc1b3",
+      "canonicalSha256": "dd73bc9652900d3b9966af17fe0b80449cfb4f66226df0d6d0ce8403514bc1b3",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/README.md",
+      "kind": "new",
+      "bytes": 3751,
+      "sha256": "df131f8c2952f561bbf2ebe947d981199527e4a0e9e4e83f292e19324c9a30ba",
+      "canonicalSha256": "df131f8c2952f561bbf2ebe947d981199527e4a0e9e4e83f292e19324c9a30ba",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/main/kotlin/arc/font/NativeFontProvider.kt",
+      "kind": "new",
+      "bytes": 8296,
+      "sha256": "0d8b133f205f7e8af905f889ffcb6391f68f076fbb513a850aab39bb9f714023",
+      "canonicalSha256": "0d8b133f205f7e8af905f889ffcb6391f68f076fbb513a850aab39bb9f714023",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/main/resources/META-INF/licenses/FreeType-FTL.txt",
+      "kind": "new",
+      "bytes": 6743,
+      "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+      "canonicalSha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/main/resources/META-INF/licenses/HarfBuzz-COPYING.txt",
+      "kind": "new",
+      "bytes": 1971,
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+      "canonicalSha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/main/resources/META-INF/licenses/LWJGL-LICENSE.txt",
+      "kind": "new",
+      "bytes": 1518,
+      "sha256": "4c2f770897d0cfda4d9a65bb4d6d6983dccfd57d4c7eb74ea5ded0762cbc0e75",
+      "canonicalSha256": "4c2f770897d0cfda4d9a65bb4d6d6983dccfd57d4c7eb74ea5ded0762cbc0e75",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/test/kotlin/arc/font/NativeFontProviderTest.kt",
+      "kind": "new",
+      "bytes": 3868,
+      "sha256": "6e63b428cd8322051ec854ce244479537303cd72bfe0d47ed3edeba5841b68b9",
+      "canonicalSha256": "6e63b428cd8322051ec854ce244479537303cd72bfe0d47ed3edeba5841b68b9",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/test/resources/fonts/NotoSans-Regular.ttf",
+      "kind": "new",
+      "bytes": 569208,
+      "sha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "canonicalSha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/test/resources/fonts/OFL.txt",
+      "kind": "new",
+      "bytes": 4377,
+      "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+      "canonicalSha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-font/arc-font-native/src/test/resources/fonts/SOURCE.md",
+      "kind": "new",
+      "bytes": 390,
+      "sha256": "ae7f63985ba723e3f322ecfa6f4516c5a3feaa13ac567dc0581e1696db05406d",
+      "canonicalSha256": "ae7f63985ba723e3f322ecfa6f4516c5a3feaa13ac567dc0581e1696db05406d",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputContext.kt",
+      "kind": "new",
+      "bytes": 1276,
+      "sha256": "1447633b184d2159ae82106b4b73afb8dd87e365c845ef454ff3a73378e22719",
+      "canonicalSha256": "1447633b184d2159ae82106b4b73afb8dd87e365c845ef454ff3a73378e22719",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-input/arc-input-core/src/main/kotlin/arc/input/InputEngine.kt",
+      "kind": "tracked",
+      "bytes": 994,
+      "sha256": "4e9e1493db0bafe3b7cc6587d2040ec6c17d38a645bc2dcbc916f9f0b024af59",
+      "canonicalSha256": "4e9e1493db0bafe3b7cc6587d2040ec6c17d38a645bc2dcbc916f9f0b024af59",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/GlfwInputEngine.kt",
+      "kind": "tracked",
+      "bytes": 4333,
+      "sha256": "e4c721dbbf618f31cd37f0005458dc0c9499c35fc9c3af2c08338ba03bc5b716",
+      "canonicalSha256": "e4c721dbbf618f31cd37f0005458dc0c9499c35fc9c3af2c08338ba03bc5b716",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/keyboard/GlfwKeyboardInput.kt",
+      "kind": "tracked",
+      "bytes": 1927,
+      "sha256": "f876132fa200891fdedb278f73b599b6ffef4302467bd3b40231205e1a8a8965",
+      "canonicalSha256": "f876132fa200891fdedb278f73b599b6ffef4302467bd3b40231205e1a8a8965",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "arc-extensions/arc-input/arc-input-glfw/src/main/kotlin/arc/input/mouse/GlfwMouseInput.kt",
+      "kind": "tracked",
+      "bytes": 3287,
+      "sha256": "e0691445d3631b8e56ba614fd294ab9386fb6633b671634a41d0dc2060cdedde",
+      "canonicalSha256": "e0691445d3631b8e56ba614fd294ab9386fb6633b671634a41d0dc2060cdedde",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/build.gradle.kts",
+      "kind": "tracked",
+      "bytes": 615,
+      "sha256": "2f052cdbaf78e46a631b98bbe3aeb9f32c3f3c78ad0df4d8318880a7aa6534a8",
+      "canonicalSha256": "2f052cdbaf78e46a631b98bbe3aeb9f32c3f3c78ad0df4d8318880a7aa6534a8",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/GlApplication.kt",
+      "kind": "tracked",
+      "bytes": 3255,
+      "sha256": "9a8c73c177e4e45024b34d2051ed25f624c9d4abb3820ac3bc7ed99c16c0abed",
+      "canonicalSha256": "9a8c73c177e4e45024b34d2051ed25f624c9d4abb3820ac3bc7ed99c16c0abed",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlContextResource.kt",
+      "kind": "new",
+      "bytes": 1773,
+      "sha256": "f5c1080b4f29370ad7ec24d90088a4923e5304ac0cf5f539e649958b491663df",
+      "canonicalSha256": "f5c1080b4f29370ad7ec24d90088a4923e5304ac0cf5f539e649958b491663df",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderContext.kt",
+      "kind": "tracked",
+      "bytes": 12724,
+      "sha256": "9b373dde0f2bebe8d3a910b9b44656ac0ac0965875084abf3f811bde27468448",
+      "canonicalSha256": "9b373dde0f2bebe8d3a910b9b44656ac0ac0965875084abf3f811bde27468448",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderState.kt",
+      "kind": "new",
+      "bytes": 19766,
+      "sha256": "e15294a02e4c98f3b5eb0fabc5776d4e52d622d7d0e40b8d00ea061a94515ad6",
+      "canonicalSha256": "e15294a02e4c98f3b5eb0fabc5776d4e52d622d7d0e40b8d00ea061a94515ad6",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRenderTarget.kt",
+      "kind": "new",
+      "bytes": 6866,
+      "sha256": "2c1fb2a1191d4eb1eeefd0a45c68210d40fce6f1abd03e1fed96640628eed992",
+      "canonicalSha256": "2c1fb2a1191d4eb1eeefd0a45c68210d40fce6f1abd03e1fed96640628eed992",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlRgbaTexture.kt",
+      "kind": "new",
+      "bytes": 3506,
+      "sha256": "b1dbd815d22ffbe13492cf4c0da2f507e4f1410af990bab0b3fe25535d290d42",
+      "canonicalSha256": "b1dbd815d22ffbe13492cf4c0da2f507e4f1410af990bab0b3fe25535d290d42",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlTextureSampler.kt",
+      "kind": "new",
+      "bytes": 1348,
+      "sha256": "45d01ebc531a00c66358a6a622c24fea50d47d7dfa50f252e68dd352b5485189",
+      "canonicalSha256": "45d01ebc531a00c66358a6a622c24fea50d47d7dfa50f252e68dd352b5485189",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/GlVertexUploader.kt",
+      "kind": "tracked",
+      "bytes": 2866,
+      "sha256": "26cacd5d20ad88f4e42dbc5885d9cf11f76b59f13c4e35bf9243f1bedb2f2dd6",
+      "canonicalSha256": "26cacd5d20ad88f4e42dbc5885d9cf11f76b59f13c4e35bf9243f1bedb2f2dd6",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexArrayBuffer.kt",
+      "kind": "tracked",
+      "bytes": 3258,
+      "sha256": "851ae3c518bc3d2ffa0e61fdc337e03c2af8628c2c43cb64a6d2910aab71af28",
+      "canonicalSha256": "851ae3c518bc3d2ffa0e61fdc337e03c2af8628c2c43cb64a6d2910aab71af28",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/graphics/vertex/GlVertexBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2929,
+      "sha256": "9eb8e56138ca0051aaecf6370335374f90e0fda9761f8a38395e63f5f08bdb21",
+      "canonicalSha256": "9eb8e56138ca0051aaecf6370335374f90e0fda9761f8a38395e63f5f08bdb21",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/OpenGL.kt",
+      "kind": "tracked",
+      "bytes": 783,
+      "sha256": "684b16e012bdc0ca89c6f17643cadbb56ed809a5ff131d35d05ab166e5825fc7",
+      "canonicalSha256": "684b16e012bdc0ca89c6f17643cadbb56ed809a5ff131d35d05ab166e5825fc7",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlFrameBuffer.kt",
+      "kind": "tracked",
+      "bytes": 3629,
+      "sha256": "87dcdf18a58c2a37aead25405df0ea3195ed483ed0d3aba55d24d03a8e9ec02f",
+      "canonicalSha256": "87dcdf18a58c2a37aead25405df0ea3195ed483ed0d3aba55d24d03a8e9ec02f",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlShaderInstance.kt",
+      "kind": "tracked",
+      "bytes": 7692,
+      "sha256": "7f25fb7ac43c5ec6f699dc0154f1387ab2d43f054ad7e24d00dd23cd0e3d9ac2",
+      "canonicalSha256": "7f25fb7ac43c5ec6f699dc0154f1387ab2d43f054ad7e24d00dd23cd0e3d9ac2",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/shader/GlUniformBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2779,
+      "sha256": "39d252cf5009dc7d482e286dde2a35539933f4a17ed662bf86dd9a977157ff46",
+      "canonicalSha256": "39d252cf5009dc7d482e286dde2a35539933f4a17ed662bf86dd9a977157ff46",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/texture/GlTexture.kt",
+      "kind": "tracked",
+      "bytes": 1118,
+      "sha256": "c427348f916258252b776f4819c07b22dd35a49ff51d6debf3d074ea43bf662b",
+      "canonicalSha256": "c427348f916258252b776f4819c07b22dd35a49ff51d6debf3d074ea43bf662b",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/main/kotlin/arc/gl/window/GlfwGlWindow.kt",
+      "kind": "tracked",
+      "bytes": 1176,
+      "sha256": "a40d72c88e342390f7978a87baddf700fea89c6fd4a590ec23e117c60cf17550",
+      "canonicalSha256": "a40d72c88e342390f7978a87baddf700fea89c6fd4a590ec23e117c60cf17550",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengl/src/test/kotlin/arc/gl/graphics/GraphicsRegression.kt",
+      "kind": "new",
+      "bytes": 20489,
+      "sha256": "4e5ee1ced5d717c6d6c851d0eda48ccbc09874717ed25b971f4523bc664324f5",
+      "canonicalSha256": "4e5ee1ced5d717c6d6c851d0eda48ccbc09874717ed25b971f4523bc664324f5",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/GlesApplication.kt",
+      "kind": "tracked",
+      "bytes": 3276,
+      "sha256": "b5bde83497e1c6157b331365d41212e76124a2905d0b110f28d85cebb3e6d089",
+      "canonicalSha256": "b5bde83497e1c6157b331365d41212e76124a2905d0b110f28d85cebb3e6d089",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesContextResource.kt",
+      "kind": "new",
+      "bytes": 1809,
+      "sha256": "79ac15f3659d974c024afda2d3375106925c468608184ecf9ba38703acd18a7f",
+      "canonicalSha256": "79ac15f3659d974c024afda2d3375106925c468608184ecf9ba38703acd18a7f",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderContext.kt",
+      "kind": "tracked",
+      "bytes": 12296,
+      "sha256": "c17de4f530175d3d3851641668ee626108eb4e0dc36b5d30fce97b0a0feb717d",
+      "canonicalSha256": "c17de4f530175d3d3851641668ee626108eb4e0dc36b5d30fce97b0a0feb717d",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderState.kt",
+      "kind": "new",
+      "bytes": 18099,
+      "sha256": "ce14fdcd1ddc7898e64574e5f884c5361501c45f42b47788f44314180ce5a763",
+      "canonicalSha256": "ce14fdcd1ddc7898e64574e5f884c5361501c45f42b47788f44314180ce5a763",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRenderTarget.kt",
+      "kind": "new",
+      "bytes": 7032,
+      "sha256": "239a0f8adf5e10c2a5f104768d05972d0f6681f83f772386c80144b030a6529e",
+      "canonicalSha256": "239a0f8adf5e10c2a5f104768d05972d0f6681f83f772386c80144b030a6529e",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesRgbaTexture.kt",
+      "kind": "new",
+      "bytes": 3618,
+      "sha256": "582ddf81ddd6d9044dd5af555994177c7437824b70e3701ed528d7a74600096a",
+      "canonicalSha256": "582ddf81ddd6d9044dd5af555994177c7437824b70e3701ed528d7a74600096a",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesTextureSampler.kt",
+      "kind": "new",
+      "bytes": 1394,
+      "sha256": "fb88ee5b259cc862a04d9608f0629af87430541c592bc98be327bc5a260dbf87",
+      "canonicalSha256": "fb88ee5b259cc862a04d9608f0629af87430541c592bc98be327bc5a260dbf87",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/GlesVertexUploader.kt",
+      "kind": "tracked",
+      "bytes": 3098,
+      "sha256": "c617490242b45d8dc5b0c84d7f734835ed456c733771808661e7cb37894069a7",
+      "canonicalSha256": "c617490242b45d8dc5b0c84d7f734835ed456c733771808661e7cb37894069a7",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexArrayBuffer.kt",
+      "kind": "tracked",
+      "bytes": 3318,
+      "sha256": "3fa49e8a2461ea58b0510d1dfdd817f1759eca73deb09c1329387a2cf7b561c3",
+      "canonicalSha256": "3fa49e8a2461ea58b0510d1dfdd817f1759eca73deb09c1329387a2cf7b561c3",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/graphics/vertex/GlesVertexBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2977,
+      "sha256": "b0f5971799a3afe90b2539f006ba031283fb22e9064e7e4b95193b70df3d9f3d",
+      "canonicalSha256": "b0f5971799a3afe90b2539f006ba031283fb22e9064e7e4b95193b70df3d9f3d",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesFrameBuffer.kt",
+      "kind": "tracked",
+      "bytes": 3653,
+      "sha256": "6c9b95fcdd00c26925a16aa6a09361fd8c74aeaaf2f3269bcb436d7f5b9d1849",
+      "canonicalSha256": "6c9b95fcdd00c26925a16aa6a09361fd8c74aeaaf2f3269bcb436d7f5b9d1849",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesShaderInstance.kt",
+      "kind": "tracked",
+      "bytes": 7746,
+      "sha256": "4c8ab8861ff9f1fcfbf8e293f7687e09a064624828a8f7ef50b8a6fa9f8852eb",
+      "canonicalSha256": "4c8ab8861ff9f1fcfbf8e293f7687e09a064624828a8f7ef50b8a6fa9f8852eb",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt",
+      "kind": "tracked",
+      "bytes": 2827,
+      "sha256": "c7109782ba66090e4f7fd60fc08d71784b3ea567b479af2cd801a0481a1e7185",
+      "canonicalSha256": "c7109782ba66090e4f7fd60fc08d71784b3ea567b479af2cd801a0481a1e7185",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt",
+      "kind": "tracked",
+      "bytes": 1168,
+      "sha256": "020d7f677bf9956ac82b98b62d672ff667166ddbe423acf7c81fe95da483caa6",
+      "canonicalSha256": "020d7f677bf9956ac82b98b62d672ff667166ddbe423acf7c81fe95da483caa6",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt",
+      "kind": "tracked",
+      "bytes": 12437,
+      "sha256": "c7453903debc800307bff056fc6ead2efb1c73566255d76247af4c5270f8df8f",
+      "canonicalSha256": "c7453903debc800307bff056fc6ead2efb1c73566255d76247af4c5270f8df8f",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "docs/graphics-passes.md",
+      "kind": "new",
+      "bytes": 7939,
+      "sha256": "c2019305cce08611cba93f508cdc577091c3e7a72fa4aefb5de5443e534a9568",
+      "canonicalSha256": "c2019305cce08611cba93f508cdc577091c3e7a72fa4aefb5de5443e534a9568",
+      "lineEndingOverlay": false
+    },
+    {
+      "path": "gradle/libs.versions.toml",
+      "kind": "tracked",
+      "bytes": 2622,
+      "sha256": "36c4a72568eacd2c221d7bf34a8ca6b5f415fd0ec6726ac58d3360f3036a8c7d",
+      "canonicalSha256": "60bed599326c3eaaef2763686bfa6f20b89ebf8183fa9335eed19fa4f9669c95",
+      "lineEndingOverlay": true
+    },
+    {
+      "path": "settings.gradle.kts",
+      "kind": "tracked",
+      "bytes": 2175,
+      "sha256": "8d41e6d98fb1e0b04a8b756b3162073d3be987c4451c43f4a3a6a24daa23c4a2",
+      "canonicalSha256": "8d41e6d98fb1e0b04a8b756b3162073d3be987c4451c43f4a3a6a24daa23c4a2",
+      "lineEndingOverlay": false
+    }
+  ]
+}
