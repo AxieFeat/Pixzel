@@ -34,6 +34,13 @@ tasks.register<JavaExec>("preview") {
     mainClass = "pixzel.demo.HeadlessDemoKt"
 }
 
+tasks.register<JavaExec>("cristalix") {
+    group = "application"
+    description = "Runs the animated Cristalix-inspired server browser built with Pixzel."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "pixzel.demo.cristalix.CristalixDemoKt"
+}
+
 tasks.register<JavaExec>("graphicsChecks") {
     group = "verification"
     dependsOn(tasks.testClasses)

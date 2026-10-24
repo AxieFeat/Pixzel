@@ -87,7 +87,7 @@ fun main(args: Array<String>) {
     val resources = ResourceScope()
     try {
         val fonts = resources.own(NativeFontProvider.of())
-        val root = Path.of(System.getProperty("pixzel.fonts", "../assets/fonts"))
+        val root = Path.of(System.getProperty("pixzel.fonts", "C:\\Users\\kiril\\OneDrive\\Documents\\ChatGPT\\Pixzel\\assets\\fonts"))
         val latin = fonts.load("noto", Files.readAllBytes(root.resolve("NotoSans-Regular.ttf")))
         val arabic = fonts.load("arabic", Files.readAllBytes(root.resolve("NotoSansArabic-Regular.ttf")))
         val text = ArcTextService.of(listOf(latin, arabic))

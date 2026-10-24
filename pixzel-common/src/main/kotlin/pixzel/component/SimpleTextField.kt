@@ -22,10 +22,13 @@ import pixzel.surface.Insets
 import pixzel.surface.Rect
 import pixzel.surface.Transform
 import pixzel.surface.Vec2
+import pixzel.text.TextLayout
 import pixzel.text.TextRange
 import pixzel.text.TextRequest
 import pixzel.text.TextSpans
 import pixzel.text.UnicodeGraphemeSegmenter
+import pixzel.text.VerticalAlignment
+import pixzel.text.alignedOrigin
 import pixzel.text.nextBoundary
 import pixzel.text.previousBoundary
 import kotlin.math.abs
@@ -78,6 +81,7 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
     private var lastImeCaret: Rect? = null
 
     init {
+        verticalAlignment = VerticalAlignment.CENTER
         layout.width = 220.dp
         layout.height = 36.dp
         layout.padding = Insets.all(8.dp)
@@ -94,7 +98,7 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
                         ui!!.focus.request(this)
                         val point = event.localPosition ?: Vec2.ZERO
                         val shaped = shaped(fieldRequest(displayValue()))
-                        selectionEnd = sourceIndex(shaped.hitTest(point - Vec2(surface.contentBox.x - caretOffset, surface.contentBox.y)).index)
+                        selectionEnd = sourceIndex(shaped.hitTest(point - textOrigin(shaped)).index)
                         selectionStart = selectionEnd
                         event.capturePointer()
                         event.consume()
@@ -102,14 +106,8 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
 
                     PointerAction.MOVE -> if (state.pressed) {
                         val point = event.localPosition ?: Vec2.ZERO
-                        selectionEnd = sourceIndex(
-                            shaped(fieldRequest(displayValue())).hitTest(
-                                point - Vec2(
-                                    surface.contentBox.x - caretOffset,
-                                    surface.contentBox.y
-                                )
-                            ).index
-                        )
+                        val shaped = shaped(fieldRequest(displayValue()))
+                        selectionEnd = sourceIndex(shaped.hitTest(point - textOrigin(shaped)).index)
                         event.consume()
                     }
 
@@ -308,6 +306,10 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
     private fun fieldRequest(display: String) =
         TextRequest(display, style, direction = direction, locale = locale, textScale = ui?.settings?.textScale ?: 1f)
 
+    private fun textOrigin(layout: TextLayout): Vec2 {
+        return layout.alignedOrigin(surface.contentBox, horizontalAlignment, verticalAlignment) - Vec2(caretOffset, 0f)
+    }
+
     private fun updateCaretOffset(x: Float) {
         val width = surface.contentBox.width
         caretOffset = caretOffset.coerceIn((x - width + 1).coerceAtLeast(0f), x.coerceAtLeast(0f))
@@ -320,9 +322,9 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
             val display = displayValue()
             val shaped = shaped(fieldRequest(display))
             val caret = shaped.caret(displayCaret().coerceAtMost(display.length))
-            val box = surface.contentBox
             updateCaretOffset(caret.position.x)
-            val root = surface.mapRect(Rect(box.x + caret.position.x - caretOffset, box.y, 1f, caret.height))
+            val origin = textOrigin(shaped) + caret.position
+            val root = surface.mapRect(Rect(origin.x, origin.y, 1f, caret.height))
             val scale = owner.settings.uiScale
             val rect = Rect(root.x * scale, root.y * scale, root.width * scale, root.height * scale)
             if (lastImeCaret != rect) {
@@ -348,7 +350,7 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
     }
 
     override fun paint(canvas: Canvas) {
-        val owner = ui ?: return
+        if (ui == null) return
         val display = displayValue()
         val layout = shaped(fieldRequest(display))
         val caretIndex = displayCaret()
@@ -357,19 +359,20 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
         updateCaretOffset(caret.position.x)
         canvas.saved {
             emit(Clip(Rectangle, box))
-            emit(Concat(Transform.translation(box.x - caretOffset, box.y)))
+            val origin = textOrigin(layout)
+            emit(Concat(Transform.translation(origin.x, origin.y)))
             if (state.focused && selectionStart != selectionEnd && !password && composition == null) {
                 val a = layout.caret(selectionStart).position.x
                 val b = layout.caret(selectionEnd).position.x
-                fill(Rectangle, Rect(minOf(a, b), 0f, abs(b - a), box.height), Solid(0x4466AAFF.rgba))
+                fill(Rectangle, Rect(minOf(a, b), caret.position.y, abs(b - a), minOf(box.height, caret.height)), Solid(0x4466AAFF.rgba))
             }
             text(layout, Vec2.ZERO, color)
             composition?.takeIf { !password }?.let { preedit ->
                 val a = layout.caret(preedit.replacement.start).position.x
                 val b = layout.caret(preedit.replacement.start + preedit.preedit.length).position.x
-                fill(Rectangle, Rect(minOf(a, b), minOf(box.height, caret.height) - 1f, abs(b - a), 1f), Solid(color))
+                fill(Rectangle, Rect(minOf(a, b), caret.position.y + minOf(box.height, caret.height) - 1f, abs(b - a), 1f), Solid(color))
             }
-            if (state.focused) fill(Rectangle, Rect(caret.position.x, 0f, 1f, minOf(box.height, caret.height)), Solid(color))
+            if (state.focused) fill(Rectangle, Rect(caret.position.x, caret.position.y, 1f, minOf(box.height, caret.height)), Solid(color))
         }
     }
 }

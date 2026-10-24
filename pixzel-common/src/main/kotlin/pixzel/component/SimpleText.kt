@@ -10,6 +10,7 @@ import pixzel.layout.Constraints
 import pixzel.layout.unit.Dp
 import pixzel.resource.Subscription
 import pixzel.state.Binding
+import pixzel.surface.Rect
 import pixzel.surface.Size
 import pixzel.surface.Vec2
 import pixzel.text.TextAlignment
@@ -28,6 +29,7 @@ import pixzel.text.TextService
 import pixzel.text.TextSpans
 import pixzel.text.TextStyle
 import pixzel.text.VerticalAlignment
+import pixzel.text.alignedOrigin
 import pixzel.text.hoverReveal
 import kotlin.time.Duration
 
@@ -104,7 +106,7 @@ internal open class SimpleText(id: String) : AbstractElement(id), Text {
     override var wrap: Boolean by property(false, Invalidation.MEASURE)
     override var maxLines: Int by property(Int.MAX_VALUE, Invalidation.MEASURE)
     override var horizontalAlignment: TextAlignment by property(TextAlignment.START)
-    override var verticalAlignment: VerticalAlignment by property(VerticalAlignment.TOP)
+    override var verticalAlignment: VerticalAlignment by property(VerticalAlignment.TOP, Invalidation.ARRANGE)
     private var runtimeBehavior: TextRevealBehavior = TextReveal.NONE
     private var runtime = runtimeBehavior.createRuntime()
     private var full: TextLayout? = null
@@ -178,11 +180,7 @@ internal open class SimpleText(id: String) : AbstractElement(id), Text {
     }
 
     override fun intrinsicBaseline(contentSize: Size): Float? = measured?.let { layout ->
-        layout.baseline + when (verticalAlignment) {
-            VerticalAlignment.CENTER -> ((contentSize.height - layout.size.height) / 2).coerceAtLeast(0f)
-            VerticalAlignment.BOTTOM -> (contentSize.height - layout.size.height).coerceAtLeast(0f)
-            else -> 0f
-        }
+        layout.baseline + layout.alignedOrigin(Rect(0f, 0f, contentSize.width, contentSize.height), vertical = verticalAlignment).y
     }
 
     private fun prepare() {
@@ -268,21 +266,10 @@ internal open class SimpleText(id: String) : AbstractElement(id), Text {
         val draw = frame ?: TextRevealFrame(static!!.layout, clip = static!!.clip)
         val box = surface.contentBox
         val layout = draw.layout
-        val x = when (horizontalAlignment) {
-            TextAlignment.CENTER -> (box.width - layout.size.width) / 2
-            TextAlignment.RIGHT -> box.width - layout.size.width
-            TextAlignment.END -> if (layout.direction == TextDirection.RTL) 0f else box.width - layout.size.width
-            TextAlignment.START -> if (layout.direction == TextDirection.RTL) box.width - layout.size.width else 0f
-            else -> 0f
-        }
-        val y = when (verticalAlignment) {
-            VerticalAlignment.CENTER -> (box.height - layout.size.height) / 2
-            VerticalAlignment.BOTTOM -> box.height - layout.size.height
-            else -> 0f
-        }
+        val origin = layout.alignedOrigin(box, horizontalAlignment, verticalAlignment)
         canvas.saved {
             if (draw.clip) emit(Clip(Rectangle, box))
-            text(layout, Vec2(box.x + x.coerceAtLeast(0f) + draw.offsetX, box.y + y.coerceAtLeast(0f)), color)
+            text(layout, origin + Vec2(draw.offsetX, 0f), color)
         }
     }
 
