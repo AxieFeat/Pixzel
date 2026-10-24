@@ -24,7 +24,9 @@ data class TextOverflowContext(
 
 data class TextOverflowResult(val layout: TextLayout, val clip: Boolean, val overflowed: Boolean)
 
-/** Static overflow is independent of component type and time-dependent reveal. */
+/**
+ * Static overflow is independent of component type and time-dependent reveal.
+ */
 fun interface TextOverflowPolicy {
 
     fun resolve(context: TextOverflowContext): TextOverflowResult

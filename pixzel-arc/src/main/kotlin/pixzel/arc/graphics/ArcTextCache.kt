@@ -13,7 +13,9 @@ private data class TextKey(val layout: TextLayout, val scale: Float)
 internal data class TextTile(val bounds: Rect, val texture: Texture)
 internal data class PreparedText(val tiles: List<TextTile>, val bytes: Long)
 
-/** Raster tiles are reused across frames and released with their owning session. */
+/**
+ * Raster tiles are reused across frames and released with their owning session.
+ */
 internal class ArcTextCache(
     private val context: RenderContext,
     private val text: ArcTextService,

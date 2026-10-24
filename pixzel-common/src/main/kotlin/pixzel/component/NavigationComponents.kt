@@ -152,7 +152,9 @@ internal class SimpleTabs(id: String, private val factory: ComponentFactory) : A
     }
 }
 
-/** One open menu owns its focus scope and row callbacks. The anchor owns its popup subtree. */
+/**
+ * One open menu owns its focus scope and row callbacks. The anchor owns its popup subtree.
+ */
 class Menu<T> private constructor(
     private val ui: Ui,
     private val anchor: Element,

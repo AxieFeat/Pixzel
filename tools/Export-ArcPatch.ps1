@@ -307,10 +307,12 @@ function Resolve-ExportScope {
 # These paths existed in the fixed baseline and belong in the tracked patch.
 # Baseline additions below remain overlays even after staging or committing them.
 $trackedAllowlist = @(
+    'arc-annotations/build.gradle.kts'
     'arc-common/src/main/kotlin/arc/graphics/NativeDrawBuffer.kt'
     'arc-core/src/main/kotlin/arc/graphics/DrawBuffer.kt'
     'arc-core/src/main/kotlin/arc/graphics/RenderContext.kt'
     'arc-core/src/main/kotlin/arc/graphics/vertex/VertexBuffer.kt'
+    'arc-core/src/main/kotlin/arc/sample/uniformProviderSample.kt'
     'arc-core/src/main/kotlin/arc/shader/FrameBuffer.kt'
     'arc-core/src/main/kotlin/arc/shader/ShaderInstance.kt'
     'arc-core/src/main/kotlin/arc/shader/UniformBuffer.kt'
@@ -342,6 +344,7 @@ $trackedAllowlist = @(
     'backend/render/arc-opengles/src/main/kotlin/arc/gles/shader/GlesUniformBuffer.kt'
     'backend/render/arc-opengles/src/main/kotlin/arc/gles/texture/GlesTexture.kt'
     'backend/window/arc-glfw/src/main/kotlin/arc/window/glfw/AbstractGlfwWindow.kt'
+    'build-logic/src/main/kotlin/arc.publishing.gradle.kts'
     'gradle/libs.versions.toml'
     'settings.gradle.kts'
 )
@@ -351,6 +354,8 @@ $newAllowlist = @(
     'arc-core/src/main/kotlin/arc/graphics/RenderTarget.kt'
     'arc-core/src/main/kotlin/arc/graphics/TextureSampler.kt'
     'arc-core/src/main/kotlin/arc/window/WindowEvents.kt'
+    'arc-core/src/main/kotlin/arc/window/WindowEvent.kt'
+    'arc-core/src/main/kotlin/arc/window/WindowInputState.kt'
     'arc-extensions/arc-font/arc-font-core/src/main/kotlin/arc/font/FontProvider.kt'
     'arc-extensions/arc-font/arc-font-native/README.md'
     'arc-extensions/arc-font/arc-font-native/build.gradle.kts'

@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>BracesOnWhenStatements:RecordingBackend.kt$when</ID>
+    <ID>BracesOnWhenStatements:SoftwareBackend.kt$RasterFrame$when</ID>
+    <ID>BracesOnWhenStatements:TestHost.kt$TestHost$when</ID>
+    <ID>ClassOrdering:SoftwareBackend.kt$SoftwareBackend$fun clearCaches()</ID>
+    <ID>ComplexCondition:FixedFontTextService.kt$FixedFontTextService$request.wrap &amp;&amp; request.width.isFinite() &amp;&amp; current.isNotEmpty() &amp;&amp; cursor + clusterWidth &gt; request.width</ID>
+    <ID>ComplexCondition:SoftwareBackend.kt$RasterFrame$command.source.width == 0f || command.source.height == 0f || command.destination.width == 0f || command.destination.height == 0f</ID>
+    <ID>CyclomaticComplexMethod:FixedFontTextService.kt$FixedFontTextService$override fun layout(request: TextRequest): TextLayout</ID>
+    <ID>CyclomaticComplexMethod:RecordingBackend.kt$internal fun validateCommands(frame: FrameInfo, commands: List&lt;DrawCommand&gt;, capabilities: BackendCapabilities)</ID>
+    <ID>CyclomaticComplexMethod:ReferenceBackendTest.kt$fun runReferenceBackendChecks()</ID>
+    <ID>CyclomaticComplexMethod:SoftwareBackend.kt$RasterFrame$private fun stroke(command: Stroke)</ID>
+    <ID>CyclomaticComplexMethod:TestHost.kt$TestHost$override fun drainEvents()</ID>
+    <ID>FunctionMaxLength:ReferenceBackendTest.kt$ReferenceBackendTest$@Test fun recordingValidatesCustomCapabilitiesAndImageBrushLifetime()</ID>
+    <ID>LongMethod:FixedFontTextService.kt$FixedFontTextService$override fun layout(request: TextRequest): TextLayout</ID>
+    <ID>LongMethod:ReferenceBackendTest.kt$fun runReferenceBackendChecks()</ID>
+    <ID>LoopWithTooManyJumpStatements:SoftwareBackend.kt$RasterFrame$for</ID>
+    <ID>MagicNumber:FixedFontTextService.kt$FixedFontTextService$0.001f</ID>
+    <ID>MagicNumber:SoftwareBackend.kt$24</ID>
+    <ID>MagicNumber:SoftwareBackend.kt$255</ID>
+    <ID>MagicNumber:SoftwareBackend.kt$GlyphCache$256</ID>
+    <ID>MagicNumber:SoftwareBackend.kt$RasterFrame$24</ID>
+    <ID>MagicNumber:SoftwareBackend.kt$RasterFrame$255</ID>
+    <ID>MagicNumber:SoftwareGlyphProvider.kt$Bitmap5x7GlyphProvider$16_777_216</ID>
+    <ID>MagicNumber:SoftwareGlyphProvider.kt$Bitmap5x7GlyphProvider$9</ID>
+    <ID>MaxLineLength:RecordingBackend.kt$require(source.x &gt;= 0 &amp;&amp; source.y &gt;= 0 &amp;&amp; source.right &lt;= image.size.width &amp;&amp; source.bottom &lt;= image.size.height) { "Image source is outside '${image.id}'." }</ID>
+    <ID>MaxLineLength:SoftwareBackend.kt$SoftwareBackend.&lt;no name provided&gt;$require(width &gt; 0 &amp;&amp; height &gt; 0 &amp;&amp; width.toLong() * height &lt;= maxPixels) { "Software frame exceeds the configured pixel budget or has zero size." }</ID>
+    <ID>SpacingBetweenPackageAndImports:RecordingBackend.kt$ </ID>
+  </CurrentIssues>
+</SmellBaseline>

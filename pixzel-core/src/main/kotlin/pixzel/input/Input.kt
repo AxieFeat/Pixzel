@@ -210,6 +210,8 @@ interface FocusManager {
     fun move(forward: Boolean = true): Boolean
     fun move(direction: NavigationDirection): Boolean
 
-    /** Traps navigation in a logical subtree and restores prior focus on idempotent close. */
+    /**
+     * Traps navigation in a logical subtree and restores prior focus on idempotent close.
+     */
     fun pushScope(root: Element, restoreFocus: Boolean = true): Subscription
 }

@@ -35,7 +35,9 @@ enum class PopupSide {
     RIGHT
 }
 
-/** Flips the preferred side then shifts within viewport; caller constrains popup dimensions. */
+/**
+ * Flips the preferred side then shifts within viewport; caller constrains popup dimensions.
+ */
 fun popupPosition(anchor: Rect, popup: Size, viewport: Rect, side: PopupSide = PopupSide.BELOW): Vec2 {
     var x = anchor.x
     var y = anchor.bottom
@@ -128,7 +130,9 @@ class Modal private constructor(private val ui: Ui, owner: Element, private val 
         background = Painter { c, ctx -> c.fill(Rectangle, ctx.bounds, Solid(0x00000088.rgba)) }
     }
 
-    /** Dialog shell; header/body/actions are ordinary replaceable-content Surfaces. */
+    /**
+     * Dialog shell; header/body/actions are ordinary replaceable-content Surfaces.
+     */
     val dialog = ui.components.surface("dialog").apply {
         layout.width = 360.dp
         layout.height = 240.dp
@@ -205,7 +209,9 @@ class Modal private constructor(private val ui: Ui, owner: Element, private val 
     }
 }
 
-/** Controller belongs to its anchor. Tooltip content never captures focus or pointers. */
+/**
+ * Controller belongs to its anchor. Tooltip content never captures focus or pointers.
+ */
 fun Element.tooltip(value: String, delay: Duration = 600.milliseconds, showWhenDisabled: Boolean = true) {
     require(delay.isFinite() && !delay.isNegative())
     val target = this

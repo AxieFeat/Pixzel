@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>BracesOnWhenStatements:Interpolators.kt$Interpolators$when</ID>
+    <ID>BracesOnWhenStatements:PathGeometry.kt$PathGeometry$when</ID>
+    <ID>CastToNullableType:Theme.kt$as</ID>
+    <ID>ClassOrdering:Input.kt$RoutedEvent$val isConsumed get() = shared.consumed</ID>
+    <ID>ClassOrdering:Input.kt$RoutedEvent$val scrollRemaining get() = shared.scrollRemainder</ID>
+    <ID>ClassOrdering:Layout.kt$LayoutConfig$private fun &lt;T&gt; property(initial: T)</ID>
+    <ID>ComplexCondition:AttachmentScope.kt$AttachmentScope$closed || !attached || entry !in entries || entry.opening || entry.lease != null</ID>
+    <ID>ComplexCondition:PathGeometry.kt$PathGeometry$(a.y &lt;= point.y &amp;&amp; b.y &gt; point.y) || (b.y &lt;= point.y &amp;&amp; a.y &gt; point.y)</ID>
+    <ID>ComplexCondition:PathGeometry.kt$PathGeometry$length &gt; 0 &amp;&amp; abs(dx * py - dy * px) &lt;= 1e-6 * length &amp;&amp; px * dx + py * dy &gt;= 0 &amp;&amp; px * dx + py * dy &lt;= length * length</ID>
+    <ID>CyclomaticComplexMethod:PathGeometry.kt$PathGeometry$fun contains(contours: List&lt;List&lt;Vec2&gt;&gt;, point: Vec2, fillRule: FillRule): Boolean</ID>
+    <ID>LongParameterList:Graphics.kt$Canvas$( shape: Shape, bounds: Rect, brush: Brush, width: Float, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f )</ID>
+    <ID>LongParameterList:PathGeometry.kt$PathGeometry$(a: Vec2, b: Vec2, c: Vec2, d: Vec2, t: Float, append: (Vec2) -&gt; Unit, depth: Int)</ID>
+    <ID>LongParameterList:PathGeometry.kt$PathGeometry$(a: Vec2, b: Vec2, c: Vec2, t: Float, append: (Vec2) -&gt; Unit, depth: Int)</ID>
+    <ID>LongParameterList:TextService.kt$TextLayout$( val text: String, val size: Size, lines: List&lt;TextLine&gt;, runs: List&lt;GlyphRun&gt;, clusters: List&lt;TextCluster&gt;, val direction: TextDirection = TextDirection.LTR, val providerId: String, val isTruncated: Boolean = false )</ID>
+    <ID>LongParameterList:Theme.kt$( default: T, theme: T? = null, inherited: T? = null, rules: List&lt;StateStyle&lt;T&gt;&gt; = emptyList(), state: ElementState, instance: T? = null, instanceRules: List&lt;StateStyle&lt;T&gt;&gt; = emptyList() )</ID>
+    <ID>LongParameterList:nineSlice.kt$( image: ImageHandle, destination: Rect, sourceInsets: Insets, targetInsets: Insets = sourceInsets, tint: Color = Color.WHITE, sampling: Sampling = Sampling.LINEAR )</ID>
+    <ID>MagicNumber:Geometry.kt$Transform$1e-8f</ID>
+    <ID>MagicNumber:PathGeometry.kt$PathGeometry$1e-6</ID>
+    <ID>MagicNumber:PathGeometry.kt$PathGeometry$65536</ID>
+    <ID>MagicNumber:Theme.kt$Theme$6f</ID>
+    <ID>MatchingDeclarationName:SemanticsTree.kt$SemanticsNode</ID>
+    <ID>MaxLineLength:PathGeometry.kt$PathGeometry$if (length &gt; 0 &amp;&amp; abs(dx * py - dy * px) &lt;= 1e-6 * length &amp;&amp; px * dx + py * dy &gt;= 0 &amp;&amp; px * dx + py * dy &lt;= length * length) return true</ID>
+    <ID>StringLiteralDuplication:Input.kt$PointerEvent$"default"</ID>
+    <ID>StringLiteralDuplication:PathGeometry.kt$PathGeometry$"A path starts with MoveTo"</ID>
+    <ID>TooManyFunctions:Element.kt$ComponentFactory</ID>
+    <ID>TooManyFunctions:Element.kt$Element : AutoCloseableMeasurable</ID>
+  </CurrentIssues>
+</SmellBaseline>

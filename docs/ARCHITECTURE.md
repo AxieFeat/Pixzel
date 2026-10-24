@@ -4,7 +4,7 @@ Pixzel is a separate Kotlin/JVM project, built with JDK 21, Kotlin 2.4.10 and Gr
 
 ## Module boundary
 
-`pixzel-core` holds public values and contracts and depends only on Kotlin stdlib. `pixzel-common` supplies the retained implementation and algorithms. `pixzel-test` supplies a second host and two independent backends. `pixzel-samples` compiles external components against public APIs. `pixzel-arc` depends on neutral Arc core/font/input contracts; the application chooses OpenGL, GLFW and native font implementations. The default build does not configure Arc. `verifyBoundaries` checks forbidden imports in independent sources and concrete backend/window imports in the adapter.
+`pixzel-core` holds public values and contracts and depends only on Kotlin stdlib. `pixzel-common` supplies the retained implementation and algorithms. `pixzel-test` supplies a second host and two independent backends. `pixzel-samples` compiles external components against public APIs. `pixzel-arc` depends on neutral Arc core/font/input contracts; the application chooses OpenGL, GLFW and native font implementations. Every module is included unconditionally; Arc artifacts come from GitHub Packages at the version pinned in `gradle/libs.versions.toml`. `verifyBoundaries` checks forbidden imports in independent sources and concrete backend/window imports in the adapter.
 
 All library modules have Maven publications and source JARs. The example application is not a library publication. No external repository has been published to; the supplied publication task writes a local repository under `build/repository`.
 

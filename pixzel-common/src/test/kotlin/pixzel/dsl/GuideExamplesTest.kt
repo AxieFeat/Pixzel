@@ -34,7 +34,9 @@ import java.util.concurrent.Executor
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-/** These functions are copied verbatim into USER_GUIDE.md (with the import prelude). */
+/**
+ * These functions are copied verbatim into USER_GUIDE.md (with the import prelude).
+ */
 fun directCounter(ui: Ui): Button {
     val runtime = stateRuntime()
     val count = stateOf(0, runtime)

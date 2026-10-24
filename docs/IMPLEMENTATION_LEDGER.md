@@ -14,15 +14,15 @@ Status: required independent JVM and desktop Arc/OpenGL scope implemented and ve
 
 ## Decisions and shared contracts
 
-1. Separate Pixzel Gradle project with optional explicit `-ParcPath` composite. Core/common work without configuring Arc. Adapter imports only neutral Arc APIs. Application selects concrete OpenGL/GLFW/native fonts.
+1. Separate Pixzel Gradle project with Arc's included `build-logic`, shared version catalog and typed project accessors. Every module is always included; Arc resolves from GitHub Packages at the pinned commit version. Core/common remain independent of Arc. Adapter imports only neutral Arc APIs. Application selects concrete OpenGL/GLFW/native fonts.
 2. Retained public Elements and local component factories; direct API and typed DSL share runtime semantics. Explicit tracked bindings/keyed regions, no implicit whole-function recomposition. External samples compile separately.
 3. Read-only nested Surface coordinates, X right/Y down, logical dp. Pointer divides by UI scale; framebuffer scale applies once at raster boundary. Logical parent controls inheritance/lifetime/routes; portals change geometric attachment only.
 4. Public two-phase layout, immutable paint traversal, ordered independent draw commands and per-node paint caches. Surface does not allocate a framebuffer. Renderer batches adjacent compatible solids and flushes at material/clip/target boundaries.
 5. Production FT/HB text uses measured positioned glyph data; deterministic independent font is an explicit fixture. Static overflow and timed reveal are replaceable independent strategies, with theme/scope/instance defaults and per-label running clocks.
 6. Ordered capture/target/bubble plus default action. Consumed gesture repeats/releases remain blocked from lower gameplay layers even after the consuming listener closes. Physical polling remains separate. Focus scopes mask held gameplay inputs and restore focus.
 7. Injected services are borrowed; sessions/tree/leases are owned. Detach and disposal differ. Cleanup aggregates errors. Generation-aware native cleanup cannot delete replacement-context IDs; owned image sources restore and borrowed handles require rebind.
-8. Development Maven coordinates `pixzel.engine:<module>:0.1.0-dev`, local publications/source JARs only. Optional native/platform support is not inferred from interfaces or source compilation.
-9. Kotlin sources follow original Arc formatting: four-space indentation, eight-space continuations, explicit imports, separate statements and multiline blocks. Pixzel includes `.editorconfig` and a shared IntelliJ formatter profile. Import collisions use meaningful aliases; native binding functions use explicit imports.
+8. Maven coordinates `pixzel.engine:<module>:<commit>`, with source JARs, a local artifact repository and a separate GitHub Packages publication target. Project dependencies and publication versions match. Optional native/platform support is not inferred from interfaces or source compilation.
+9. Kotlin sources follow original Arc formatting: four-space indentation, eight-space continuations, explicit imports, separate statements, multiline KDoc and multiline blocks. Pixzel includes `.editorconfig` and a shared IntelliJ formatter profile. Import collisions use meaningful aliases; native binding functions use explicit imports. Logical function stages are separated by blank lines, with concise explanations for nontrivial algorithms.
 
 ## Workstreams and independent review
 
@@ -31,6 +31,8 @@ The lead owned shared contracts/build/layout/tree/input/integration. Three bound
 Important resolved findings include inherited wireframe/discard state, stale native ID deletion, tessellation output/cache budgets, callback/cleanup failures, minimized-frame closure resurrection, mutation before owner validation, stale text provider generations, IME shorter-preedit/caret mapping, themed label policies, slot accessible-label corruption, fixed-image remeasurement, context-menu cleanup and paired-key release leakage.
 
 ## Integrated evidence
+
+The earlier composite-build timings below are historical. The later convention-plugin migration passed the independent checks and a full Maven-artifact build with real GPU/input fixtures. Arc's readability/publication changes passed Detekt and native regressions before entering `master`; [verification](VERIFICATION.md) records the current Maven checks.
 
 - Final independent build/boundaries/state/animation/preview/local publications: PASS, 10 seconds, 112 Jupiter methods (common 109, reference 2, sample 1), zero failures/errors/skips. Default build does not configure Arc.
 - Final full composite build, boundaries, executable checks, GPU/input fixtures, local publications and scale 1.25 showcase: PASS, 11 seconds. All 9 adapter methods pass. Native fixture entry points execute explicitly, separate from empty JUnit discovery in the demo.

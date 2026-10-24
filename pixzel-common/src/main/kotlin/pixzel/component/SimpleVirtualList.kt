@@ -14,7 +14,9 @@ import pixzel.surface.Size
 import pixzel.surface.Vec2
 import kotlin.time.Duration
 
-/** Bounded materialization; height/index caches may scale with model size, live nodes do not. */
+/**
+ * Bounded materialization; height/index caches may scale with model size, live nodes do not.
+ */
 fun <T, K> virtualList(
     ui: Ui,
     items: List<T>,
@@ -25,7 +27,9 @@ fun <T, K> virtualList(
 ): VirtualList<T, K> =
     SimpleVirtualList(ui, items, key, estimatedHeight, overscan, row)
 
-/** A Fenwick tree keeps height corrections and prefix sums logarithmic as rows are measured. */
+/**
+ * A Fenwick tree keeps height corrections and prefix sums logarithmic as rows are measured.
+ */
 private class HeightIndex(size: Int, initial: Float) {
 
     private val values = FloatArray(size) { initial }
@@ -104,7 +108,9 @@ internal class SimpleVirtualList<T, K>(
     private val states = mutableMapOf<K, MutableMap<StateSlot<*>, MutableState<*>>>()
     private var nextCellId = 0L
 
-    /** This implementation virtualizes vertical rows; ordinary ScrollView supports all axes. */
+    /**
+     * This implementation virtualizes vertical rows; ordinary ScrollView supports all axes.
+     */
     override var axes: ScrollAxes
         get() = super.axes
         set(value) {

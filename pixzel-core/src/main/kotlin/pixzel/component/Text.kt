@@ -34,7 +34,9 @@ interface Text : Element {
     }
 }
 
-/** Selection and caret indices are UTF-16 grapheme boundaries. */
+/**
+ * Selection and caret indices are UTF-16 grapheme boundaries.
+ */
 interface TextField : Text {
 
     val composition: TextComposition?

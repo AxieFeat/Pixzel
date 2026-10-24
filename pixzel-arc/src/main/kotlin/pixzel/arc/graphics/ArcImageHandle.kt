@@ -6,7 +6,9 @@ import pixzel.graphics.ImageHandle
 import pixzel.surface.Size
 import java.util.concurrent.atomic.AtomicLong
 
-/** Arc texture bridge. Closing a borrowed image never deletes the application's texture. */
+/**
+ * Arc texture bridge. Closing a borrowed image never deletes the application's texture.
+ */
 class ArcImageHandle private constructor(
     private var currentTexture: Texture,
     initialSize: Size,
@@ -61,7 +63,9 @@ class ArcImageHandle private constructor(
         return currentTexture
     }
 
-    /** Application hook after recreating a borrowed texture. The old borrowed texture is never deleted here. */
+    /**
+     * Application hook after recreating a borrowed texture. The old borrowed texture is never deleted here.
+     */
     fun rebind(texture: Texture, size: Size = this.size, context: RenderContext? = sourceContext, intrinsicSize: Size = this.intrinsicSize) {
         check(Thread.currentThread() === owner)
         check(!isClosed && !owned) { "Only an open borrowed image can be rebound" }
@@ -90,7 +94,9 @@ class ArcImageHandle private constructor(
             return ArcImageHandle(texture, size, id, false, premultiplied, flipVertically, context, null, intrinsicSize)
         }
 
-        /** RGBA8 straight-alpha bytes, top row first. Creation/close run on the render thread. */
+        /**
+         * RGBA8 straight-alpha bytes, top row first. Creation/close run on the render thread.
+         */
         fun rgba(
             context: RenderContext, width: Int, height: Int, bytes: ByteArray, id: String = "arc-image", sourceBudgetBytes: Long = 32L * 1024 * 1024,
             intrinsicSize: Size = Size(width.toFloat(), height.toFloat())

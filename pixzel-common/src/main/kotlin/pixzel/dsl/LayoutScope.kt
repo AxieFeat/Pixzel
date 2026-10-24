@@ -53,7 +53,9 @@ class LayoutScope internal constructor(private val config: LayoutConfig) {
             config.margin = value
         }
 
-    /** Metadata for a custom policy; standard row/column spacing is their typed builder argument. */
+    /**
+     * Metadata for a custom policy; standard row/column spacing is their typed builder argument.
+     */
     var spacing: Dp
         get() = config.spacing
         set(value) {

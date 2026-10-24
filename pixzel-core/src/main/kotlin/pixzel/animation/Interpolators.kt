@@ -8,13 +8,17 @@ import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-/** Stateless, shareable strategies. Property ranges and interpolation spaces are explicit. */
+/**
+ * Stateless, shareable strategies. Property ranges and interpolation spaces are explicit.
+ */
 object Interpolators {
 
     val FLOAT: Interpolator<Float> = Interpolator { from, to, fraction -> from + (to - from) * fraction }
     val DOUBLE: Interpolator<Double> = Interpolator { from, to, fraction -> from + (to - from) * fraction }
 
-    /** Unit opacity. Overshooting easing is clamped to the legal 0..1 property range. */
+    /**
+     * Unit opacity. Overshooting easing is clamped to the legal 0..1 property range.
+     */
     val OPACITY: Interpolator<Float> = Interpolator { from, to, fraction ->
         require(from.isFinite() && to.isFinite() && from in 0f..1f && to in 0f..1f)
         require(fraction.isFinite())

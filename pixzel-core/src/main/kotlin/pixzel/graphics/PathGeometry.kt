@@ -5,12 +5,16 @@ import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
 
-/** Shared, Arc-independent curve flattening and fill geometry for paint and positional input. */
+/**
+ * Shared, Arc-independent curve flattening and fill geometry for paint and positional input.
+ */
 object PathGeometry {
 
     const val DEFAULT_TOLERANCE = .01f
 
-    /** Open subpaths stay open here; fill operations close them implicitly, while strokes preserve their caps. */
+    /**
+     * Open subpaths stay open here; fill operations close them implicitly, while strokes preserve their caps.
+     */
     fun flatten(path: VectorPath, tolerance: Float = DEFAULT_TOLERANCE): List<List<Vec2>> {
         require(tolerance.isFinite() && tolerance > 0) { "Path tolerance must be positive and finite" }
         val result = mutableListOf<List<Vec2>>()
@@ -66,7 +70,9 @@ object PathGeometry {
         return result
     }
 
-    /** Closed-fill hit test. Boundary points are included; crossings use the same nonzero/even-odd rules as paint. */
+    /**
+     * Closed-fill hit test. Boundary points are included; crossings use the same nonzero/even-odd rules as paint.
+     */
     fun contains(contours: List<List<Vec2>>, point: Vec2, fillRule: FillRule): Boolean {
         var winding = 0
         contours.forEach { contour ->

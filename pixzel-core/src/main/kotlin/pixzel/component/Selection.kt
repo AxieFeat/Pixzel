@@ -12,7 +12,9 @@ interface Checkbox : Button {
 
     var checkState: CheckState
 
-    /** User activation resolves INDETERMINATE to CHECKED; direct changes also notify. */
+    /**
+     * User activation resolves INDETERMINATE to CHECKED; direct changes also notify.
+     */
     fun onCheckChange(handler: (CheckState) -> Unit): Subscription
 
     companion object {

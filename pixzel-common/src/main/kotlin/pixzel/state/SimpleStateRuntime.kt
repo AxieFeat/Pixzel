@@ -2,7 +2,9 @@ package pixzel.state
 
 import pixzel.resource.Subscription
 
-/** Shared implementation; no host, renderer, frame polling, or global service lookup is needed. */
+/**
+ * Shared implementation; no host, renderer, frame polling, or global service lookup is needed.
+ */
 internal class SimpleStateRuntime : StateRuntime {
 
     private val ownerThread = Thread.currentThread()

@@ -16,7 +16,9 @@ import pixzel.surface.Rect
 import pixzel.surface.Size
 import kotlin.time.Duration
 
-/** Ordered, thread-confined host fixture with separate physical and gameplay polling views. */
+/**
+ * Ordered, thread-confined host fixture with separate physical and gameplay polling views.
+ */
 class TestHost private constructor(initialMetrics: HostMetrics, override val hostId: String) : UiHost, AutoCloseable {
 
     override val capabilities =
@@ -61,7 +63,9 @@ class TestHost private constructor(initialMetrics: HostMetrics, override val hos
         }
     }
 
-    /** Zero/default event identities are assigned in queue order; explicit sequence must increase. */
+    /**
+     * Zero/default event identities are assigned in queue order; explicit sequence must increase.
+     */
     fun queue(event: InputEvent) {
         checkOpen()
         require(event.timestamp.isFinite() && event.timestamp >= Duration.ZERO) { "Event timestamp must be finite and nonnegative." }

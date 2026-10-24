@@ -33,7 +33,7 @@ Limits are explicit: 64 gradient stops, 8192 flattened/outline points, 4096 non-
 On Windows 11, Oracle JDK 21.0.10, Gradle 9.6.1, Kotlin 2.4.10, NVIDIA GeForce RTX 4060 Ti, driver 617.42, OpenGL 4.1.0:
 
 ```powershell
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:graphicsChecks :pixzel-common:test --tests pixzel.PathGeometryTest verifyBoundaries --offline --no-daemon --console=plain
+.\gradlew.bat :pixzel-demo:graphicsChecks :pixzel-common:test --tests pixzel.PathGeometryTest verifyBoundaries --offline --no-daemon --console=plain
 ```
 
 The hidden desktop check verifies rendered Cyrillic, even-odd holes, transformed and independently rounded clips, linear/radial gradients, nearest image orientation/brush mapping, stroke caps/joins, custom operation dispatch/error restoration, overlapping group opacity, shadows, application target/viewport/depth/raster restoration (including inherited line mode and rasterizer discard), the next application draw and zero uploaded bytes on the second static frame. It writes `pixzel-demo/build/reports/arc-graphics.png` for visual inspection. The acceptance scene uses 23 draws, four targets (14,745,600 bytes) and 62,524 text texture bytes; its second frame uploads zero bytes. One run closed 1000 GPU sessions in 2467 ms, checked native program/VBO/FBO deletion on every cycle and custom resource leases and verified a target-budget failure preserved application state. These are rendering/lifetime checks, not the 1000-element UI performance benchmark.
@@ -54,7 +54,7 @@ The GPU fixture also compares 1002 transformed/multicolor/translucent solid comm
 Run the optional native benchmark with:
 
 ```powershell
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:graphicsChecks --args=--benchmark verifyBoundaries --offline --no-daemon --console=plain
+.\gradlew.bat :pixzel-demo:graphicsChecks --args=--benchmark verifyBoundaries --offline --no-daemon --console=plain
 ```
 
 The recorded run uses a 1920x1080 offscreen application target, scale 1, supersampling 2, vsync 0, 100 warmup frames and 300 measured retained frames on the hardware above. Five nested rounded clips surround an isolated opacity group, a blurred/spread shadow and 1000 transformed multicolor rectangles. Timing covers CPU `RenderSession.submit`; application clear, poll, present and final `glFinish` are outside the interval. Submission includes driver backpressure.

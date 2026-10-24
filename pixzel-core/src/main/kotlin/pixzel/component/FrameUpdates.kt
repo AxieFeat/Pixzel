@@ -3,7 +3,9 @@ package pixzel.component
 import pixzel.resource.Subscription
 import kotlin.time.Duration
 
-/** Owner-scoped callbacks for public behaviors and transitions, advanced by the UI clock. */
+/**
+ * Owner-scoped callbacks for public behaviors and transitions, advanced by the UI clock.
+ */
 class FrameUpdates(private val checkOwner: () -> Unit = {}) : AutoCloseable {
 
     private val callbacks = linkedMapOf<Any, (Duration) -> Boolean>()

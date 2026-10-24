@@ -7,7 +7,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-/** Desktop showcase evidence only. Production adapters use Arc's neutral API. */
+/**
+ * Desktop showcase evidence only. Production adapters use Arc's neutral API.
+ */
 internal fun captureShowcase(width: Int, height: Int, path: Path) {
     val pixels = ByteBuffer.allocateDirect(Math.multiplyExact(Math.multiplyExact(width, height), 4))
     GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels)

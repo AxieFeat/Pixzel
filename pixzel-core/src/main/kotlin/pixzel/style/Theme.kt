@@ -16,7 +16,9 @@ import kotlin.time.Duration.Companion.milliseconds
 
 data class Palette(val background: Color, val panel: Color, val primary: Color, val text: Color, val disabled: Color, val focus: Color)
 
-/** Null fields inherit the enclosing component defaults; common supplies ellipsis/hover reveal. */
+/**
+ * Null fields inherit the enclosing component defaults; common supplies ellipsis/hover reveal.
+ */
 data class ButtonTextDefaults(val overflow: TextOverflowPolicy? = null, val reveal: TextRevealBehavior? = null) {
 
     fun applyTo(base: ButtonTextDefaults) = ButtonTextDefaults(overflow ?: base.overflow, reveal ?: base.reveal)
@@ -42,7 +44,9 @@ data class Theme(
     }
 }
 
-/** Immutable standard scope overrides. A null token inherits the enclosing scope/theme value. */
+/**
+ * Immutable standard scope overrides. A null token inherits the enclosing scope/theme value.
+ */
 data class StyleTokens(
     val palette: Palette? = null,
     val typography: TextStyle? = null,
@@ -74,7 +78,9 @@ data class ResolvedTokens(
     val buttonText: ButtonTextDefaults = ButtonTextDefaults()
 )
 
-/** Rules are applied in declaration order after inherited tokens; explicit component values win. */
+/**
+ * Rules are applied in declaration order after inherited tokens; explicit component values win.
+ */
 data class StyleScope(val tokens: StyleTokens = StyleTokens(), val rules: List<StateStyle<StyleTokens>> = emptyList()) {
 
     fun resolve(base: ResolvedTokens, state: ElementState): ResolvedTokens {
@@ -91,7 +97,9 @@ val Element.isEffectivelyEnabled: Boolean
 
 data class StateStyle<T>(val matches: (ElementState) -> Boolean, val value: T)
 
-/** Defaults -> theme -> inherited -> ordered state rules -> instance (including instance states). */
+/**
+ * Defaults -> theme -> inherited -> ordered state rules -> instance (including instance states).
+ */
 fun <T> resolveStyle(
     default: T,
     theme: T? = null,

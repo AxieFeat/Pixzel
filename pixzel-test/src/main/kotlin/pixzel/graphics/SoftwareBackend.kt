@@ -15,7 +15,9 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-/** Immutable straight-alpha ARGB bitmap; closing a rendering session never closes borrowed images. */
+/**
+ * Immutable straight-alpha ARGB bitmap; closing a rendering session never closes borrowed images.
+ */
 class SoftwareImage private constructor(override val id: String, val width: Int, val height: Int, pixels: IntArray) : ImageHandle {
 
     internal val pixels = pixels.copyOf()

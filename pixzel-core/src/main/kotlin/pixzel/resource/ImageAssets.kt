@@ -4,7 +4,9 @@ import pixzel.graphics.ImageHandle
 import pixzel.state.State
 import pixzel.surface.Size
 
-/** Managed, immutable straight-alpha RGBA8 pixels. Decoders never return native resources. */
+/**
+ * Managed, immutable straight-alpha RGBA8 pixels. Decoders never return native resources.
+ */
 class DecodedImage(
     val width: Int,
     val height: Int,
@@ -27,13 +29,17 @@ class DecodedImage(
     val byteCount: Int get() = pixels.size
 }
 
-/** Invoked on the injected worker executor; implementations must support concurrent retries. */
+/**
+ * Invoked on the injected worker executor; implementations must support concurrent retries.
+ */
 fun interface ImageDecoder {
 
     fun decode(bytes: ByteArray): DecodedImage
 }
 
-/** Invoked on the Ui thread. Its result has the ownership selected when creating the asset. */
+/**
+ * Invoked on the Ui thread. Its result has the ownership selected when creating the asset.
+ */
 fun interface ImageUploader {
 
     fun upload(image: DecodedImage): ImageHandle
@@ -46,7 +52,9 @@ sealed interface ImageAssetStatus {
     data object Closed : ImageAssetStatus
 }
 
-/** Ui-owned asset. Retry, observation and close run on the Ui thread. Worker results use Ui.post. */
+/**
+ * Ui-owned asset. Retry, observation and close run on the Ui thread. Worker results use Ui.post.
+ */
 interface ImageAsset : AutoCloseable {
 
     val status: State<ImageAssetStatus>
@@ -54,7 +62,9 @@ interface ImageAsset : AutoCloseable {
     val intrinsicSize: Size
     val isClosed: Boolean
 
-    /** Supersedes pending work and releases the previous owned image before reloading. */
+    /**
+     * Supersedes pending work and releases the previous owned image before reloading.
+     */
     fun retry()
     override fun close()
 }

@@ -25,7 +25,9 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/** CPU flattening and scan conversion produce non-overlapping triangles, including holes and intersections. */
+/**
+ * CPU flattening and scan conversion produce non-overlapping triangles, including holes and intersections.
+ */
 internal object ShapeTessellator {
 
     const val MAX_VERTICES = 262144

@@ -2,7 +2,9 @@ package pixzel.component
 
 import pixzel.resource.Subscription
 
-/** Finite inclusive range. A zero step is continuous; positive steps are anchored at min. */
+/**
+ * Finite inclusive range. A zero step is continuous; positive steps are anchored at min.
+ */
 interface RangedValue {
 
     var min: Float
@@ -10,7 +12,9 @@ interface RangedValue {
     var step: Float
     var value: Float
 
-    /** Atomically changes both bounds and clamps the value; min==max is valid. */
+    /**
+     * Atomically changes both bounds and clamps the value; min==max is valid.
+     */
     fun setRange(min: Float, max: Float)
     fun onValueChange(handler: (Float) -> Unit): Subscription
 }

@@ -6,20 +6,20 @@ The current build uses JDK 21, Kotlin 2.4.10 and Gradle 9.6.1. See [capabilities
 
 ## Build and modules
 
-Run independent checks without Arc:
+Configure GitHub Packages credentials as described in the [README](../README.md), then build every module:
 
 ```powershell
 .\gradlew.bat build verifyBoundaries :pixzel-common:stateChecks :pixzel-common:animationChecks --offline
-.\gradlew.bat :pixzel-demo:run --offline
+.\gradlew.bat :pixzel-demo:preview --offline
 ```
 
 `--offline` assumes dependencies are already cached; omit it for the initial dependency resolution. The independent demo uses an explicitly limited software preview and deterministic test font. Its PNG is a test artifact, not evidence of production typography.
 
-For joint development, pass the separate Arc checkout explicitly:
+The adapter and native demo are always present and use the pinned Maven version of Arc:
 
 ```powershell
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-arc:test :pixzel-demo:graphicsChecks :pixzel-demo:inputChecks --offline
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:run --args="--smoke" --offline
+.\gradlew.bat :pixzel-arc:test :pixzel-demo:graphicsChecks :pixzel-demo:inputChecks --offline
+.\gradlew.bat :pixzel-demo:run --args="--smoke" --offline
 ```
 
 In this checkout, an application depends on `project(":pixzel-common")`; add `pixzel-arc` and selected Arc implementations for the native application. `pixzel-core` contains contracts and value types; `pixzel-common` implements them. `pixzel-test` is a separate support artifact. `pixzel-samples` demonstrates external extensions using public APIs. No published Maven release is assumed by these instructions.

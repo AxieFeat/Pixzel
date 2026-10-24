@@ -3,16 +3,22 @@ package pixzel.state
 import pixzel.resource.Subscription
 import kotlin.reflect.KProperty
 
-/** A structurally compared observable value. Observe does not deliver an initial value. */
+/**
+ * A structurally compared observable value. Observe does not deliver an initial value.
+ */
 interface State<out T> {
 
     val value: T
 
-    /** Returns an idempotent handle. Listeners run on the state's owning thread. */
+    /**
+     * Returns an idempotent handle. Listeners run on the state's owning thread.
+     */
     fun observe(listener: (@UnsafeVariance T) -> Unit): Subscription
 }
 
-/** Replacing the value notifies observers; mutating a collection in place does not. */
+/**
+ * Replacing the value notifies observers; mutating a collection in place does not.
+ */
 interface MutableState<T> : State<T> {
 
     override var value: T

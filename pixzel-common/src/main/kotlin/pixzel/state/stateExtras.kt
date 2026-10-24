@@ -1,6 +1,8 @@
 package pixzel.state
 
-/** Creates an independent runtime confined to the calling thread. */
+/**
+ * Creates an independent runtime confined to the calling thread.
+ */
 fun stateRuntime(): StateRuntime = SimpleStateRuntime()
 
 private val threadRuntime = ThreadLocal.withInitial<StateRuntime> { SimpleStateRuntime() }
@@ -18,7 +20,9 @@ fun <T> bind(
     expression: () -> T
 ): Binding<T> = runtime.bind(name, expression)
 
-/** A read-only derived value with explicit ownership, using the same tracked graph as [bind]. */
+/**
+ * A read-only derived value with explicit ownership, using the same tracked graph as [bind].
+ */
 fun <T> derivedStateOf(
     runtime: StateRuntime = threadRuntime.get(),
     name: String? = null,

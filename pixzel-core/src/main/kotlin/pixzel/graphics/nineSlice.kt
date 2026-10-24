@@ -3,7 +3,9 @@ package pixzel.graphics
 import pixzel.surface.Insets
 import pixzel.surface.Rect
 
-/** Undersized borders shrink proportionally; source and target insets have independent units. */
+/**
+ * Undersized borders shrink proportionally; source and target insets have independent units.
+ */
 fun Canvas.nineSlice(
     image: ImageHandle,
     destination: Rect,

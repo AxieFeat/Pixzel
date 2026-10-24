@@ -113,7 +113,9 @@ interface ComponentSkin<T : Element> {
     fun paint(canvas: Canvas, component: T, context: PaintContext)
 }
 
-/** Public extension boundary; one logical parent and one computed Surface per element. */
+/**
+ * Public extension boundary; one logical parent and one computed Surface per element.
+ */
 interface Element : AutoCloseable, Measurable {
 
     override val id: String
@@ -129,7 +131,9 @@ interface Element : AutoCloseable, Measurable {
     override var placement: Placement
     var paintTransform: Transform
 
-    /** Optional geometric attachment; logical parent still controls lifetime and event routes. */
+    /**
+     * Optional geometric attachment; logical parent still controls lifetime and event routes.
+     */
     var portalTarget: Element?
     var opacity: Float
     var visibility: Visibility
@@ -159,7 +163,9 @@ interface Element : AutoCloseable, Measurable {
     fun onEvent(phase: EventPhase = EventPhase.BUBBLE, handler: (RoutedEvent) -> Unit): Subscription
     fun invalidate(reason: Invalidation = Invalidation.PAINT)
 
-    /** Runtime lifecycle hook for public custom implementations; tree mutations use add/remove. */
+    /**
+     * Runtime lifecycle hook for public custom implementations; tree mutations use add/remove.
+     */
     fun attach(parent: Element?, ui: Ui?)
     fun setInteractionState(state: ElementState)
     fun dispatch(event: RoutedEvent)
@@ -188,7 +194,9 @@ interface ComponentFactory {
 
 interface Button : Element {
 
-    /** Slot elements are owned by this button; replacing a slot disposes its previous element. */
+    /**
+     * Slot elements are owned by this button; replacing a slot disposes its previous element.
+     */
     val leading: Element?
     val content: Element?
     val trailing: Element?

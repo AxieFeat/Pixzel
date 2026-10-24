@@ -12,7 +12,9 @@ data class Diagnostic(
     val severity: DiagnosticSeverity = DiagnosticSeverity.WARNING
 )
 
-/** Bounded, deduplicated UI-owned diagnostic history; it never prints per-frame spam. */
+/**
+ * Bounded, deduplicated UI-owned diagnostic history; it never prints per-frame spam.
+ */
 class DiagnosticLog(private val capacity: Int = 256) {
 
     private val entries = linkedMapOf<Pair<String, String>, Diagnostic>()

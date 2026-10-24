@@ -359,7 +359,9 @@ object ArcGraphicsChecks {
         }
     }
 
-    /** Two fresh, unshared contexts force the same native object names to refer to different resources. */
+    /**
+     * Two fresh, unshared contexts force the same native object names to refer to different resources.
+     */
     private fun batching(text: ArcTextService) {
         val context = OpenGL.currentRenderContext()
         val backend = ArcUiBackend.of(context, text, supersampling = 1)

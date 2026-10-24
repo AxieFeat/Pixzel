@@ -22,7 +22,9 @@ import java.util.IdentityHashMap
 
 internal data class RecordedPaint(val commands: List<DrawCommand>, val paintedNodes: Int)
 
-/** Keeps each node's own layers separate so children can be replayed in paint order. */
+/**
+ * Keeps each node's own layers separate so children can be replayed in paint order.
+ */
 internal class UiPainter(private val ui: SimpleUi) {
 
     private data class PaintKey(

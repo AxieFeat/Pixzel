@@ -42,15 +42,21 @@ interface UiHost {
     val hostId: String
     fun subscribe(listener: (InputEvent) -> Boolean): Subscription
 
-    /** Delivery is ordered on the owning UI thread; consumed events must not reach lower layers. */
+    /**
+     * Delivery is ordered on the owning UI thread; consumed events must not reach lower layers.
+     */
     fun drainEvents()
     fun readClipboard(): Result<String>
     fun writeClipboard(text: String): Result<Unit>
     fun setCursor(cursor: Cursor): Result<Unit>
 
-    /** Blocks already held gameplay keys/buttons until release; physical polling remains available. */
+    /**
+     * Blocks already held gameplay keys/buttons until release; physical polling remains available.
+     */
     fun maskHeldInput(): Result<Unit> = Result.failure(UnsupportedOperationException("Held-input masking is not supported by this host"))
 
-    /** Candidate-window caret rectangle in window logical units, not framebuffer pixels. */
+    /**
+     * Candidate-window caret rectangle in window logical units, not framebuffer pixels.
+     */
     fun setImeCaret(bounds: Rect): Result<Unit> = Result.failure(UnsupportedOperationException("IME composition is not supported by this host"))
 }

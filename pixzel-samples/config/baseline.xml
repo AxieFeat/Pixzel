@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionMaxLength:HealthBarLifetimeTest.kt$HealthBarLifetimeTest$@Test fun `external component observes only while attached and resynchronizes borrowed model`()</ID>
+    <ID>MagicNumber:HealthBar.kt$HealthBar$7f</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -48,7 +48,9 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
 
-/** Convenience base for external components. All collaborators use public contracts. */
+/**
+ * Convenience base for external components. All collaborators use public contracts.
+ */
 abstract class AbstractElement(final override val id: String = "") : Element {
 
     private val ownerThread = Thread.currentThread()

@@ -11,7 +11,9 @@ internal data class GeometryKey(
     val join: StrokeJoin, val cap: StrokeCap, val miterLimit: Float
 )
 
-/** Session-owned LRU caches account for CPU geometry and GPU meshes separately. */
+/**
+ * Session-owned LRU caches account for CPU geometry and GPU meshes separately.
+ */
 internal class ArcGeometryCache(private val meshBudgetBytes: Long) : AutoCloseable {
 
     private val meshes = object : LinkedHashMap<Any, VertexBuffer>(64, .75f, true) {}

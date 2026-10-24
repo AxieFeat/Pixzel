@@ -7,7 +7,9 @@ enum class ScrollBarOrientation {
     VERTICAL
 }
 
-/** A borrowed ScrollView controls the thumb. An absent/non-scrollable view is a disabled bar. */
+/**
+ * A borrowed ScrollView controls the thumb. An absent/non-scrollable view is a disabled bar.
+ */
 interface ScrollBar : Element {
 
     var view: ScrollView?

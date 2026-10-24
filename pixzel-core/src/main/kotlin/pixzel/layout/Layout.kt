@@ -39,7 +39,9 @@ data class Constraints(
     }
 }
 
-/** Mutable configuration, with immediate owner invalidation. Computed Surface data is separate. */
+/**
+ * Mutable configuration, with immediate owner invalidation. Computed Surface data is separate.
+ */
 class LayoutConfig(private val changed: (Invalidation) -> Unit = {}) {
 
     private fun <T> property(initial: T) = object : ReadWriteProperty<Any?, T> {
@@ -89,14 +91,18 @@ interface Placeable {
     val size: Size
     val baseline: Float?
 
-    /** Called once during arrange, in parent-local dp coordinates. */
+    /**
+     * Called once during arrange, in parent-local dp coordinates.
+     */
     fun place(position: Vec2)
 }
 
 data class ChildPlacement(val child: Placeable, val position: Vec2)
 data class LayoutPlan(val size: Size, val children: List<ChildPlacement> = emptyList(), val baseline: Float? = null)
 
-/** Policies receive only public measurables. Measurement must not mutate the tree. */
+/**
+ * Policies receive only public measurables. Measurement must not mutate the tree.
+ */
 fun interface LayoutPolicy {
 
     fun measure(children: List<Measurable>, constraints: Constraints, environment: LayoutEnvironment): LayoutPlan

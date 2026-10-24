@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>BracesOnWhenStatements:ArcMaterial.kt$ArcMaterial$when</ID>
+    <ID>BracesOnWhenStatements:ArcRenderSession.kt$ArcRenderSession$when</ID>
+    <ID>BracesOnWhenStatements:ArcUiHost.kt$ArcUiHost$when</ID>
+    <ID>BracesOnWhenStatements:ShapeTessellator.kt$ShapeTessellator$when</ID>
+    <ID>CascadingCallWrapping:ArcRenderSession.kt$ArcRenderSession$setColor(color.red, color.green, color.blue, color.alpha)</ID>
+    <ID>CascadingCallWrapping:ArcTextService.kt$ArcTextService$line.clusters.firstOrNull { item.glyph.clusterStart &gt;= it.start &amp;&amp; item.glyph.clusterStart &lt; it.end } ?.let { if (it.leadingX &gt; it.trailingX) TextDirection.RTL else TextDirection.LTR } ?: line.direction</ID>
+    <ID>ClassOrdering:ArcCustomRenderers.kt$ArcCustomRenderer$/** * Every texture unit the handler may modify; native state is restored by a nested Arc pass. */ val textureUnits: Set&lt;Int&gt; get() = setOf(0)</ID>
+    <ID>ClassOrdering:ArcTextService.kt$ArcTextService.Companion$private fun nextIdentity()</ID>
+    <ID>ClassOrdering:ArcTextServiceTest.kt$ArcTextServiceTest$private val family = FontFamily(listOf(FontFace("noto"), FontFace("arabic")))</ID>
+    <ID>ComplexCondition:ArcRenderSession.kt$ArcRenderSession$frame.framebufferSize.width &lt;= 0 || frame.framebufferSize.height &lt;= 0 || frame.logicalSize.width &lt;= 0 || frame.logicalSize.height &lt;= 0</ID>
+    <ID>ComplexCondition:ArcTextService.kt$ArcTextService$group.isNotEmpty() &amp;&amp; (cell.face !== group.last().face || cell.script != group.last().script || cell.style != group.last().style || level != groupLevel)</ID>
+    <ID>ComplexCondition:ArcTextService.kt$ArcTextService$request.wrap &amp;&amp; request.width.isFinite() &amp;&amp; line.width &gt; request.width &amp;&amp; cursor &lt; end</ID>
+    <ID>CyclomaticComplexMethod:ArcRenderSession.kt$ArcRenderSession$override fun submit(frame: FrameInfo, commands: List&lt;DrawCommand&gt;)</ID>
+    <ID>CyclomaticComplexMethod:ArcRenderSession.kt$ArcRenderSession$private fun execute(command: DrawCommand)</ID>
+    <ID>CyclomaticComplexMethod:ArcTextService.kt$ArcTextService$override fun layout(request: TextRequest): TextLayout</ID>
+    <ID>CyclomaticComplexMethod:ArcTextService.kt$ArcTextService$private fun shapeLine( request: TextRequest, input: List&lt;Cell&gt;, start: Int, end: Int, paragraphStart: Int, paragraphBidi: Bidi, family: List&lt;ArcFontFace&gt;, size: Float ): LocalLine</ID>
+    <ID>CyclomaticComplexMethod:ArcUiHost.kt$ArcUiHost$override fun subscribe(listener: (InputEvent) -&gt; Boolean): Subscription</ID>
+    <ID>CyclomaticComplexMethod:ShapeTessellator.kt$ShapeTessellator$fun triangles( shape: Shape, bounds: Rect, stroke: Float? = null, tolerance: Float = .2f, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f ): List&lt;Vec2&gt;</ID>
+    <ID>CyclomaticComplexMethod:ShapeTessellator.kt$ShapeTessellator$private fun triangulate(contours: List&lt;List&lt;Vec2&gt;&gt;, rule: FillRule): List&lt;Vec2&gt;</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:ShapeTessellator.kt$ShapeTessellator$(x, y, start, radius)</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `bidi visual ordering and legal caret edges work for mixed Arabic numbers and Cyrillic`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `measured glyph IDs are rasterized at requested independent density`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `real Latin Cyrillic ligatures fallback and source maps are retained`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `recreated services and revised font bytes cannot silently reuse stale layouts`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `registered real bold variant is selected and produces different metrics and coverage`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `styled spans preserve source clusters mixed sizes fallback bidi and immutable keys`()</ID>
+    <ID>FunctionMaxLength:ArcTextServiceTest.kt$ArcTextServiceTest$@Test fun `wrapped source never splits graphemes and max lines reports hidden content`()</ID>
+    <ID>FunctionMaxLength:ShapeTessellatorTest.kt$ShapeTessellatorTest$@Test fun `dense crossing paths fail within tessellation budget`()</ID>
+    <ID>FunctionMaxLength:ShapeTessellatorTest.kt$ShapeTessellatorTest$@Test fun `ordinary intersecting path remains supported`()</ID>
+    <ID>FunctionMinLength:ShapeTessellator.kt$ShapeTessellator.Edge$fun x(y: Float)</ID>
+    <ID>LongMethod:ArcRenderSession.kt$ArcRenderSession$override fun submit(frame: FrameInfo, commands: List&lt;DrawCommand&gt;)</ID>
+    <ID>LongMethod:ArcTextService.kt$ArcTextService$override fun layout(request: TextRequest): TextLayout</ID>
+    <ID>LongMethod:ArcTextService.kt$ArcTextService$private fun shapeLine( request: TextRequest, input: List&lt;Cell&gt;, start: Int, end: Int, paragraphStart: Int, paragraphBidi: Bidi, family: List&lt;ArcFontFace&gt;, size: Float ): LocalLine</ID>
+    <ID>LongMethod:ShapeTessellator.kt$ShapeTessellator$fun triangles( shape: Shape, bounds: Rect, stroke: Float? = null, tolerance: Float = .2f, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f ): List&lt;Vec2&gt;</ID>
+    <ID>LongParameterList:ArcImageHandle.kt$ArcImageHandle$( private var currentTexture: Texture, initialSize: Size, override val id: String, private val owned: Boolean, val premultiplied: Boolean, val flipVertically: Boolean, private val sourceContext: RenderContext?, private var source: ByteArray?, initialIntrinsicSize: Size, )</ID>
+    <ID>LongParameterList:ArcImageHandle.kt$ArcImageHandle.Companion$( context: RenderContext, width: Int, height: Int, bytes: ByteArray, id: String = "arc-image", sourceBudgetBytes: Long = 32L * 1024 * 1024, intrinsicSize: Size = Size(width.toFloat(), height.toFloat()) )</ID>
+    <ID>LongParameterList:ArcImageHandle.kt$ArcImageHandle.Companion$( texture: Texture, size: Size, id: String = "arc-image", premultiplied: Boolean = false, flipVertically: Boolean = false, context: RenderContext? = null, intrinsicSize: Size = size )</ID>
+    <ID>LongParameterList:ArcRenderSession.kt$ArcRenderSession$( private val context: RenderContext, private val text: ArcTextService, private val supersampling: Int, private val customRenderers: ArcCustomRenderers, private val capabilities: BackendCapabilities, private val targetBudgetBytes: Long, private val meshBudgetBytes: Long, )</ID>
+    <ID>LongParameterList:ArcRenderSession.kt$ArcRenderSession$( shape: Shape, bounds: Rect, brush: Brush, stroke: Float? = null, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f )</ID>
+    <ID>LongParameterList:ArcRenderSession.kt$ArcRenderSession$( shape: Shape, bounds: Rect, stroke: Float? = null, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f )</ID>
+    <ID>LongParameterList:ArcRenderSession.kt$ArcRenderSession$( texture: Texture, bounds: Rect, uv: Rect, tint: Color, premultiplied: Boolean, flip: Boolean, sampling: Sampling, opacity: Float = 1f, blur: Vec2 = Vec2.ZERO )</ID>
+    <ID>LongParameterList:ArcTextService.kt$ArcTextService$( request: TextRequest, input: List&lt;Cell&gt;, start: Int, end: Int, paragraphStart: Int, paragraphBidi: Bidi, family: List&lt;ArcFontFace&gt;, size: Float )</ID>
+    <ID>LongParameterList:ArcUiBackend.kt$ArcUiBackend.Companion$( context: RenderContext, text: ArcTextService, supersampling: Int = 2, customRenderers: ArcCustomRenderers = ArcCustomRenderers.EMPTY, targetBudgetBytes: Long = 512L * 1024 * 1024, meshBudgetBytes: Long = 32L * 1024 * 1024 )</ID>
+    <ID>LongParameterList:ShapeTessellator.kt$ShapeTessellator$( shape: Shape, bounds: Rect, stroke: Float? = null, tolerance: Float = .2f, join: StrokeJoin = StrokeJoin.ROUND, cap: StrokeCap = StrokeCap.ROUND, miterLimit: Float = 4f )</ID>
+    <ID>LoopWithTooManyJumpStatements:ArcTextService.kt$ArcTextService$for</ID>
+    <ID>LoopWithTooManyJumpStatements:ShapeTessellator.kt$ShapeTessellator$for</ID>
+    <ID>MagicNumber:ArcGeometryCache.kt$ArcGeometryCache$512</ID>
+    <ID>MagicNumber:ArcImageHandle.kt$ArcImageHandle.Companion$1024</ID>
+    <ID>MagicNumber:ArcMaterial.kt$ArcMaterial$255f</ID>
+    <ID>MagicNumber:ArcRenderSession.kt$ArcRenderSession$.2f</ID>
+    <ID>MagicNumber:ArcRenderSession.kt$ArcRenderSession$1024</ID>
+    <ID>MagicNumber:ArcRenderSession.kt$ArcRenderSession$255</ID>
+    <ID>MagicNumber:ArcRenderSession.kt$ArcRenderSession$256L</ID>
+    <ID>MagicNumber:ArcRenderSession.kt$ArcRenderSession$65532</ID>
+    <ID>MagicNumber:ArcTextCache.kt$ArcTextCache$1024</ID>
+    <ID>MagicNumber:ArcTextCache.kt$ArcTextCache$255</ID>
+    <ID>MagicNumber:ArcTextCache.kt$ArcTextCache$256</ID>
+    <ID>MagicNumber:ArcTextService.kt$ArcTextService.Companion$0x09</ID>
+    <ID>MagicNumber:ArcTextService.kt$ArcTextService.Companion$0x0A</ID>
+    <ID>MagicNumber:ArcTextService.kt$ArcTextService.Companion$0x200D</ID>
+    <ID>MagicNumber:ArcUiBackend.kt$ArcUiBackend.Companion$1024</ID>
+    <ID>MagicNumber:ArcUiBackend.kt$ArcUiBackend.Companion$512L</ID>
+    <ID>MagicNumber:ShapeTessellator.kt$ShapeTessellator$1e-6f</ID>
+    <ID>MagicNumber:ShapeTessellator.kt$ShapeTessellator$1e-7f</ID>
+    <ID>MagicNumber:ShapeTessellator.kt$ShapeTessellator$4096</ID>
+    <ID>MagicNumber:ShapeTessellator.kt$ShapeTessellator$8192</ID>
+    <ID>MaxLineLength:ArcImageHandle.kt$ArcImageHandle.Companion$require(sourceBudgetBytes &gt; 0 &amp;&amp; bytes.size &lt;= sourceBudgetBytes) { "Image restoration source exceeds its $sourceBudgetBytes-byte budget" }</ID>
+    <ID>MaxLineLength:ArcImageHandle.kt$ArcImageHandle.Companion$require(texture.resourceGeneration == 0L || texture.resourceGeneration == generation) { "Texture belongs to a different or stale context generation" }</ID>
+    <ID>MaxLineLength:ArcRenderSession.kt$ArcRenderSession$check(context.resourceGeneration == generation &amp;&amp; generation != 0L) { "Arc session belongs to a stale or missing context; open a new session for the current generation" }</ID>
+    <ID>MaxLineLength:ArcRenderSession.kt$ArcRenderSession$require(solidVertices.toLong() * coloredFormat.nextOffset &lt;= meshBudgetBytes) { "Solid batch exceeds its $meshBudgetBytes-byte mesh budget" }</ID>
+    <ID>MaxLineLength:ArcTextService.kt$ArcTextService$glyphs.filter { it.face === face &amp;&amp; it.glyph.clusterStart &gt;= part.cells.first().start &amp;&amp; it.glyph.clusterEnd &lt;= part.cells.last().end }</ID>
+    <ID>SpacingBetweenPackageAndImports:ArcMaterial.kt$ </ID>
+    <ID>StringLiteralDuplication:ArcMaterial.kt$ArcMaterial$"paintMode"</ID>
+    <ID>TooManyFunctions:ArcRenderSession.kt$ArcRenderSession : RenderSessionRenderMetricsProvider</ID>
+    <ID>UnusedImports:ArcTextService.kt$import kotlin.math.min</ID>
+    <ID>UseRequire:ArcTextService.kt$ArcTextService$throw IllegalArgumentException("Font face '${face.id}' is not registered")</ID>
+  </CurrentIssues>
+</SmellBaseline>

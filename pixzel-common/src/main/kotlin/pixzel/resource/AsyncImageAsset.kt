@@ -12,7 +12,9 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-/** Source/decoder/executor/uploader are borrowed; the asset belongs to [ui]'s resource scope. */
+/**
+ * Source/decoder/executor/uploader are borrowed; the asset belongs to [ui]'s resource scope.
+ */
 fun imageAsset(
     ui: Ui,
     source: () -> ByteArray,
@@ -157,7 +159,9 @@ enum class ImageAssetSizing {
     INTRINSIC
 }
 
-/** The Image borrows the asset's handle. Closing the Image disconnects this observation. */
+/**
+ * The Image borrows the asset's handle. Closing the Image disconnects this observation.
+ */
 fun Image.bindAsset(asset: ImageAsset, sizing: ImageAssetSizing = ImageAssetSizing.PLACEHOLDER): Subscription {
     ui?.assertThread()
     check(!isDisposed) { "Image is disposed" }

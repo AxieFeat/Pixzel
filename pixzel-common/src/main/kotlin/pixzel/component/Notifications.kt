@@ -32,7 +32,9 @@ interface Notification : AutoCloseable {
     override fun close()
 }
 
-/** Named content slots accept ordinary elements and own their complete subtrees. */
+/**
+ * Named content slots accept ordinary elements and own their complete subtrees.
+ */
 class NotificationSlots internal constructor(private val ui: Ui, element: Element, dismiss: () -> Unit) {
 
     private val row = ui.components.surface("notification-slots").apply {
@@ -175,7 +177,9 @@ class NotificationHost private constructor(
     fun show(timeout: Duration? = 4.seconds, pauseOnHoverOrFocus: Boolean = true, content: ContentScope.() -> Unit): Notification =
         showEntry(timeout, pauseOnHoverOrFocus, 72f, content)
 
-    /** Taller structured toast; bounded FIFO promotion uses this height and the safe viewport. */
+    /**
+     * Taller structured toast; bounded FIFO promotion uses this height and the safe viewport.
+     */
     fun showSlots(
         timeout: Duration? = 4.seconds,
         pauseOnHoverOrFocus: Boolean = true,

@@ -6,7 +6,9 @@ import pixzel.surface.Transform
 import pixzel.surface.Vec2
 import pixzel.text.TextLayout
 
-/** Straight-alpha sRGB inputs, RRGGBBAA. Backends convert to their blend representation once. */
+/**
+ * Straight-alpha sRGB inputs, RRGGBBAA. Backends convert to their blend representation once.
+ */
 @JvmInline
 value class Color(val rgba: Long) {
 
@@ -43,7 +45,9 @@ data class RadialGradient(val center: Vec2, val radius: Float, val stops: List<C
 }
 }
 
-/** Maps cropped-image coordinates (origin 0,0) into local canvas coordinates; edge pixels clamp. */
+/**
+ * Maps cropped-image coordinates (origin 0,0) into local canvas coordinates; edge pixels clamp.
+ */
 data class ImageBrush(
     val image: ImageHandle, val source: Rect = Rect(0f, 0f, image.size.width, image.size.height),
     val sampling: Sampling = Sampling.LINEAR, val transform: Transform = Transform.IDENTITY
@@ -95,7 +99,9 @@ data class CornerRadii(val topLeft: Float = 0f, val topRight: Float = 0f, val bo
         require(listOf(topLeft, topRight, bottomRight, bottomLeft).all { it.isFinite() && it >= 0 })
     }
 
-    /** Uniformly scales conflicting adjacent radii until every pair fits its edge. */
+    /**
+     * Uniformly scales conflicting adjacent radii until every pair fits its edge.
+     */
     fun fit(size: Size): CornerRadii {
         fun ratio(length: Float, sum: Float) = if (sum == 0f) 1f else length / sum
         val factor = minOf(
@@ -182,7 +188,9 @@ enum class TextRenderMode {
     APPROXIMATE_GLYPH_BOUNDS
 }
 
-/** Null values mean unknown; formats are null when the backend does not expose storage information. */
+/**
+ * Null values mean unknown; formats are null when the backend does not expose storage information.
+ */
 data class BackendLimits(
     val maxTextureSize: Int? = null, val maxClipDepth: Int? = null, val maxGradientStops: Int? = null,
     val maxShapeEdges: Int? = null, val maxTessellationVertices: Int? = null,
@@ -207,7 +215,9 @@ interface ImageHandle : AutoCloseable {
     val generation: Long
     val size: Size
 
-    /** Logical intrinsic units; [size] remains source-image pixels for cropping and atlas regions. */
+    /**
+     * Logical intrinsic units; [size] remains source-image pixels for cropping and atlas regions.
+     */
     val intrinsicSize: Size get() = size
     val isClosed: Boolean
 }
@@ -219,7 +229,9 @@ enum class Sampling {
 data class FrameInfo(val logicalSize: Size, val framebufferSize: Size, val pixelsPerDp: Vec2, val generation: Long = 0)
 interface DrawCommand
 
-/** An external operation executed only by an explicitly registered backend renderer. */
+/**
+ * An external operation executed only by an explicitly registered backend renderer.
+ */
 interface CustomCommand : DrawCommand {
 
     val operationId: String
@@ -304,12 +316,16 @@ inline fun Canvas.group(opacity: Float, block: Canvas.() -> Unit) {
     }
 }
 
-/** A backend is borrowed; each Ui owns and closes its session. */
+/**
+ * A backend is borrowed; each Ui owns and closes its session.
+ */
 interface UiBackend {
 
     val capabilities: BackendCapabilities
 
-    /** Changes when context-owned session resources must be recreated. Zero means no native context tracking. */
+    /**
+     * Changes when context-owned session resources must be recreated. Zero means no native context tracking.
+     */
     val resourceGeneration: Long get() = 0L
     fun openSession(): RenderSession
 }
@@ -320,7 +336,9 @@ interface RenderSession : AutoCloseable {
     override fun close()
 }
 
-/** Per-submission backend observations. Null means the backend cannot measure a field accurately. */
+/**
+ * Per-submission backend observations. Null means the backend cannot measure a field accurately.
+ */
 data class RenderMetrics(
     val drawCalls: Int? = null, val batches: Int? = null, val vertices: Int? = null, val uploadedBytes: Long? = null,
     val textureSwitches: Int? = null, val transientTargets: Int? = null, val ownedResources: Int? = null

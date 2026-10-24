@@ -1,24 +1,52 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
+    includeBuild("build-logic")
+
     repositories {
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
-dependencyResolutionManagement { repositories { mavenCentral() } }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "pixzel"
-include("pixzel-core", "pixzel-common", "pixzel-test", "pixzel-demo", "pixzel-samples")
-val arcPath = providers.gradleProperty("arcPath").orNull
-if (arcPath != null) {
-    include("pixzel-arc")
-    includeBuild(arcPath) {
-        dependencySubstitution {
-            substitute(module("arc.engine:arc-core")).using(project(":arc-core"))
-            substitute(module("arc.engine:arc-input-core")).using(project(":arc-extensions:arc-input:arc-input-core"))
-            substitute(module("arc.engine:arc-input-glfw")).using(project(":arc-extensions:arc-input:arc-input-glfw"))
-            substitute(module("arc.engine:arc-font-core")).using(project(":arc-extensions:arc-font:arc-font-core"))
-            substitute(module("arc.engine:arc-opengl")).using(project(":arc-opengl"))
-            substitute(module("arc.engine:arc-font-native")).using(project(":arc-extensions:arc-font:arc-font-native"))
+
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.PREFER_SETTINGS
+
+    repositories {
+        mavenCentral()
+        maven("https://maven.pkg.github.com/AxieFeat/Arc") {
+            name = "ArcGitHubPackages"
+            credentials {
+                username = providers.gradleProperty("gpr.user")
+                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
+                password = providers.gradleProperty("gpr.key")
+                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+            }
+            content {
+                includeGroup("arc.engine")
+            }
         }
     }
-    project(":pixzel-demo").buildFileName = "build-arc.gradle.kts"
+}
+
+project("core")
+project("common")
+project("test")
+project("samples")
+project("arc")
+project("demo")
+
+/**
+ * Includes a module with the root project prefix.
+ */
+fun project(moduleName: String) {
+    include("${rootProject.name}-$moduleName")
 }

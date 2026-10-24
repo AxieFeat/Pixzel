@@ -2,7 +2,9 @@ package pixzel.component
 
 import pixzel.resource.Subscription
 
-/** Retained keyed pages; selecting a tab collapses other pages without disposing their state. */
+/**
+ * Retained keyed pages; selecting a tab collapses other pages without disposing their state.
+ */
 interface Tabs : Element {
 
     var selectedKey: String?

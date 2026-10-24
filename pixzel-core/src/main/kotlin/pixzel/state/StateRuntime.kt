@@ -8,7 +8,9 @@ interface StateRuntime {
 
     fun <T> stateOf(initial: T, name: String? = null): MutableState<T>
 
-    /** Tracks the library states read by [expression], including changing conditional reads. */
+    /**
+     * Tracks the library states read by [expression], including changing conditional reads.
+     */
     fun <T> bind(name: String? = null, expression: () -> T): Binding<T>
 
     /**

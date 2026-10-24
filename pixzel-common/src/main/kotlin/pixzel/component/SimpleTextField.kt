@@ -52,7 +52,9 @@ internal class SimpleTextField(id: String) : SimpleText(id), TextField {
         }
     override var readOnly: Boolean by property(false, Invalidation.INPUT)
 
-    /** Rich editing is separate from the single-style 1.0 field; never silently discard spans. */
+    /**
+     * Rich editing is separate from the single-style 1.0 field; never silently discard spans.
+     */
     override var spans: TextSpans
         get() = TextSpans.EMPTY
         set(value) {

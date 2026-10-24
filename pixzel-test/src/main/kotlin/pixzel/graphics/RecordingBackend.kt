@@ -5,7 +5,9 @@ import pixzel.surface.Rect
 
 data class RecordedFrame(val sessionId: Long, val info: FrameInfo, val commands: List<DrawCommand>)
 
-/** Records validated painter order and scoped operations without graphics/native dependencies. */
+/**
+ * Records validated painter order and scoped operations without graphics/native dependencies.
+ */
 class RecordingBackend private constructor(override val capabilities: BackendCapabilities) : UiBackend {
 
     private var nextSession = 0L

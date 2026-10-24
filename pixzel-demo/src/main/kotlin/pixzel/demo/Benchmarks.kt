@@ -134,7 +134,9 @@ private class AllocationCounter {
     fun read(): Long = bean?.let { runCatching { it.getThreadAllocatedBytes(threadId) }.getOrDefault(-1L) } ?: -1L
 }
 
-/** Submission counts commands without retaining frames or pretending to render pixels. */
+/**
+ * Submission counts commands without retaining frames or pretending to render pixels.
+ */
 private class CpuDiscardBackend : UiBackend {
 
     override val capabilities = BackendCapabilities(setOf(Capability.RECT_CLIP, Capability.TEXT), "CPU benchmark command counter; no rendering")

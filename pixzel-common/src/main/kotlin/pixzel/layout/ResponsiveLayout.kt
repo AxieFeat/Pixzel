@@ -46,7 +46,9 @@ class ResponsiveLayoutScope {
     }
 }
 
-/** Ordered matching rules use committed geometry; instance override wins. Reflow retains children. */
+/**
+ * Ordered matching rules use committed geometry; instance override wins. Reflow retains children.
+ */
 fun Element.adaptiveLayout(reference: Surface = surface, instanceOverride: LayoutPolicy? = null, configure: ResponsiveLayoutScope.() -> Unit) {
     val config = ResponsiveLayoutScope().apply(configure)
     layoutPolicy = instanceOverride ?: config.defaultPolicy

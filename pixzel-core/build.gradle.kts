@@ -1,1 +1,4 @@
-plugins { `java-library` }
+plugins {
+    id("pixzel.publishing")
+    id("pixzel.detekt")
+}

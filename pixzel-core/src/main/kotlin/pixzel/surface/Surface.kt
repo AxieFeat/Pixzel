@@ -51,7 +51,9 @@ data class Placement(
     }
 }
 
-/** Computed geometry is read-only; coordinates require an attached, laid-out owner. */
+/**
+ * Computed geometry is read-only; coordinates require an attached, laid-out owner.
+ */
 interface Surface {
 
     val bounds: Rect

@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CascadingCallWrapping:Benchmarks.kt$BenchmarkConditions.Companion$firstOrNull { it.contains("ProcessorNameString") }</ID>
+    <ID>CascadingCallWrapping:Benchmarks.kt$toInt()</ID>
+    <ID>CyclomaticComplexMethod:ArcContextGenerationChecks.kt$ArcContextGenerationChecks$fun run(originalWindow: Long, text: ArcTextService)</ID>
+    <ID>CyclomaticComplexMethod:ArcDemo.kt$fun main(args: Array&lt;String&gt;)</ID>
+    <ID>CyclomaticComplexMethod:ArcDemo.kt$private fun buildShowcase(ui: Ui, resources: ResourceScope, context: RenderContext)</ID>
+    <ID>CyclomaticComplexMethod:ArcGraphicsChecks.kt$ArcGraphicsChecks$@JvmStatic fun main(args: Array&lt;String&gt;)</ID>
+    <ID>LateinitUsage:ArcDemo.kt$lateinit var longLabel: Text</ID>
+    <ID>LateinitUsage:ArcDemo.kt$lateinit var notifications: NotificationHost</ID>
+    <ID>LongMethod:ArcContextGenerationChecks.kt$ArcContextGenerationChecks$fun run(originalWindow: Long, text: ArcTextService)</ID>
+    <ID>LongMethod:ArcDemo.kt$fun main(args: Array&lt;String&gt;)</ID>
+    <ID>LongMethod:ArcDemo.kt$private fun buildShowcase(ui: Ui, resources: ResourceScope, context: RenderContext)</ID>
+    <ID>LongMethod:ArcGraphicsBenchmark.kt$ArcGraphicsBenchmark$fun run(text: ArcTextService)</ID>
+    <ID>LongMethod:ArcGraphicsChecks.kt$ArcGraphicsChecks$@JvmStatic fun main(args: Array&lt;String&gt;)</ID>
+    <ID>LongMethod:ArcInputChecks.kt$ArcInputChecks$@JvmStatic fun main(args: Array&lt;String&gt;)</ID>
+    <ID>LongParameterList:Benchmarks.kt$BenchmarkScene$( val name: String, val host: TestHost, val backend: CpuDiscardBackend, val text: FixedFontTextService, val ui: Ui, val tick: (Int) -&gt; Unit = {}, val rows: () -&gt; Int? = { null }, val validate: () -&gt; String = { "" } )</ID>
+    <ID>MagicNumber:ArcDemo.kt$.1f</ID>
+    <ID>MagicNumber:ArcDemo.kt$100f</ID>
+    <ID>MagicNumber:ArcDemo.kt$120f</ID>
+    <ID>MagicNumber:ArcDemo.kt$145</ID>
+    <ID>MagicNumber:ArcDemo.kt$1500f</ID>
+    <ID>MagicNumber:ArcDemo.kt$44</ID>
+    <ID>MagicNumber:ArcDemo.kt$600f</ID>
+    <ID>MagicNumber:ArcDemo.kt$65</ID>
+    <ID>MagicNumber:ArcDemo.kt$66</ID>
+    <ID>MagicNumber:ArcDemo.kt$7</ID>
+    <ID>MagicNumber:ArcDemo.kt$700f</ID>
+    <ID>MagicNumber:ArcDemo.kt$88</ID>
+    <ID>MagicNumber:ArcDemoCapture.kt$24</ID>
+    <ID>MagicNumber:ArcDemoCapture.kt$255</ID>
+    <ID>MagicNumber:Benchmarks.kt$.95</ID>
+    <ID>MagicNumber:Benchmarks.kt$.99</ID>
+    <ID>MagicNumber:Benchmarks.kt$1080</ID>
+    <ID>MagicNumber:Benchmarks.kt$10_000</ID>
+    <ID>MagicNumber:Benchmarks.kt$1280</ID>
+    <ID>MagicNumber:Benchmarks.kt$1920</ID>
+    <ID>MagicNumber:Benchmarks.kt$1_000</ID>
+    <ID>MagicNumber:Benchmarks.kt$1_000_000.0</ID>
+    <ID>MagicNumber:Benchmarks.kt$24f</ID>
+    <ID>MagicNumber:Benchmarks.kt$300</ID>
+    <ID>MagicNumber:Benchmarks.kt$36</ID>
+    <ID>MagicNumber:Benchmarks.kt$38f</ID>
+    <ID>MagicNumber:Benchmarks.kt$50</ID>
+    <ID>MagicNumber:Benchmarks.kt$720</ID>
+    <ID>MagicNumber:Benchmarks.kt$97</ID>
+    <ID>MagicNumber:Benchmarks.kt$99_900</ID>
+    <ID>MagicNumber:Benchmarks.kt$9_999</ID>
+    <ID>MaxLineLength:ArcContextGenerationChecks.kt$ArcContextGenerationChecks$println("PASS: two unshared context generations, colliding texture/buffer/VAO/program/sampler/FBO/renderbuffer IDs survive stale cleanup; owned image restores, borrowed image requires rebind, no-current cleanup makes no native calls")</ID>
+    <ID>MaxLineLength:ArcGraphicsBenchmark.kt$ArcGraphicsBenchmark$println("GPU scene CPU submit warmup$warmup/samples$samples p50=$p50 ms p95=$p95 ms p99=$p99 ms; draws=${session.statistics.drawCalls}; static uploads0; tracked GPU bytes=${peakTargets + peakMeshes + peakText}; report=${path.toAbsolutePath()}")</ID>
+    <ID>MaxLineLength:ArcGraphicsChecks.kt$ArcGraphicsChecks$check(GL11.glGetInteger(GL11.GL_DEPTH_FUNC) == GL11.GL_LESS &amp;&amp; !GL11.glIsEnabled(GL11.GL_DEPTH_TEST)) { "Failing nested custom/group pass did not restore application depth" }</ID>
+    <ID>MaxLineLength:ArcGraphicsChecks.kt$ArcGraphicsChecks$println("Lifecycle: 1000 GPU sessions closed, native program/buffer/FBO deleted each cycle, borrowed image alive, custom leases released, elapsed ${(System.nanoTime() - start) / 1_000_000}ms; target budget failure preserved state")</ID>
+    <ID>MaxLineLength:ArcGraphicsChecks.kt$ArcGraphicsChecks$println("PASS: 1002 transformed/multicolor/translucent solid commands -&gt; ${batchStats.drawCalls} draws, pixel-identical to1003 separate draws, static uploads0; mesh/CPU byte-budget eviction verified")</ID>
+    <ID>MaxLineLength:ArcGraphicsChecks.kt$ArcGraphicsChecks$println("PASS: real Cyrillic text, path hole, transformed/independent rounded clips, images/brush, stroke caps/joins, custom command/error, gradient, group alpha, shadow, scene restoration, static uploads=0")</ID>
+    <ID>MaxLineLength:ArcInputChecks.kt$ArcInputChecks$println("Arc real-window callback, Unicode commit, ordered delivery, consumed gameplay polling and listener lifetime checks passed; metrics=${window.metrics}")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$appendLine("- Allocation source: ${if (allocationAvailable) "ThreadMXBean current-thread allocated bytes" else "unavailable; no allocation estimate substituted"}")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$appendLine("- Submission: bounded CPU command counter, no rasterization, GPU, driver, vsync or presentation; operations are draw commands, not GPU draw calls")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$appendLine("Native/GPU memory high-water marks, GPU submit/present times, actual draw calls and visual acceptance were not measured. Setup/destruction are excluded from steady scenes and included in lifecycle. CPU thread allocation includes the library, deterministic fixture and benchmark callbacks; JVM/GC scheduling affects tail latency.")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$appendLine("Reference engineering budgets (not universal guarantees): static p95&lt;=2ms ${if (static == null) "not sampled" else if (static.cpu.p95 &lt;= 2) "met" else "exceeded"}; live p95&lt;=4ms ${if (live == null) "not sampled" else if (live.cpu.p95 &lt;= 4) "met" else "exceeded"} for this CPU-only run.")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$appendLine("| Scene | Samples | CPU p50 ms | p95 ms | p99 ms | Mean allocated B/sample | Allocation p95 B | Mean measured nodes | Shape calls | Retained nodes | Materialized rows | Commands / draw operations |")</ID>
+    <ID>MaxLineLength:Benchmarks.kt$}</ID>
+    <ID>StringLiteralDuplication:Benchmarks.kt$"lifecycle"</ID>
+    <ID>TooManyFunctions:Benchmarks.kt$pixzel.demo.Benchmarks.kt</ID>
+    <ID>UnusedImports:ArcDemo.kt$import pixzel.graphics.Color</ID>
+    <ID>UnusedImports:ArcDemo.kt$import pixzel.graphics.Solid</ID>
+    <ID>UnusedParameter:Benchmarks.kt$name: String</ID>
+  </CurrentIssues>
+</SmellBaseline>

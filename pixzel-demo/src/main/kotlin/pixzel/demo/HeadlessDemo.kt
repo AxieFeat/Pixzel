@@ -24,7 +24,9 @@ import java.nio.file.Path
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-/** One builder is shared by independent and Arc entry points. */
+/**
+ * One builder is shared by independent and Arc entry points.
+ */
 fun buildMenu(ui: Ui) {
     val online = stateOf(12)
     ui.content {

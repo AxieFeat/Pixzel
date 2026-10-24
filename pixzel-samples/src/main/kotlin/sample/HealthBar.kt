@@ -47,7 +47,9 @@ import pixzel.ui
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-/** External component: this module has no access to pixzel-common internals. */
+/**
+ * External component: this module has no access to pixzel-common internals.
+ */
 class HealthBar private constructor(value: State<Float>) : AbstractElement() {
 
     init {
@@ -135,13 +137,17 @@ fun radialButton(ui: Ui, action: () -> Unit): Button = Button.of(ui.components).
     onClick(action)
 }
 
-/** An external static algorithm can compose existing public strategies. */
+/**
+ * An external static algorithm can compose existing public strategies.
+ */
 class MiddleDotsOverflow : TextOverflowPolicy {
 
     override fun resolve(context: TextOverflowContext) = TextOverflow.ELLIPSIS_MIDDLE.resolve(context.copy(marker = "..."))
 }
 
-/** A deliberately stepped reveal demonstrates replacement without a Button patch. */
+/**
+ * A deliberately stepped reveal demonstrates replacement without a Button patch.
+ */
 class SteppedReveal : TextRevealBehavior {
 
     override fun createRuntime() = object : TextRevealRuntime {

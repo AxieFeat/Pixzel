@@ -1,6 +1,8 @@
 package pixzel.text
 
-/** JVM implementation using Java 21's Unicode extended-grapheme matcher (UAX #29). */
+/**
+ * JVM implementation using Java 21's Unicode extended-grapheme matcher (UAX #29).
+ */
 object UnicodeGraphemeSegmenter : GraphemeSegmenter {
 
     private val grapheme = Regex("\\X")

@@ -7,16 +7,22 @@ import pixzel.graphics.FrameInfo
 import pixzel.resource.ResourceScope
 import pixzel.surface.Transform
 
-/** Borrowed handler; allocate cached resources through the session-owned scope. */
+/**
+ * Borrowed handler; allocate cached resources through the session-owned scope.
+ */
 fun interface ArcCustomRenderer {
 
     fun render(scope: ArcCustomDrawScope, command: CustomCommand)
 
-    /** Every texture unit the handler may modify; native state is restored by a nested Arc pass. */
+    /**
+     * Every texture unit the handler may modify; native state is restored by a nested Arc pass.
+     */
     val textureUnits: Set<Int> get() = setOf(0)
 }
 
-/** An immutable, Ui-backend-local registry. No renderer is found through a global provider. */
+/**
+ * An immutable, Ui-backend-local registry. No renderer is found through a global provider.
+ */
 class ArcCustomRenderers private constructor(internal val entries: Map<String, ArcCustomRenderer>) {
 
     companion object {

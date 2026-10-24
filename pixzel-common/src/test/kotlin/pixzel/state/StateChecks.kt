@@ -2,7 +2,9 @@ package pixzel.state
 
 import org.junit.jupiter.api.Test
 
-/** Executable without a test framework, and callable by the integrated contract-check suite. */
+/**
+ * Executable without a test framework, and callable by the integrated contract-check suite.
+ */
 fun runStateChecks() {
     val runtime = stateRuntime()
     val first = stateOf(1, runtime, "first")

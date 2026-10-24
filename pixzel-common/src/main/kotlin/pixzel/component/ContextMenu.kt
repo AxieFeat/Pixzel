@@ -107,10 +107,14 @@ class ContextMenu<T> private constructor(
         }
     }
 
-    /** Opens at a point already expressed in UI root dp, not logical-window or framebuffer pixels. */
+    /**
+     * Opens at a point already expressed in UI root dp, not logical-window or framebuffer pixels.
+     */
     fun openAt(position: Vec2): Boolean = open({ position })
 
-    /** Opens below a logical descendant's current root bounds, following resize/rearrangement. */
+    /**
+     * Opens below a logical descendant's current root bounds, following resize/rearrangement.
+     */
     fun openFor(element: Element = owner): Boolean {
         ui.assertThread()
         check(!closed) { "ContextMenu is closed" }
@@ -204,7 +208,9 @@ class ContextMenu<T> private constructor(
         }
     }
 
-    /** Dismisses the current popup while leaving the owner's invocation handler reusable. */
+    /**
+     * Dismisses the current popup while leaving the owner's invocation handler reusable.
+     */
     fun closeMenu() {
         ui.assertThread()
         val previous = menu

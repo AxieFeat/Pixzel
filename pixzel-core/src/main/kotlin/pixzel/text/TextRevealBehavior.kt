@@ -70,13 +70,17 @@ data class TextRevealFrame(
     val phase: RevealPhase = RevealPhase.IDLE
 )
 
-/** Immutable/shareable strategy. Each Text owns a distinct runtime created by this factory. */
+/**
+ * Immutable/shareable strategy. Each Text owns a distinct runtime created by this factory.
+ */
 fun interface TextRevealBehavior {
 
     fun createRuntime(): TextRevealRuntime
 }
 
-/** Runtime state is never stored in shared themes. reset is also used on detach/disposal. */
+/**
+ * Runtime state is never stored in shared themes. reset is also used on detach/disposal.
+ */
 interface TextRevealRuntime {
 
     fun update(context: TextRevealContext): TextRevealFrame

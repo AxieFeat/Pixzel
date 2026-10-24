@@ -2,6 +2,24 @@
 
 Verified on 2026-10-24, Windows 11, Ryzen 7 7800X3D, Oracle JDK 21.0.10, Kotlin 2.4.10, Gradle 9.6.1, LWJGL 3.4.2 and NVIDIA GeForce RTX 4060 Ti / driver 617.42. The native fixtures requested desktop OpenGL 4.1. Tests ran against the shared integrated sources, with separately owned workstreams and independent source review before final integration.
 
+## Maven and convention-plugin migration
+
+All six modules are now included unconditionally. `build-logic` follows Arc's precompiled convention-plugin structure, imports the shared version catalog and provides typed `libs`/`projects` accessors. Arc dependencies use GitHub Packages at the pinned commit version. The former conditional/composite commands recorded below are historical and no longer select a different build.
+
+The independent modules passed build, Detekt, boundary checks, state checks and animation checks after this migration. A full build plus native graphics and input checks also passed against a temporary Maven repository containing the reviewed Arc sources, without dependency substitution. `verifyCodeStyle` checks multiline KDoc as part of `check`. Per-module Detekt baselines record existing findings from adopting Arc's rules; baseline generation is explicit.
+
+Arc's readability/publication changes passed Detekt, the real OpenGL regression, GLES compilation and native-font tests before the fast-forward to [`229da48`](https://github.com/AxieFeat/Arc/commit/229da488a3e0e50f2e2003cee2f431b7fa8ca73b) on `master`. Its Maven publications now include `arc-annotations`, and dependency versions match the commit-versioned artifacts.
+
+The [Arc GitHub Actions run](https://github.com/AxieFeat/Arc/actions/runs/40071765470) completed both Detekt and publication successfully. The publication job compiled and published the library modules in 208 executed tasks. Arc version `229da48`, including its font and GLFW input modules, is available from GitHub Packages.
+
+The final Pixzel invocation resolved Arc directly from GitHub Packages, without an init script, composite build or local Arc repository:
+
+```powershell
+.\gradlew.bat build verifyBoundaries verifyCodeStyle :pixzel-common:stateChecks :pixzel-common:animationChecks :pixzel-demo:graphicsChecks :pixzel-demo:inputChecks :pixzel-demo:preview publishAllPublicationsToLocalArtifactsRepository :pixzel-demo:run --args="--smoke --scale=1.25" --refresh-dependencies --console=plain
+```
+
+**PASS, 1 minute 23 seconds**, 69 tasks. The XML reports contain **121 Pixzel tests**, zero failures/errors. GPU/context-generation/lifecycle checks, real GLFW input checks, software preview, scaled native smoke demo and all five local Maven publications passed. POM versions were checked for both Pixzel intermodule references and Arc's `229da48` dependencies. The intermediate attempt while GitHub Actions was still publishing stopped at the then-unavailable input artifact; this successful invocation supersedes it.
+
 ## Code-style revalidation and publication
 
 The later formatting pass covers 132 live Pixzel and 57 owned Arc Kotlin files, plus authored PowerShell and guide examples. It follows original Arc indentation, explicit imports, separate statements, multiline blocks and enum entries. All owned Kotlin sources now use explicit imports; 2,299 optional statement separators were removed. The production GLSL vertex/fragment sources were formatted too.
@@ -12,7 +30,7 @@ An independent Kotlin PSI comparison against the normalized preformatter sources
 
 Arc is committed in [`e5d04a8`](https://github.com/AxieFeat/Arc/commit/e5d04a8de4eec543e67eff7778d37f88ae29d824) on `codex/pixzel-integration`. The final [delivery](delivery/README.md) was regenerated from that committed checkout. Pixzel's `dev` retains the original remote `master` history. Build outputs, local tooling experiments and historical delivery attempts are excluded from version control; original Arc IDE/Vulkan files remain outside the integration commit.
 
-## Independent execution
+## Historical independent execution
 
 From the Pixzel workspace, without `-ParcPath`:
 
@@ -25,7 +43,7 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-21.0.10'
 
 Tests cover the normative `(24,24)`/`(84,48)` geometry, all anchors, inverse transforms, padding/constraints/weights/baselines/flow/grid, scaled input, incremental layout, responsive identity, portals/clips, keyed state/focus, nested fractional scrolling, variable-height VirtualList bounds, button/content slots, selection/value/navigation controls, context menus/modals/toasts, paired input releases, exception-safe cleanup, IME simulation, semantics/actions, assets/retry/generations, text/reveal policies and typed visual transitions. Guide functions compile and execute in GuideExamplesTest; public extension lifetime executes in the separate sample module.
 
-## Composite/native execution
+## Historical composite/native execution
 
 The final combined command completed successfully in **11 seconds**:
 

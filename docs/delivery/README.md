@@ -1,6 +1,8 @@
 # Verified Arc source delivery
 
-Final package: [arc-419619a2-changes.zip](20261024T052444868Z-7d1637db/arc-419619a2-changes.zip).
+Archived package: [arc-419619a2-changes.zip](20261024T052444868Z-7d1637db/arc-419619a2-changes.zip).
+
+This snapshot predates the later KDoc, input-transport readability and Maven publication fixes. Current Pixzel resolves the version pinned in `gradle/libs.versions.toml` from Arc's GitHub Packages repository; this archive remains byte-for-byte historical evidence.
 
 SHA-256: `db5923ec0dde2bd20b16d8152af25b59a4514ba66dd5fb52969e943a14d6a597`.
 

@@ -1,0 +1,257 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>BracesOnWhenStatements:DragDrop.kt$DragDropManager$when</ID>
+    <ID>BracesOnWhenStatements:Notifications.kt$NotificationHost$when</ID>
+    <ID>BracesOnWhenStatements:SimpleButton.kt$SimpleButton$when</ID>
+    <ID>BracesOnWhenStatements:SimpleScrollBar.kt$SimpleScrollBar$when</ID>
+    <ID>BracesOnWhenStatements:SimpleTextField.kt$SimpleTextField$when</ID>
+    <ID>BracesOnWhenStatements:TextOverflow.kt$when</ID>
+    <ID>BracesOnWhenStatements:UiInput.kt$UiInput$when</ID>
+    <ID>CascadingCallWrapping:UiFocus.kt$UiFocus$let { request(it) }</ID>
+    <ID>CascadingCallWrapping:UiFocus.kt$UiFocus$minByOrNull { it.second }</ID>
+    <ID>CascadingCallWrapping:UnicodeGraphemeSegmenter.kt$UnicodeGraphemeSegmenter$toList()</ID>
+    <ID>CastToNullableType:ContextMenu.kt$ContextMenu$as</ID>
+    <ID>CastToNullableType:DragDrop.kt$DragDropManager$as</ID>
+    <ID>CastToNullableType:SimpleButton.kt$SimpleButton$as</ID>
+    <ID>CastToNullableType:SimpleOverlayManager.kt$SimpleOverlayManager$as</ID>
+    <ID>CastToNullableType:SimpleUi.kt$SimpleUi$as</ID>
+    <ID>CastToNullableType:UiFocus.kt$UiFocus$as</ID>
+    <ID>CastToNullableType:UiInput.kt$UiInput$as</ID>
+    <ID>CastToNullableType:semanticsExtras.kt$as</ID>
+    <ID>ClassOrdering:AbstractElement.kt$AbstractElement$Companion</ID>
+    <ID>ClassOrdering:AbstractElement.kt$AbstractElement$internal fun refreshInheritedStyles()</ID>
+    <ID>ClassOrdering:AbstractElement.kt$AbstractElement$private fun styleChanged(before: ResolvedTokens)</ID>
+    <ID>ClassOrdering:AbstractElement.kt$AbstractElement$protected fun &lt;T&gt; property(initial: T, reason: Invalidation = Invalidation.PAINT)</ID>
+    <ID>ClassOrdering:ContentScope.kt$ElementScope$var hitShape: HitShape get() = element.hitShape set(value) { element.hitShape = value }</ID>
+    <ID>ClassOrdering:ContentScope.kt$TextScope$fun typography(configure: TypographyScope.() -&gt; Unit)</ID>
+    <ID>ClassOrdering:ContentScope.kt$TextScope$fun value(binding: Binding&lt;String&gt;)</ID>
+    <ID>ClassOrdering:ContentScope.kt$TextScope$fun value(value: String)</ID>
+    <ID>ClassOrdering:ImageAssetTest.kt$ImageAssetTest.Workers$val size get() = tasks.size</ID>
+    <ID>ClassOrdering:SimpleOverlayManager.kt$SimpleOverlayManager$private val listener = owner.root.onEvent(EventPhase.CAPTURE) { event -&gt; val top = entries.lastOrNull(::active) ?: return@onEvent val key = event.event as? KeyEvent val pointer = event.event as? PointerEvent val outside = pointer?.action == PointerAction.DOWN &amp;&amp; generateSequence(event.target as Element?) { it.parent }.none { it === top.element } if (top.escape &amp;&amp; key?.key == Key.ESCAPE &amp;&amp; key.action == KeyAction.DOWN || top.outside &amp;&amp; outside) { event.consume() event.preventDefault() event.stopPropagation() top.dismiss() } }</ID>
+    <ID>ClassOrdering:SimpleScrollBar.kt$SimpleScrollBar$private fun metrics(): Metrics</ID>
+    <ID>ClassOrdering:SimpleScrollBar.kt$SimpleScrollBar$private fun validView(): ScrollView?</ID>
+    <ID>ClassOrdering:SimpleText.kt$SimpleText$protected fun assign(value: String)</ID>
+    <ID>ClassOrdering:SimpleText.kt$SimpleText$protected open fun onValueChanged(previous: String, value: String)</ID>
+    <ID>ClassOrdering:UiFocus.kt$UiFocus$override var focused: Element? = null private set</ID>
+    <ID>ComplexCondition:AbstractElement.kt$AbstractElement$tokenParent !== inherited || tokenScope !== styleScope || tokenState != effectiveState || tokenResult == null</ID>
+    <ID>ComplexCondition:AbstractElement.kt$AbstractElement$ui != null &amp;&amp; !measureDirty &amp;&amp; cachedConstraints == constraints &amp;&amp; cachedTextScale == textScale</ID>
+    <ID>ComplexCondition:AbstractElement.kt$AbstractElement.&lt;no name provided&gt;$computed.contentBox.x != pad.left || computed.contentBox.y != pad.top || computed.contentBox.width != contentWidth || computed.contentBox.height != contentHeight</ID>
+    <ID>ComplexCondition:ContextMenu.kt$ContextMenu$!closed &amp;&amp; pointer.action == PointerAction.DOWN &amp;&amp; pointer.button == pointerButton &amp;&amp; usable(owner)</ID>
+    <ID>ComplexCondition:ContextMenu.kt$ContextMenu$pointer.pointerId == pointerId &amp;&amp; (pointer.action == PointerAction.CANCEL || pointer.action == PointerAction.UP &amp;&amp; pointer.button == pointerButton)</ID>
+    <ID>ComplexCondition:Layouts.kt$margin.horizontal == 0f &amp;&amp; margin.vertical == 0f &amp;&amp; width == ordinary.maxWidth &amp;&amp; height == ordinary.maxHeight</ID>
+    <ID>ComplexCondition:Layouts.kt$p.anchor == Anchor.TOP_LEFT &amp;&amp; p.pivot == Pivot.TOP_LEFT &amp;&amp; m.left == 0f &amp;&amp; m.top == 0f &amp;&amp; box.x == 0f &amp;&amp; box.y == 0f</ID>
+    <ID>ComplexCondition:SelectionComponents.kt$SimpleRadio$owner != null &amp;&amp; (value &amp;&amp; owner.selected !== this || !value &amp;&amp; owner.selected === this)</ID>
+    <ID>ComplexCondition:SelectionComponents.kt$SimpleRadioGroup$radio.selected || selected == null &amp;&amp; !allowNone &amp;&amp; eligible(radio)</ID>
+    <ID>ComplexCondition:SimpleButton.kt$SimpleButton$generateSequence(this as Element?) { it.parent }.all { it.enabled &amp;&amp; it.visibility == Visibility.VISIBLE &amp;&amp; !it.isDisposed &amp;&amp; it.ui === owner }</ID>
+    <ID>ComplexCondition:SimpleOverlayManager.kt$SimpleOverlayManager$top.escape &amp;&amp; key?.key == Key.ESCAPE &amp;&amp; key.action == KeyAction.DOWN || top.outside &amp;&amp; outside</ID>
+    <ID>ComplexCondition:SimpleTextField.kt$SimpleTextField$state.focused &amp;&amp; selectionStart != selectionEnd &amp;&amp; !password &amp;&amp; composition == null</ID>
+    <ID>ComplexCondition:SimpleUi.kt$SimpleUi$!current.enabled || current.visibility != Visibility.VISIBLE || current.isDisposed || current.ui !== this</ID>
+    <ID>ComplexCondition:SimpleUi.kt$SimpleUi$reason == Invalidation.TREE || reason == Invalidation.MEASURE || reason == Invalidation.ARRANGE || reason == Invalidation.TRANSFORM</ID>
+    <ID>ComplexCondition:TextReveal.kt$SimpleHoverRevealRuntime$!context.enabled || distance &lt;= configuration.minimumOverflow || speed == 0f || context.full.lines.size != 1 || context.reducedMotion &amp;&amp; configuration.reducedMotion == RevealReducedMotion.STATIC</ID>
+    <ID>ComplexCondition:TextReveal.kt$SimpleHoverRevealRuntime$wasActive &amp;&amp; previous != null &amp;&amp; previous.phase != RevealPhase.IDLE &amp;&amp; previous.phase != RevealPhase.WAIT</ID>
+    <ID>ComplexCondition:UiFocus.kt$UiFocus$ui.lifecycle == UiLifecycle.CLOSED || ui.closing || !element.focusable || !ui.effective(element) || !permitted(element)</ID>
+    <ID>ComplexCondition:UiInput.kt$UiInput$event is KeyEvent &amp;&amp; event.action == KeyAction.DOWN &amp;&amp; !flags.consumed &amp;&amp; !flags.prevented</ID>
+    <ID>ComplexCondition:UiInput.kt$UiInput$event.action == PointerAction.CANCEL || event.action == PointerAction.UP &amp;&amp; (captureButtons[event.pointerId] == null || captureButtons[event.pointerId] == event.button)</ID>
+    <ID>ComplexCondition:UiInput.kt$UiInput$flags.prevented || flags.stopped || (abs(remainder.x) &lt; .00001f &amp;&amp; abs(remainder.y) &lt; .00001f)</ID>
+    <ID>ComplexCondition:UiPainter.kt$UiPainter$previous == null || previous.version != element.paintVersion || previous.transform != element.surface.localToParent || previous.bounds != element.surface.bounds || previous.content != element.surface.contentBox || previous.theme != ui.theme || previous.settings != ui.settings || previous.tokens !== tokens || previous.disabled != disabled</ID>
+    <ID>ComplexCondition:ValueComponents.kt$SimpleProgress$!indeterminate || !enabled || visibility != Visibility.VISIBLE || ui?.settings?.isReducedMotion == true</ID>
+    <ID>CyclomaticComplexMethod:AbstractElement.kt$AbstractElement$override fun measure(constraints: Constraints): Placeable</ID>
+    <ID>CyclomaticComplexMethod:ContextMenu.kt$ContextMenu$private fun open(position: () -&gt; Vec2, target: Element = owner): Boolean</ID>
+    <ID>CyclomaticComplexMethod:DragDrop.kt$DragDropManager$fun &lt;T&gt; source( element: Element, type: DragType&lt;T&gt;, value: () -&gt; T, threshold: Float = 6f, preview: (T) -&gt; Element? = { null }, complete: (DragResult&lt;T&gt;) -&gt; Unit = {} ): Subscription</ID>
+    <ID>CyclomaticComplexMethod:LayoutChecks.kt$fun runLayoutChecks()</ID>
+    <ID>CyclomaticComplexMethod:Layouts.kt$fun gridLayout(columns: List&lt;GridTrack&gt;, spacing: Dp = 0.dp): LayoutPolicy</ID>
+    <ID>CyclomaticComplexMethod:Layouts.kt$fun overlayLayout(): LayoutPolicy</ID>
+    <ID>CyclomaticComplexMethod:Layouts.kt$private fun linearLayout(horizontal: Boolean, spacing: Dp, alignment: CrossAxisAlignment): LayoutPolicy</ID>
+    <ID>CyclomaticComplexMethod:NavigationComponents.kt$Menu$private fun build()</ID>
+    <ID>CyclomaticComplexMethod:Notifications.kt$NotificationHost$private fun promote()</ID>
+    <ID>CyclomaticComplexMethod:SimpleScrollBar.kt$SimpleScrollBar$private fun metrics(): Metrics</ID>
+    <ID>CyclomaticComplexMethod:SimpleTextField.kt$SimpleTextField$private fun handleKey(event: KeyEvent)</ID>
+    <ID>CyclomaticComplexMethod:SimpleUi.kt$SimpleUi$override fun frame(delta: Duration)</ID>
+    <ID>CyclomaticComplexMethod:SimpleVirtualList.kt$SimpleVirtualList$override fun update(delta: Duration): Boolean</ID>
+    <ID>CyclomaticComplexMethod:TextOverflow.kt$private fun ellipsize(c: TextOverflowContext, requestedPosition: EllipsisPosition, force: Boolean = false): OverflowCandidate</ID>
+    <ID>CyclomaticComplexMethod:TextReveal.kt$SimpleHoverRevealRuntime$override fun update(context: TextRevealContext): TextRevealFrame</ID>
+    <ID>CyclomaticComplexMethod:UiFocus.kt$UiFocus$override fun move(direction: NavigationDirection): Boolean</ID>
+    <ID>CyclomaticComplexMethod:UiInput.kt$UiInput$fun cancelCaptures(predicate: (Element) -&gt; Boolean = { true })</ID>
+    <ID>CyclomaticComplexMethod:UiInput.kt$UiInput$fun dispatch(original: InputEvent): Boolean</ID>
+    <ID>CyclomaticComplexMethod:UiInput.kt$UiInput$private fun hit(element: Element, position: Vec2, includeDisabled: Boolean = false): Element?</ID>
+    <ID>CyclomaticComplexMethod:UiPainter.kt$UiPainter$fun record(root: Element, capacity: Int): RecordedPaint</ID>
+    <ID>EmptyFunctionBlock:AbstractElement.kt$AbstractElement${}</ID>
+    <ID>FunctionMaxLength:AdvancedComponentRegressionTest.kt$AdvancedComponentRegressionTest$@Test fun horizontalScrollAndTransformAwareRevealUseTheConfiguredAxis()</ID>
+    <ID>FunctionMaxLength:AdvancedComponentRegressionTest.kt$AdvancedComponentRegressionTest$@Test fun notificationAndKeyedBuilderFailuresDisposePartialSubtrees()</ID>
+    <ID>FunctionMaxLength:AdvancedComponentRegressionTest.kt$AdvancedComponentRegressionTest$@Test fun notificationsFitSafeViewportPauseForDescendantFocusAndQueueOverflow()</ID>
+    <ID>FunctionMaxLength:AdvancedComponentRegressionTest.kt$AdvancedComponentRegressionTest$@Test fun virtualRowsHaveIndependentIdScopesAndRetainTheirMeasuredAnchor()</ID>
+    <ID>FunctionMaxLength:ButtonTextDefaultsTest.kt$ButtonTextDefaultsTest$@Test fun `leading and trailing text updates preserve the complete primary button semantics`()</ID>
+    <ID>FunctionMaxLength:ButtonTextDefaultsTest.kt$ButtonTextDefaultsTest$@Test fun `policy-only theme updates preserve full layout measurements and shaping cache`()</ID>
+    <ID>FunctionMaxLength:ButtonTextDefaultsTest.kt$ButtonTextDefaultsTest$@Test fun `shared theme reveal has independent per-label clocks and NONE disables existing motion`()</ID>
+    <ID>FunctionMaxLength:ButtonTextDefaultsTest.kt$ButtonTextDefaultsTest$@Test fun `theme and component scope label defaults merge while explicit instance values win`()</ID>
+    <ID>FunctionMaxLength:ComponentSlotTest.kt$ComponentSlotTest$@Test fun buttonDslContentReplacesOnlyItsCenterAndRollsBackFailedSlotBuilders()</ID>
+    <ID>FunctionMaxLength:ComponentSlotTest.kt$ComponentSlotTest$@Test fun buttonSlotsReserveLabelWidthAndPreserveBehaviorDuringReplacement()</ID>
+    <ID>FunctionMaxLength:ComponentSlotTest.kt$ComponentSlotTest$@Test fun modalNamedSlotsUseIndependentContentAndRetainFocusSemantics()</ID>
+    <ID>FunctionMaxLength:ComponentSlotTest.kt$ComponentSlotTest$@Test fun removeDisposesResourcesAfterDetachCleanupFailsAndPreservesSuppressedErrors()</ID>
+    <ID>FunctionMaxLength:ComponentSlotTest.kt$ComponentSlotTest$@Test fun structuredNotificationSlotsPackWithinViewportAndClosePromotesTheQueue()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun detachmentAndDisposalRemovePopupAnchorsCallbacksAndOpeningHandlers()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun explicitKeyboardInvocationUsesArrowNavigationAndEscapeRestoresFocus()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun failedMenuContentAndSelectionCallbacksReleaseAnchorsAndRestoreFocus()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun focusLossAndEscapeBeforeOpeningReleaseRemoveTemporaryListeners()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun pointInvocationFlipsAndClampsToSafeViewportAndKeyboardAnchorFollowsGeometry()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$@Test fun rightClickDoesNotDismissItsOpeningMenuAndPointerSelectionConsumesGameplay()</ID>
+    <ID>FunctionMaxLength:ContextMenuTest.kt$ContextMenuTest$private fun assertOpeningReleaseHandlerRemoved(ui: Ui)</ID>
+    <ID>FunctionMaxLength:GuideExamplesTest.kt$GuideExamplesTest$@Test fun `guide direct and DSL state examples retain activation and replace previous content`()</ID>
+    <ID>FunctionMaxLength:GuideExamplesTest.kt$GuideExamplesTest$@Test fun `guide image pipeline applies posted upload and Ui owns the resulting handle`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `Ui close releases ready image and worker completion after close never reaches uploader`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `decode and upload errors are observable and retry replaces failure`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `disposal drops queued completion and owned or borrowed handles have explicit cleanup`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `managed pixels are immutable and intrinsic metadata differs from pixel dimensions`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `observer error does not turn a successful upload into failure or prevent owned cleanup`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `reentrant uploader retry closes its stale owned upload and preserves newer work`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `superseded queued and decoded generations never upload`()</ID>
+    <ID>FunctionMaxLength:ImageAssetTest.kt$ImageAssetTest$@Test fun `worker decode posts a FIFO UI upload and stable placeholder can precede intrinsic layout`()</ID>
+    <ID>FunctionMaxLength:InputEdgeTest.kt$InputEdgeTest$@Test fun blankOutsideAndUnfocusedEscapeDismissOnlyTopPopup()</ID>
+    <ID>FunctionMaxLength:InputEdgeTest.kt$InputEdgeTest$@Test fun secondaryReleaseDoesNotActivateOrReleasePrimaryCapture()</ID>
+    <ID>FunctionMaxLength:NavigationTest.kt$NavigationTest$@Test fun `dropdown preserves button identity manages selections model replacement and detach`()</ID>
+    <ID>FunctionMaxLength:NavigationTest.kt$NavigationTest$@Test fun `menu closes and restores focus even when selection callback throws`()</ID>
+    <ID>FunctionMaxLength:NavigationTest.kt$NavigationTest$@Test fun `menu custom item pointer selection empty slot outside and escape clean resources`()</ID>
+    <ID>FunctionMaxLength:NavigationTest.kt$NavigationTest$@Test fun `menu keyboard skips disabled items traps focus selects typed value and restores anchor`()</ID>
+    <ID>FunctionMaxLength:NavigationTest.kt$NavigationTest$@Test fun `tabs preserve text selection state use roving keys and reveal long header strips`()</ID>
+    <ID>FunctionMaxLength:OverlayTest.kt$OverlayTest$@Test fun modalTrapsAndRestoresFocusConsumesBlankAndOutside()</ID>
+    <ID>FunctionMaxLength:OverlayTest.kt$OverlayTest$@Test fun portalEscapesOriginalClipButKeepsLogicalRouteAndCurrentTarget()</ID>
+    <ID>FunctionMaxLength:PathGeometryTest.kt$PathGeometryTest$@Test fun `fill rules include boundaries holes and intersections`()</ID>
+    <ID>FunctionMaxLength:PathGeometryTest.kt$PathGeometryTest$@Test fun `independent radii retain their distinct hit boundaries and fit adjacent edges`()</ID>
+    <ID>FunctionMaxLength:PathGeometryTest.kt$PathGeometryTest$@Test fun `quadratic cubic and open fill contours match shared geometry`()</ID>
+    <ID>FunctionMaxLength:PathGeometryTest.kt$PathGeometryTest$@Test fun `rotated path clipping excludes holes from pointer activation`()</ID>
+    <ID>FunctionMaxLength:PlatformBehaviorTest.kt$PlatformBehaviorTest$@Test fun compositionPreeditIsSeparateAndCancellationFocusLossAndCommitWork()</ID>
+    <ID>FunctionMaxLength:PlatformBehaviorTest.kt$PlatformBehaviorTest$@Test fun typedDragThresholdDropCancelAndKeyboardShareAcceptance()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun attachmentFactoriesCanDetachOrCloseTheirScopeWithoutLeakingTheReturnedLease()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun cancellationCanCloseMinimizedUiWithoutResurrectingIt()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun directionalCommandsAndModalMaskHeldGameplayInputUntilRelease()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun fieldDirectionAndShorterPreeditUseCurrentCaretWithinScaledField()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun geometricPortalParentDisabledDoesNotDisableLogicalOwnerAndSelectionCannotBypassIt()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun handledPainterAndUpdateFailuresKeepScopesBalancedAndOtherCallbacksRunning()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun inheritedTokensRulesInstanceOverridesAndDisabledSkinsStayConsistent()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun keyboardPressLosesItsPressedStateWhenFocusMovesAndItsReleaseStaysConsumed()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun reducedMotionChangesCachedIndeterminatePaintAndWheelDpRemainsFractional()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun rowsAlignRealTextBaselinesAcrossFontSizesAndPadding()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun semanticActionsUseFullLabelsBoundsAndLogicalEnabledState()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun styleMutationsRejectWrongThreadAndPaintBeforeChangingValues()</ID>
+    <ID>FunctionMaxLength:RuntimeAcceptanceTest.kt$RuntimeAcceptanceTest$@Test fun throwingHoverExitStillCancelsCaptureAndClearsFocusOnWindowLoss()</ID>
+    <ID>FunctionMaxLength:ScrollBarTest.kt$ScrollBarTest$@Test fun `horizontal bar clamps oversized thumb and detached or incompatible views are inert`()</ID>
+    <ID>FunctionMaxLength:ScrollBarTest.kt$ScrollBarTest$@Test fun `primary thumb capture drags beyond bounds secondary release does not end drag`()</ID>
+    <ID>FunctionMaxLength:ScrollBarTest.kt$ScrollBarTest$@Test fun `thumb derives from viewport extent and updates without remeasuring the bar`()</ID>
+    <ID>FunctionMaxLength:ScrollBarTest.kt$ScrollBarTest$@Test fun `track pages keyboard repeats and wheel clamp at both ends and disabled blocks input`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `checkbox and toggle support pointer keyboard mixed state disabled and subscriptions`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `indeterminate progress moves paint only and honors reduced motion`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `radio group roves over enabled members and replaces a removed selection`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `radio reentrant selection callbacks keep one actual selected member`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `slider capture drag keyboard repeat and focus loss have observable effects`()</ID>
+    <ID>FunctionMaxLength:SelectionValueTest.kt$SelectionValueTest$@Test fun `slider range clamps snaps and keeps explicit endpoints for a nondividing step`()</ID>
+    <ID>FunctionMaxLength:TextMutationTest.kt$TextMutationTest$@Test fun `rejected worker writes leave existing binding and paint state intact`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `animation performs no shaping and large delta skips periods in constant time`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `cache is LRU bounded by entries and bytes and uses font generations`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `candidate text is reshaped instead of summing original advances`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `caret hit and deletion boundaries never enter a cluster`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `default reveal preserves delay both pauses directions and static exit`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `ellipsis cuts only clusters at all three positions`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `exact fit empty and too narrow marker have explicit behavior`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `extended grapheme boundaries retain emoji combining flags CRLF and Hangul`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `marker fallback and custom policy use public contracts`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `overflow rebases immutable span ranges at prefix suffix middle and final wrapped line`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `reveal exit policies and repeat count have observable results`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `shared config has independent runtime reduced motion zero speed resize and focus`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `truncating AUTO text retains original paragraph direction when suffix script differs`()</ID>
+    <ID>FunctionMaxLength:TextPipelineTest.kt$TextPipelineTest$@Test fun `wrap max lines ellipsizes final visible line`()</ID>
+    <ID>FunctionMaxLength:TypedScopeTest.kt$TypedScopeTest$@Test fun `grid scope cell placement uses typed tracks and rejects foreign-child parent data`()</ID>
+    <ID>FunctionMaxLength:TypedScopeTest.kt$TypedScopeTest$@Test fun `row and column scopes distribute parent-specific weights without changing child identity`()</ID>
+    <ID>FunctionMaxLength:UiIntegrationTest.kt$UiIntegrationTest$@Test fun graphemeEditingClipboardUndoAndGeometryChangeBetweenEvents()</ID>
+    <ID>FunctionMaxLength:UiIntegrationTest.kt$UiIntegrationTest$@Test fun keyedReorderKeepsNodeFocusAndCurrentData()</ID>
+    <ID>FunctionMaxLength:UiIntegrationTest.kt$UiIntegrationTest$@Test fun nestedCoordinatesResizeAndStaticFrames()</ID>
+    <ID>FunctionMaxLength:UiIntegrationTest.kt$UiIntegrationTest$@Test fun pointerCaptureConsumptionRetinaAndKeyboard()</ID>
+    <ID>FunctionMaxLength:UiIntegrationTest.kt$UiIntegrationTest$@Test fun removeDuringRoutingPreventsDefaultAndClipsMatchHits()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun closeInActivationExitsTheCurrentFrame()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun disableAndDetachCancelCaptureAndFocus()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun disabledOwnersStillUpdateVisibleControllers()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun exceptionalCancelStillClosesEveryOwnedResource()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun geometryCreatedByUpdateIsArrangedBeforeItPaints()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun nestedFocusScopesTrapAndRestoreFocus()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun nestedScrollPassesOnlyTheUnusedWheelRemainder()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun paintCannotMutateTheTreeAndFailureLeavesTheFrameRecoverable()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun portalGeometryCyclesAreDiagnosedBeforePainting()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun portalTargetsLaterSiblingAndEscapesLogicalClipWithLogicalRouting()</ID>
+    <ID>FunctionMaxLength:UiLifetimeTest.kt$UiLifetimeTest$@Test fun secretPointerAndReplacedValueUseSourceGraphemeBoundaries()</ID>
+    <ID>FunctionMaxLength:VirtualListTest.kt$VirtualListTest$@Test fun boundsMaterializationAndPreservesKeyedState()</ID>
+    <ID>FunctionMaxLength:VisualAnimationTest.kt$VisualAnimationTest$@Test fun `color interpolates alpha without hidden endpoint tint and retarget starts at current color`()</ID>
+    <ID>FunctionMaxLength:VisualAnimationTest.kt$VisualAnimationTest$@Test fun `opacity bounds custom easing while keyframed colors remain typed`()</ID>
+    <ID>FunctionMaxLength:VisualAnimationTest.kt$VisualAnimationTest$@Test fun `owned visual controllers follow Ui clock pause while detached and finish for reduced motion`()</ID>
+    <ID>FunctionMaxLength:VisualAnimationTest.kt$VisualAnimationTest$@Test fun `transform interpolation takes shortest rotation and preserves scale shear and translation`()</ID>
+    <ID>LongMethod:AbstractElement.kt$AbstractElement$override fun measure(constraints: Constraints): Placeable</ID>
+    <ID>LongMethod:AnimationChecks.kt$fun runAnimationChecks()</ID>
+    <ID>LongMethod:ContextMenu.kt$ContextMenu$private fun open(position: () -&gt; Vec2, target: Element = owner): Boolean</ID>
+    <ID>LongMethod:DragDrop.kt$DragDropManager$fun &lt;T&gt; source( element: Element, type: DragType&lt;T&gt;, value: () -&gt; T, threshold: Float = 6f, preview: (T) -&gt; Element? = { null }, complete: (DragResult&lt;T&gt;) -&gt; Unit = {} ): Subscription</ID>
+    <ID>LongMethod:LayoutChecks.kt$fun runLayoutChecks()</ID>
+    <ID>LongMethod:Layouts.kt$fun gridLayout(columns: List&lt;GridTrack&gt;, spacing: Dp = 0.dp): LayoutPolicy</ID>
+    <ID>LongMethod:Layouts.kt$private fun linearLayout(horizontal: Boolean, spacing: Dp, alignment: CrossAxisAlignment): LayoutPolicy</ID>
+    <ID>LongMethod:NavigationComponents.kt$Menu$private fun build()</ID>
+    <ID>LongMethod:SimpleUi.kt$SimpleUi$override fun frame(delta: Duration)</ID>
+    <ID>LongMethod:StateChecks.kt$fun runStateChecks()</ID>
+    <ID>LongMethod:TextReveal.kt$SimpleHoverRevealRuntime$override fun update(context: TextRevealContext): TextRevealFrame</ID>
+    <ID>LongMethod:UiInput.kt$UiInput$fun dispatch(original: InputEvent): Boolean</ID>
+    <ID>LongMethod:UiPainter.kt$UiPainter$fun paint(element: Element)</ID>
+    <ID>LongParameterList:AsyncImageAsset.kt$( ui: Ui, source: () -&gt; ByteArray, decoder: ImageDecoder, uploader: ImageUploader, executor: Executor, placeholderSize: Size = Size.ZERO, ownership: Ownership = Ownership.OWNED, maxDecodedBytes: Long = 64L * 1024 * 1024 )</ID>
+    <ID>LongParameterList:AsyncImageAsset.kt$AsyncImageAsset$( private val ui: Ui, private val source: () -&gt; ByteArray, private val decoder: ImageDecoder, private val uploader: ImageUploader, private val executor: Executor, override val placeholderSize: Size, private val ownership: Ownership, private val maxDecodedBytes: Long )</ID>
+    <ID>LongParameterList:DragDrop.kt$DragDropManager$( element: Element, type: DragType&lt;T&gt;, value: () -&gt; T, threshold: Float = 6f, preview: (T) -&gt; Element? = { null }, complete: (DragResult&lt;T&gt;) -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:NavigationComponents.kt$Menu.Companion$( ui: Ui, anchor: Element, items: List&lt;MenuItem&lt;T&gt;&gt;, selectedKey: String? = null, emptyContent: (() -&gt; Element)? = null, onSelect: (MenuItem&lt;T&gt;) -&gt; Unit )</ID>
+    <ID>LongParameterList:SimpleVirtualList.kt$( ui: Ui, items: List&lt;T&gt;, key: (T) -&gt; K, estimatedHeight: Float = 24f, overscan: Int = 2, row: (State&lt;T&gt;) -&gt; Element )</ID>
+    <ID>LongParameterList:animationExtras.kt$( from: Float, to: Float, duration: Duration, easing: Easing = Easings.LINEAR, onValue: (Float) -&gt; Unit = {}, onFinished: () -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:animationExtras.kt$( from: T, to: T, spec: AnimationSpec&lt;T&gt;, interpolator: Interpolator&lt;T&gt;, onValue: (T) -&gt; Unit = {}, onFinished: () -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:visualAnimationExtras.kt$( from: Color, to: Color, duration: Duration, easing: Easing = Easings.LINEAR, onValue: (Color) -&gt; Unit = {}, onFinished: () -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:visualAnimationExtras.kt$( from: Float, to: Float, duration: Duration, easing: Easing = Easings.LINEAR, onValue: (Float) -&gt; Unit = {}, onFinished: () -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:visualAnimationExtras.kt$( from: Transform, to: Transform, duration: Duration, easing: Easing = Easings.LINEAR, interpolator: Interpolator&lt;Transform&gt; = Interpolators.TRANSFORM, onValue: (Transform) -&gt; Unit = {}, onFinished: () -&gt; Unit = {} )</ID>
+    <ID>LoopWithTooManyJumpStatements:Notifications.kt$NotificationHost$for</ID>
+    <ID>LoopWithTooManyJumpStatements:SimpleAnimation.kt$SimpleAnimationController$while</ID>
+    <ID>MagicNumber:AsyncImageAsset.kt$1024</ID>
+    <ID>MagicNumber:CachingTextService.kt$CachingTextService.Companion$1024</ID>
+    <ID>MagicNumber:Notifications.kt$NotificationHost$72f</ID>
+    <ID>MagicNumber:Overlays.kt$Popup$6f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$10f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$12f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$5f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$9f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$10f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$20f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$23f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$36f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$5f</ID>
+    <ID>MagicNumber:SelectionComponents.kt$SimpleToggle$7f</ID>
+    <ID>MagicNumber:SimpleButton.kt$SimpleButton$6f</ID>
+    <ID>MagicNumber:SimpleTextField.kt$SimpleTextField$100</ID>
+    <ID>MagicNumber:SimpleVirtualList.kt$SimpleVirtualList$.01f</ID>
+    <ID>MagicNumber:TextReveal.kt$SimpleHoverRevealRuntime$0.0001f</ID>
+    <ID>MagicNumber:UiInput.kt$UiInput$.00001f</ID>
+    <ID>MagicNumber:ValueComponents.kt$SimpleProgress$1.6</ID>
+    <ID>MagicNumber:ValueComponents.kt$SimpleProgress$6f</ID>
+    <ID>MagicNumber:ValueComponents.kt$SimpleSlider$14f</ID>
+    <ID>MagicNumber:ValueComponents.kt$SimpleSlider$7f</ID>
+    <ID>MaxLineLength:AbstractElement.kt$AbstractElement$require(children.size == mutableChildren.size &amp;&amp; children.toSet() == mutableChildren.toSet()) { "Reorder must contain each existing child once at ${path()}" }</ID>
+    <ID>MaxLineLength:AbstractElement.kt$AbstractElement$require(value !== this &amp;&amp; (value == null || generateSequence(value.parent) { it.parent }.none { it === this })) { "Portal cannot target its own subtree" }</ID>
+    <ID>MaxLineLength:ContextMenu.kt$ContextMenu$generateSequence(element as Element?) { it.parent }.all { it.ui === ui &amp;&amp; !it.isDisposed &amp;&amp; it.enabled &amp;&amp; it.visibility == Visibility.VISIBLE }</ID>
+    <ID>MaxLineLength:DragDrop.kt$DragDropManager$generateSequence(element as Element?) { it.parent }.all { it.ui === ui &amp;&amp; !it.isDisposed &amp;&amp; it.enabled &amp;&amp; it.visibility == Visibility.VISIBLE }</ID>
+    <ID>MaxLineLength:Layouts.kt$if</ID>
+    <ID>MaxLineLength:ResponsiveLayout.kt$ResponsiveRule$return (inputMode == null || inputMode == mode) &amp;&amp; width in minWidth..maxWidth &amp;&amp; height in minHeight..maxHeight &amp;&amp; aspect in minAspect..maxAspect</ID>
+    <ID>MaxLineLength:SelectionComponents.kt$Solid(if (context.state.disabled) 0x4A4A4AFF.rgba else if (context.state.checked || context.state.indeterminate) 0x517BEAFF.rgba else 0x303947FF.rgba)</ID>
+    <ID>MaxLineLength:SimpleScrollView.kt$SimpleScrollView$if</ID>
+    <ID>MaxLineLength:SimpleUi.kt$SimpleUi$(element.children.filter { it.portalTarget == null } + portalChildren[element].orEmpty())</ID>
+    <ID>MaxLineLength:SimpleUi.kt$SimpleUi$if</ID>
+    <ID>MaxLineLength:SimpleVirtualList.kt$SimpleVirtualList$require(content.parent == null &amp;&amp; content.ui == null &amp;&amp; !content.isDisposed) { "VirtualList row factory must return a live detached element" }</ID>
+    <ID>MaxLineLength:TextReveal.kt$SimpleHoverRevealRuntime$if (configuration.onDeactivate == RevealExit.FINISH_SEGMENT &amp;&amp; previous.phase == RevealPhase.FORWARD) trailing else leading</ID>
+    <ID>MaxLineLength:UiInspector.kt$UiInspector.&lt;no name provided&gt;$"${target.id} #${target.generation}\n${target.inspection}\nBorder ${box.bounds}\nContent ${box.contentBox}\nAnchor ${target.placement.anchor} pivot ${target.placement.pivot}\nState ${target.state}\nClip ${target.clipPolicy} focus ${owner.focus.focused?.id} capture ${owner.capturedPointers.mapValues { it.value.id }}\nMeasured ${owner.statistics.measuredNodes} materialized ${owner.statistics.totalNodes} visible ${owner.statistics.visibleNodes} commands ${owner.statistics.commands}\nText ${(owner.text as? CachingTextService)?.statistics}\nGPU ${owner.renderMetrics}\nDiagnostics ${owner.diagnostics.messages.joinToString { it.code }}"</ID>
+    <ID>SpacingBetweenPackageAndImports:CachingTextService.kt$ </ID>
+    <ID>StringLiteralDuplication:ContextMenu.kt$ContextMenu$"ContextMenu is closed"</ID>
+    <ID>ThrowingExceptionFromFinally:SimpleStateRuntime.kt$SimpleStateRuntime$throw notificationFailure</ID>
+    <ID>TooManyFunctions:ContentScope.kt$ContentScope</ID>
+    <ID>TooManyFunctions:Layouts.kt$pixzel.layout.Layouts.kt</ID>
+    <ID>TooManyFunctions:SimpleTextField.kt$SimpleTextField : SimpleTextTextField</ID>
+    <ID>UnusedImports:SimpleVirtualList.kt$import pixzel.input.PointerPolicy</ID>
+    <ID>UseIfInsteadOfWhen:SimpleText.kt$SimpleText$when (val width = layout.width) { is Dp -&gt; (width.value - layout.padding.horizontal).coerceAtLeast(0f).coerceAtMost(constraints.maxWidth) else -&gt; constraints.maxWidth }</ID>
+  </CurrentIssues>
+</SmellBaseline>

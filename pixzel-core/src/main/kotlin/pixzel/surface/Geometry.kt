@@ -52,7 +52,9 @@ data class Rect(val x: Float, val y: Float, val width: Float, val height: Float)
     }
 }
 
-/** Column-vector affine transform, multiplication applies the right operand first. */
+/**
+ * Column-vector affine transform, multiplication applies the right operand first.
+ */
 data class Transform(val a: Float = 1f, val b: Float = 0f, val c: Float = 0f, val d: Float = 1f, val tx: Float = 0f, val ty: Float = 0f) {
 
     init {

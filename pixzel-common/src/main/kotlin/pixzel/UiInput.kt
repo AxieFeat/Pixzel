@@ -24,7 +24,9 @@ import pixzel.surface.Rect
 import pixzel.surface.Vec2
 import kotlin.math.abs
 
-/** Owns pointer capture, hover and routed gestures; the Ui owns frame and layout progress. */
+/**
+ * Owns pointer capture, hover and routed gestures; the Ui owns frame and layout progress.
+ */
 internal class UiInput(private val ui: SimpleUi) {
 
     private var pointer: Vec2? = null

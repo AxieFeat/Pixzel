@@ -143,11 +143,15 @@ open class ElementScope(ui: Ui, val element: Element) : ContentScope(ui, element
     }
 }
 
-/** Generic Surface configuration has no Row/Column weight or Grid-cell parent-data helpers. */
+/**
+ * Generic Surface configuration has no Row/Column weight or Grid-cell parent-data helpers.
+ */
 @PixzelDsl
 open class SurfaceScope(ui: Ui, element: Element) : ElementScope(ui, element)
 
-/** Parent data is valid only for a direct child of this linear container. */
+/**
+ * Parent data is valid only for a direct child of this linear container.
+ */
 @PixzelDsl
 abstract class LinearScope(ui: Ui, element: Element) : SurfaceScope(ui, element) {
 
@@ -312,14 +316,18 @@ class AppearanceScope(private val element: Element) {
     }
 }
 
-/** Replaces root content, disposing the previous tree and its owned observations. */
+/**
+ * Replaces root content, disposing the previous tree and its owned observations.
+ */
 fun Ui.content(configure: ContentScope.() -> Unit) {
     assertThread()
     root.children.toList().forEach { root.remove(it) }
     ContentScope(this, root).configure()
 }
 
-/** Reconciles one root per key. Reused handlers read the current item from State<T>. */
+/**
+ * Reconciles one root per key. Reused handlers read the current item from State<T>.
+ */
 class KeyedItems<T, K>(
     private val ui: Ui,
     private val parent: Element,

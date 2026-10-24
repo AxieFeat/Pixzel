@@ -8,28 +8,32 @@ A retained Kotlin/JVM UI library for application and game loops, with independen
 | `pixzel-common` | Retained runtime, typed DSL, layout, bindings/animations, standard components and text policies |
 | `pixzel-test` | TestHost, FakeClock, RecordingBackend and limited software raster preview |
 | `pixzel-samples` | External HealthBar, custom skins and text policies through public APIs |
-| `pixzel-arc` | Neutral Arc adapters; configured only with `-ParcPath` |
+| `pixzel-arc` | Neutral Arc adapters, always included and backed by Maven dependencies |
 | `pixzel-demo` | Independent preview/benchmarks and Arc/OpenGL showcase/GPU/input checks |
 
-## Build and independent example
+## Setup and build
+
+Arc is resolved from `https://maven.pkg.github.com/AxieFeat/Arc`, as described in Arc's README. GitHub Packages requires authentication even for public packages. Set `GITHUB_ACTOR` and `GITHUB_TOKEN` (with `read:packages`) in the build environment, or put `gpr.user` and `gpr.key` in your user-level `~/.gradle/gradle.properties`. Keep credentials outside the repository.
+
+The shared [version catalog](gradle/libs.versions.toml) pins Kotlin, Arc, LWJGL and JUnit. All six modules are configured on every invocation; there is no checkout-path parameter or alternate demo build script.
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.10'
 .\gradlew.bat build verifyBoundaries :pixzel-common:stateChecks :pixzel-common:animationChecks
-.\gradlew.bat :pixzel-demo:run
+.\gradlew.bat :pixzel-demo:preview
 ```
 
-The default build does not configure Arc or require a window/native font provider. The example writes `pixzel-demo/build/preview.png`. Its deterministic bitmap font and software backend are reference fixtures with declared limitations; production text uses real font shaping.
+`build` includes the adapter and its native-font tests, but does not open a window. `preview` writes `pixzel-demo/build/preview.png` using a deterministic test font and software backend. For checks that do not resolve Arc at all, run `:pixzel-common:build :pixzel-test:build :pixzel-samples:build`; the independent modules remain free of Arc dependencies.
 
 ## Arc showcase and real integration checks
 
-The supplied changes target Arc commit `419619a2ec7147e76d9b696af823d0ecdeb3e684`. The working Arc checkout is `E:\Projects\arc-engine`. See [Arc migration and delivery](docs/ARC_MIGRATION.md) before using an unpatched checkout.
+The selected Arc version includes the neutral rendering, input and font APIs required by Pixzel. See [Arc migration and delivery](docs/ARC_MIGRATION.md) for the source history and archived patch bundle.
 
 ```powershell
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-arc:build :pixzel-demo:graphicsChecks :pixzel-demo:inputChecks verifyBoundaries
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:run
+.\gradlew.bat :pixzel-arc:build :pixzel-demo:graphicsChecks :pixzel-demo:inputChecks verifyBoundaries
+.\gradlew.bat :pixzel-demo:run
 # Hidden eight-frame run with a framebuffer capture:
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:run --args="--smoke --scale=1.25 --width=1100 --height=800"
+.\gradlew.bat :pixzel-demo:run --args="--smoke --scale=1.25 --width=1100 --height=800"
 ```
 
 The showcase draws UI over an application scene and includes flat/nine-slice/custom-shape buttons, Cyrillic, adjustable label reveal, text editing, scale/themes/reduced motion, an external animated HealthBar, modal/notifications and a 100,000-item VirtualList. Controls reflow without replacing their state. Use Tab/Shift+Tab, arrow keys and Enter/Space; Ctrl+Home toggles the inspector. Escape dismisses the top overlay before reaching gameplay. Captures go under `pixzel-demo/build/reports`.
@@ -40,11 +44,13 @@ The showcase draws UI over an application scene and includes flat/nine-slice/cus
 
 ```powershell
 .\gradlew.bat :pixzel-demo:benchmark --args="--warmup=300 --frames=500 --lifecycle=1000 --output=build/benchmarks/pixzel-cpu.md"
-.\gradlew.bat -ParcPath=E:/Projects/arc-engine :pixzel-demo:graphicsChecks --args=--benchmark
+.\gradlew.bat :pixzel-demo:graphicsChecks --args=--benchmark
 .\gradlew.bat publishAllPublicationsToLocalArtifactsRepository
 ```
 
-Library coordinates are `pixzel.engine:<module>:0.1.0-dev`, with source JARs. Publication writes a local Maven repository at `build/repository`; it does not publish remotely. Add `-ParcPath` to include the adapter artifact. Arc dependencies must also be supplied from the patched engine.
+Library coordinates are `pixzel.engine:<module>:<commit>`, with source JARs. The publication convention follows Arc: `publishingVersion`, then the first seven characters of `GITHUB_SHA`, then the local commit hash. Project dependencies use the same version in POMs and Gradle metadata. `publishAllPublicationsToLocalArtifactsRepository` writes only to `build/repository`; `publishAllPublicationsToGitHubPackagesRepository` publishes to `AxieFeat/Pixzel` using the configured credentials. The adapter is included in both.
+
+The [included build](build-logic/README.md) supplies `pixzel.base`, `pixzel.testing`, `pixzel.publishing`, `pixzel.detekt` and `pixzel.verification` conventions. Module scripts declare their plugins and dependencies through `libs` and `projects` accessors. `check` also verifies layer boundaries and multiline KDoc.
 
 Measured reference desktop CPU p95: static HUD **0.137 ms**, 100 live updates in 10,000 nodes **1.895 ms**. These exclude GPU/present and are not universal guarantees. The [performance report](docs/PERFORMANCE.md) records hardware, JVM, allocations, percentiles and warmup sensitivity; [Arc graphics](docs/ARC_GRAPHICS.md) records native submission measurements.
 

@@ -1,6 +1,8 @@
 # Arc changes and separate delivery
 
-The Arc work starts from commit `419619a2ec7147e76d9b696af823d0ecdeb3e684` in `E:\Projects\arc-engine`. Pixzel remains a separate Gradle build using the `-ParcPath=E:/Projects/arc-engine` composite. The integration sources are maintained in [Arc's `codex/pixzel-integration` branch](https://github.com/AxieFeat/Arc/tree/codex/pixzel-integration); [Pixzel's `dev` branch](https://github.com/AxieFeat/Pixzel/tree/dev) preserves the original repository history. The verified bundle remains available for applying the changes to the exact baseline separately.
+The Arc work starts from commit `419619a2ec7147e76d9b696af823d0ecdeb3e684`. Pixzel remains a separate Gradle build and resolves Arc from GitHub Packages, following Arc's README. All modules are always included; there is no composite-build parameter. The version catalog pins the integrated Arc release from [Arc's `master` branch](https://github.com/AxieFeat/Arc/tree/master). [Pixzel's `dev` branch](https://github.com/AxieFeat/Pixzel/tree/dev) preserves the original repository history.
+
+The bundle below is a historical snapshot of `e5d04a8`, before the later readability and publication fixes. It remains available for reconstructing that exact source version. Current development uses the Maven artifacts and does not require applying the bundle.
 
 The Arc changes provide neutral scoped graphics/state/targets/samplers/context generations, safe active-byte streaming and cleanup, window/input event contracts, and the native FreeType/HarfBuzz font provider. Arc runtime contracts contain no Pixzel component/UI types. The original untracked `.idea/` files and `backend/render/arc-vulkan/src/main/kotlin/arc/vk/vk.kt` are excluded and remain untouched.
 
@@ -67,13 +69,13 @@ From the Arc review checkout:
 ./gradlew.bat :arc-opengl:graphicsRegression :arc-opengles:compileKotlin :arc-extensions:arc-font:arc-font-native:test --offline --no-daemon --console=plain
 ```
 
-From Pixzel, point the composite at that review checkout:
+For normal Pixzel builds, configure GitHub Packages credentials and use the catalog's published Arc version:
 
 ```powershell
-./gradlew.bat -ParcPath=E:/Projects/arc-review :pixzel-demo:graphicsChecks --args=--benchmark verifyBoundaries --offline --no-daemon --console=plain
+./gradlew.bat :pixzel-demo:graphicsChecks --args=--benchmark verifyBoundaries --no-daemon --console=plain
 ```
 
-Offline builds require the recorded dependencies in the local Gradle cache. Native graphics checks require a desktop OpenGL 4.1 core context. The bundle verifies source reconstruction independently of those environment requirements.
+To verify a separately modified Arc source checkout, publish its library modules to a Maven repository and update the catalog to that version. Offline builds require the selected dependencies in the local Gradle cache. Native graphics checks require a desktop OpenGL 4.1 core context. The bundle verifies source reconstruction independently of those environment requirements.
 
 New RenderContext operations have explicit unsupported defaults. OpenGL/GLES implement the supported native subset and report instance texture limits. `beginScopedPass(textureUnits = setOf(0))` snapshots once, restores in LIFO order and preserves exceptional exits; custom operations declare additional texture units. Owned render-target attachment views remain borrowed. `FrameBuffer.render` no longer clears its destination; callers requiring a clear must request one. Texture bind no longer forces nearest filtering; use a sampler. Uploads honor active initialized bytes rather than backing capacity, and old resource cleanup cannot delete colliding IDs in a new context.
 

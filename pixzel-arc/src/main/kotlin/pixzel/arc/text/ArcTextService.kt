@@ -28,7 +28,9 @@ import kotlin.math.min
 import arc.font.FontFace as ArcFontFace
 import arc.font.FontMetrics as ArcFontMetrics
 
-/** Explicit variant metadata; a family can register several real faces without synthetic styling. */
+/**
+ * Explicit variant metadata; a family can register several real faces without synthetic styling.
+ */
 data class ArcFontRegistration(
     val face: ArcFontFace,
     val familyId: String = face.id,
@@ -75,7 +77,9 @@ class ArcTextService private constructor(private val registrations: List<ArcFont
         }
     }
 
-    /** Raster data is CPU-owned. The backend owns any derived atlas/texture and its budget. */
+    /**
+     * Raster data is CPU-owned. The backend owns any derived atlas/texture and its budget.
+     */
     fun rasterize(face: FontFace, glyphId: Int, fontSize: Float, pixelsPerDp: Float = 1f): RasterGlyph {
         val resolved = faces[face.id] ?: if (face.id == "default") default else
             throw IllegalArgumentException("Font face '${face.id}' is not registered")
@@ -388,7 +392,9 @@ class ArcTextService private constructor(private val registrations: List<ArcFont
         private val GRAPHEME = Regex("\\X")
         private val NEWLINE = Regex("\r\n|\r|\n")
 
-        /** Default provider identity is unique per service; explicit IDs assert compatible font resources. */
+        /**
+         * Default provider identity is unique per service; explicit IDs assert compatible font resources.
+         */
         fun of(faces: List<ArcFontFace>, providerId: String = nextIdentity()): ArcTextService {
             return from(faces.map { ArcFontRegistration(it) }, providerId)
         }

@@ -10,7 +10,9 @@ object Easings {
     val EASE_IN_OUT: Easing = Easing { it * it * (3f - 2f * it) }
 }
 
-/** A duration of zero immediately selects the target, useful for reduced-motion policies. */
+/**
+ * A duration of zero immediately selects the target, useful for reduced-motion policies.
+ */
 class TweenSpec<T>(override val duration: Duration, val easing: Easing = Easings.LINEAR) : AnimationSpec<T> {
 
     init {
@@ -27,7 +29,9 @@ class TweenSpec<T>(override val duration: Duration, val easing: Easing = Easings
     }
 }
 
-/** [easing] applies to the segment ending at this frame. */
+/**
+ * [easing] applies to the segment ending at this frame.
+ */
 data class Keyframe<T>(val time: Duration, val value: T, val easing: Easing = Easings.LINEAR)
 
 /**
@@ -81,7 +85,9 @@ fun <T> keyframes(
     endEasing: Easing = Easings.LINEAR
 ): AnimationSpec<T> = KeyframeSpec(duration, frames, endEasing)
 
-/** Initial delivery happens immediately. Subsequent callbacks run only for structural changes. */
+/**
+ * Initial delivery happens immediately. Subsequent callbacks run only for structural changes.
+ */
 fun <T> startAnimation(
     from: T,
     to: T,

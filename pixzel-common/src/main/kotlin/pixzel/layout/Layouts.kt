@@ -24,7 +24,9 @@ private fun requireSpacing(spacing: Dp) {
     require(spacing.value >= 0f) { "Layout spacing must be nonnegative." }
 }
 
-/** Sizing consumes finite maxima for fill/percentage; wrap never uses an implicit infinity. */
+/**
+ * Sizing consumes finite maxima for fill/percentage; wrap never uses an implicit infinity.
+ */
 fun resolveSize(spec: SizeSpec, intrinsic: Float, available: Float): Float = when (spec) {
     is Dp -> spec.value.also { require(it >= 0f) { "Size cannot be negative." } }
     is Percent -> requireFinite(available, "Percentage") * spec.value
@@ -52,7 +54,9 @@ private fun anchored(child: Measurable, placeable: Placeable, box: Rect): Vec2 {
     )
 }
 
-/** Uses each child's selected reference box for both available size and anchor placement. */
+/**
+ * Uses each child's selected reference box for both available size and anchor placement.
+ */
 fun overlayLayout(): LayoutPolicy = LayoutPolicy { children, constraints, environment ->
     val ordinary = Constraints(
         maxWidth = environment.contentBox?.width ?: constraints.maxWidth,
@@ -272,7 +276,9 @@ data class WeightedTrack(val weight: Float = 1f) : GridTrack {
 
 data object ContentTrack : GridTrack
 
-/** Column tracks with content-height rows. Cell margins belong inside their allocated track. */
+/**
+ * Column tracks with content-height rows. Cell margins belong inside their allocated track.
+ */
 fun gridLayout(columns: List<GridTrack>, spacing: Dp = 0.dp): LayoutPolicy {
     requireSpacing(spacing)
     require(columns.isNotEmpty()) { "Grid requires at least one column." }

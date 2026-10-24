@@ -13,7 +13,9 @@ interface ScrollView : Element {
     var scrollOffset: Vec2
     val extent: Size
 
-    /** Returns the unconsumed remainder in dp. */
+    /**
+     * Returns the unconsumed remainder in dp.
+     */
     fun scrollBy(delta: Vec2): Vec2
     fun scrollIntoView(element: Element)
 

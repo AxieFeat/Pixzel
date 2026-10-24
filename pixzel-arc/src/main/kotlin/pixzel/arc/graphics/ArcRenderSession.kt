@@ -64,7 +64,9 @@ private data class SolidPartKey(val geometry: GeometryKey, val transform: Transf
 private data class SolidBatchKey(val parts: List<SolidPartKey>)
 private data class SolidPart(val key: SolidPartKey, val points: FloatArray)
 
-/** Session allocations belong to the Ui; injected context/font service remain borrowed. */
+/**
+ * Session allocations belong to the Ui; injected context/font service remain borrowed.
+ */
 class ArcRenderSession internal constructor(
     private val context: RenderContext,
     private val text: ArcTextService,

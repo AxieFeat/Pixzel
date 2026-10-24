@@ -1,6 +1,8 @@
 package pixzel.text
 
-/** Standard policies are ordinary public extension strategies, independent of Text/Button. */
+/**
+ * Standard policies are ordinary public extension strategies, independent of Text/Button.
+ */
 object TextOverflow {
 
     val CLIP = TextOverflowPolicy { c -> TextOverflowResult(c.full, true, overflows(c.full, c)) }
@@ -60,7 +62,9 @@ private interface TextPiece
 private data class SourcePiece(val start: Int, val end: Int) : TextPiece
 private data class MarkerPiece(val text: String) : TextPiece
 
-/** Rebase source span ranges when truncation creates a different shaping context. */
+/**
+ * Rebase source span ranges when truncation creates a different shaping context.
+ */
 private fun recompose(request: TextRequest, pieces: List<TextPiece>): TextRequest {
     val text = StringBuilder()
     val spans = mutableListOf<TextSpan>()

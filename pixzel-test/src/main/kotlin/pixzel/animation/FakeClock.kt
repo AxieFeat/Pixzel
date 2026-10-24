@@ -2,7 +2,9 @@ package pixzel.animation
 
 import kotlin.time.Duration
 
-/** Monotonic simulation time, advanced explicitly and frozen during suspension. */
+/**
+ * Monotonic simulation time, advanced explicitly and frozen during suspension.
+ */
 class FakeClock {
 
     var elapsed: Duration = Duration.ZERO

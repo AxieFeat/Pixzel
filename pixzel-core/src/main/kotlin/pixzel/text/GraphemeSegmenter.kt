@@ -6,7 +6,9 @@ data class TextRange(val start: Int, val end: Int) {
     }
 }
 
-/** Segments extended graphemes; ranges use UTF-16 offsets and cover the complete input. */
+/**
+ * Segments extended graphemes; ranges use UTF-16 offsets and cover the complete input.
+ */
 fun interface GraphemeSegmenter {
 
     fun segment(text: String): List<TextRange>

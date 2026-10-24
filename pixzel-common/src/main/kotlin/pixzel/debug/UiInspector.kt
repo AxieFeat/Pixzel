@@ -20,7 +20,9 @@ import pixzel.text.TextLayout
 import pixzel.text.TextRequest
 import kotlin.time.Duration
 
-/** Optional per-Ui overlay. Disabled inspection creates no frame callbacks or text work. */
+/**
+ * Optional per-Ui overlay. Disabled inspection creates no frame callbacks or text work.
+ */
 class UiInspector private constructor(private val owner: Ui) : AutoCloseable {
 
     private var selectedElement: Element? = null

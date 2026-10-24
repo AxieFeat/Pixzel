@@ -1,6 +1,8 @@
 package pixzel.resource
 
-/** Factories reopen on attachment and close on detach; registration lifetime ends on disposal. */
+/**
+ * Factories reopen on attachment and close on detach; registration lifetime ends on disposal.
+ */
 class AttachmentScope(private val checkOwner: () -> Unit = {}) : AutoCloseable {
 
     private class Entry(val open: () -> AutoCloseable, var lease: AutoCloseable? = null, var opening: Boolean = false)

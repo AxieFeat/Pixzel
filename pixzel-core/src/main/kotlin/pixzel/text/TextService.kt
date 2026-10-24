@@ -6,7 +6,9 @@ import pixzel.surface.Size
 import pixzel.surface.Vec2
 import kotlin.math.abs
 
-/** Stable font resource identity. Changing its data requires a new [version]. */
+/**
+ * Stable font resource identity. Changing its data requires a new [version].
+ */
 data class FontFace(val id: String, val version: Long = 0) {
 
     init {
@@ -55,7 +57,9 @@ enum class VerticalAlignment {
     BOTTOM
 }
 
-/** Sp is resolved to logical dp with TextRequest.textScale, independently of raster DPI. */
+/**
+ * Sp is resolved to logical dp with TextRequest.textScale, independently of raster DPI.
+ */
 data class TextStyle(
     val family: FontFamily = FontFamily.DEFAULT,
     val size: Sp = Sp(16f),
@@ -72,7 +76,9 @@ data class TextStyle(
     }
 }
 
-/** A complete style replacement over a nonempty UTF-16 range. Later spans override earlier ones. */
+/**
+ * A complete style replacement over a nonempty UTF-16 range. Later spans override earlier ones.
+ */
 data class TextSpan(val range: TextRange, val style: TextStyle) {
 
     init {
@@ -82,7 +88,9 @@ data class TextSpan(val range: TextRange, val style: TextStyle) {
     constructor(start: Int, end: Int, style: TextStyle) : this(TextRange(start, end), style)
 }
 
-/** Immutable span snapshot, safe to include in layout-cache keys. */
+/**
+ * Immutable span snapshot, safe to include in layout-cache keys.
+ */
 class TextSpans private constructor(private val values: List<TextSpan>) : AbstractList<TextSpan>() {
 
     override val size: Int get() = values.size
@@ -96,7 +104,9 @@ class TextSpans private constructor(private val values: List<TextSpan>) : Abstra
     }
 }
 
-/** All string indices in this package are UTF-16 code-unit offsets, with an exclusive end. */
+/**
+ * All string indices in this package are UTF-16 code-unit offsets, with an exclusive end.
+ */
 data class TextRequest(
     val text: String,
     val style: TextStyle = TextStyle(),
@@ -144,7 +154,9 @@ data class PositionedGlyph(
     }
 }
 
-/** Glyph coordinates are absolute within the measured layout, with y at the glyph baseline. */
+/**
+ * Glyph coordinates are absolute within the measured layout, with y at the glyph baseline.
+ */
 class GlyphRun(val face: FontFace, glyphs: List<PositionedGlyph>, val direction: TextDirection, val fontSize: Float = 16f) {
 
     init {
@@ -162,7 +174,9 @@ data class TextLine(
     val metrics: FontMetrics
 )
 
-/** Visual bounds and both logical caret edges of one extended grapheme cluster. */
+/**
+ * Visual bounds and both logical caret edges of one extended grapheme cluster.
+ */
 data class TextCluster(
     val start: Int,
     val end: Int,
@@ -174,7 +188,9 @@ data class TextCluster(
 
 data class TextCaret(val index: Int, val position: Vec2, val height: Float, val lineIndex: Int)
 
-/** Immutable measured drawing data. Renderers consume these exact positioned runs. */
+/**
+ * Immutable measured drawing data. Renderers consume these exact positioned runs.
+ */
 class TextLayout(
     val text: String,
     val size: Size,
@@ -191,7 +207,9 @@ class TextLayout(
     val clusters: List<TextCluster> = clusters.toList()
     val baseline: Float get() = lines.firstOrNull()?.baseline ?: 0f
 
-    /** Chooses a legal cluster edge, including visual RTL edges. */
+    /**
+     * Chooses a legal cluster edge, including visual RTL edges.
+     */
     fun hitTest(point: Vec2): TextCaret {
         if (lines.isEmpty()) return TextCaret(0, Vec2.ZERO, 0f, 0)
         val lineIndex = lines.indices.firstOrNull { point.y >= lines[it].bounds.y && point.y < lines[it].bounds.bottom }
@@ -211,7 +229,9 @@ class TextLayout(
         return TextCaret(edge?.first ?: line.start, Vec2(edge?.second ?: line.bounds.x, line.bounds.y), line.bounds.height, lineIndex)
     }
 
-    /** An interior UTF-16 index snaps to the leading edge of its grapheme. */
+    /**
+     * An interior UTF-16 index snaps to the leading edge of its grapheme.
+     */
     fun caret(index: Int): TextCaret {
         require(index in 0..text.length)
         val lineIndex = lines.indexOfLast { index >= it.start && index <= it.end }.coerceAtLeast(0)
@@ -243,12 +263,16 @@ data class TextCapabilities(
     val styledSpans: Boolean = false
 )
 
-/** Thread/lifetime policy belongs to the provider. Ui borrows this service by default. */
+/**
+ * Thread/lifetime policy belongs to the provider. Ui borrows this service by default.
+ */
 interface TextService {
 
     val capabilities: TextCapabilities
     fun layout(request: TextRequest): TextLayout
 
-    /** Used to select a marker fallback. Providers must include family fallback in this check. */
+    /**
+     * Used to select a marker fallback. Providers must include family fallback in this check.
+     */
     fun canDisplay(text: String, style: TextStyle): Boolean
 }

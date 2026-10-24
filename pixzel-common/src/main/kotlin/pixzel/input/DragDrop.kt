@@ -9,11 +9,15 @@ import pixzel.surface.Placement
 import pixzel.surface.ReferenceBox
 import pixzel.surface.Vec2
 
-/** Identity token for a payload type; two tokens with the same label remain distinct types. */
+/**
+ * Identity token for a payload type; two tokens with the same label remain distinct types.
+ */
 class DragType<T>(val name: String)
 data class DragResult<T>(val value: T, val source: Element, val target: Element?, val accepted: Boolean, val cancelled: Boolean)
 
-/** Typed in-process dragging. Native file drops are a separate platform capability. */
+/**
+ * Typed in-process dragging. Native file drops are a separate platform capability.
+ */
 class DragDropManager(private val ui: Ui) : AutoCloseable {
 
     private data class Target(val element: Element, val type: Any, val accepts: (Any?) -> Boolean, val drop: (Any?) -> Unit)
@@ -159,7 +163,9 @@ class DragDropManager(private val ui: Ui) : AutoCloseable {
         }
     }
 
-    /** A keyboard accessibility action can move the same payload without pointer simulation. */
+    /**
+     * A keyboard accessibility action can move the same payload without pointer simulation.
+     */
     fun <T> perform(source: Element, target: Element, type: DragType<T>, value: T): Boolean {
         ui.assertThread()
         check(!closed)

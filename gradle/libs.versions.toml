@@ -1,0 +1,27 @@
+[versions]
+
+kotlin = "2.4.10"
+arc = "229da48"
+lwjgl = "3.4.2"
+junit = "6.0.0"
+detekt = "1.23.8"
+
+[libraries]
+
+arc-core = { module = "arc.engine:arc-core", version.ref = "arc" }
+arc-input-core = { module = "arc.engine:arc-input-core", version.ref = "arc" }
+arc-font-core = { module = "arc.engine:arc-font-core", version.ref = "arc" }
+arc-opengl = { module = "arc.engine:arc-opengl", version.ref = "arc" }
+arc-input-glfw = { module = "arc.engine:arc-input-glfw", version.ref = "arc" }
+arc-font-native = { module = "arc.engine:arc-font-native", version.ref = "arc" }
+
+lwjgl-lib = { module = "org.lwjgl:lwjgl", version.ref = "lwjgl" }
+lwjgl-glfw = { module = "org.lwjgl:lwjgl-glfw", version.ref = "lwjgl" }
+lwjgl-opengl = { module = "org.lwjgl:lwjgl-opengl", version.ref = "lwjgl" }
+
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }

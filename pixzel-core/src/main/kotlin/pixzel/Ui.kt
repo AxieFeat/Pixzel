@@ -73,16 +73,24 @@ interface Ui : AutoCloseable {
     fun assertThread()
     fun hitTest(point: Vec2): Element?
 
-    /** Host/gamepad adapters can navigate without manufacturing physical keyboard events. */
+    /**
+     * Host/gamepad adapters can navigate without manufacturing physical keyboard events.
+     */
     fun navigate(command: NavigationCommand): Boolean
 
-    /** Sends cancel and releases captures owned by this element. */
+    /**
+     * Sends cancel and releases captures owned by this element.
+     */
     fun releasePointerCapture(element: Element)
 
-    /** Releases capture/focus owned by an element subtree before host detachment. */
+    /**
+     * Releases capture/focus owned by an element subtree before host detachment.
+     */
     fun elementDetached(element: Element)
 
-    /** Runtime arrangement hook: geometry attached to another branch commits after its target. */
+    /**
+     * Runtime arrangement hook: geometry attached to another branch commits after its target.
+     */
     fun deferPlacement(element: Element, target: Element, placement: () -> Unit)
     override fun close()
     fun interface Factory {

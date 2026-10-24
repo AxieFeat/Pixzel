@@ -1,6 +1,8 @@
 package pixzel.resource
 
-/** Idempotent cancellation of an observation or host listener. */
+/**
+ * Idempotent cancellation of an observation or host listener.
+ */
 fun interface Subscription : AutoCloseable {
 
     override fun close()
@@ -11,7 +13,9 @@ enum class Ownership {
     BORROWED
 }
 
-/** Closes owned resources in reverse order, including when one cleanup fails. */
+/**
+ * Closes owned resources in reverse order, including when one cleanup fails.
+ */
 class ResourceScope : AutoCloseable {
 
     private val resources = mutableListOf<AutoCloseable>()
@@ -24,7 +28,9 @@ class ResourceScope : AutoCloseable {
         return resource
     }
 
-    /** Removes and closes one owned lease, allowing bounded replacement in a long-lived scope. */
+    /**
+     * Removes and closes one owned lease, allowing bounded replacement in a long-lived scope.
+     */
     fun release(resource: AutoCloseable): Boolean {
         val index = resources.indexOfFirst { it === resource }
         if (index < 0) return false

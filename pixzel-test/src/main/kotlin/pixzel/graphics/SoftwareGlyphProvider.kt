@@ -3,7 +3,9 @@ package pixzel.graphics
 import pixzel.text.FontFace
 import kotlin.math.ceil
 
-/** Raster pixels and bearings are in pixels at the requested pixels-per-dp scale. */
+/**
+ * Raster pixels and bearings are in pixels at the requested pixels-per-dp scale.
+ */
 class SoftwareGlyph(val width: Int, val height: Int, val left: Int, val top: Int, alpha: ByteArray) {
 
     val alpha: ByteArray = alpha.copyOf()
@@ -13,12 +15,16 @@ class SoftwareGlyph(val width: Int, val height: Int, val left: Int, val top: Int
     }
 }
 
-/** Explicit raster boundary. A demo can adapt a real font service without adding Arc here. */
+/**
+ * Explicit raster boundary. A demo can adapt a real font service without adding Arc here.
+ */
 interface SoftwareGlyphProvider {
 
     fun supports(providerId: String): Boolean
 
-    /** Legacy shared glyph-ID namespace; providers with multiple namespaces override the overload below. */
+    /**
+     * Legacy shared glyph-ID namespace; providers with multiple namespaces override the overload below.
+     */
     fun rasterize(face: FontFace, glyphId: Int, fontSize: Float, pixelsPerDp: Float): SoftwareGlyph
     fun rasterize(providerId: String, face: FontFace, glyphId: Int, fontSize: Float, pixelsPerDp: Float): SoftwareGlyph =
         rasterize(face, glyphId, fontSize, pixelsPerDp)

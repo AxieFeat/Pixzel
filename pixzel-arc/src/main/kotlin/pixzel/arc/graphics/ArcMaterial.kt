@@ -18,7 +18,9 @@ import pixzel.surface.Transform
 import pixzel.surface.Size
 
 
-/** Maps independent brushes to shader uniforms; textures and the program remain session-owned. */
+/**
+ * Maps independent brushes to shader uniforms; textures and the program remain session-owned.
+ */
 internal class ArcMaterial(
     private val context: RenderContext,
     private val shader: ShaderInstance,
