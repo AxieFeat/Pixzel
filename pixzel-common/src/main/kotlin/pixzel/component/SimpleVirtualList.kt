@@ -25,6 +25,7 @@ fun <T, K> virtualList(
 ): VirtualList<T, K> =
     SimpleVirtualList(ui, items, key, estimatedHeight, overscan, row)
 
+/** A Fenwick tree keeps height corrections and prefix sums logarithmic as rows are measured. */
 private class HeightIndex(size: Int, initial: Float) {
 
     private val values = FloatArray(size) { initial }
@@ -43,10 +44,12 @@ private class HeightIndex(size: Int, initial: Float) {
     fun prefix(end: Int): Float {
         var i = end
         var sum = 0f
+
         while (i > 0) {
             sum += tree[i]
             i -= i and -i
         }
+
         return sum
     }
 
@@ -61,8 +64,11 @@ private class HeightIndex(size: Int, initial: Float) {
     }
 
     fun value(index: Int): Float = values[index]
+
     fun at(offset: Float): Int {
         if (values.isEmpty()) return 0
+
+        // Walk prefix-sum blocks from largest to smallest to find the row containing this offset.
         var index = 0
         var sum = 0f
         var bit = Integer.highestOneBit(values.size)
@@ -74,6 +80,7 @@ private class HeightIndex(size: Int, initial: Float) {
             }
             bit = bit ushr 1
         }
+
         return index.coerceAtMost(values.lastIndex)
     }
 }
@@ -114,15 +121,19 @@ internal class SimpleVirtualList<T, K>(
             require(nextKeys.toSet().size == nextKeys.size) { "Duplicate VirtualList key" }
             val oldPositions = positions
             val oldHeights = heights
+
+            // Preserve the visible row and its local offset when keyed data is reordered.
             val anchorIndex = if (model.isEmpty()) 0 else heights.at(scrollOffset.y)
             val anchorKey = keys.getOrNull(anchorIndex)
             val anchorOffset = scrollOffset.y - heights.prefix(anchorIndex)
+
             model = next
             keys = nextKeys
             positions = keys.withIndex().associate { it.value to it.index }
             heights = HeightIndex(model.size, estimate)
             keys.forEachIndexed { i, k -> oldPositions[k]?.let { heights.set(i, oldHeights.value(it)) } }
             states.keys.retainAll(keys.toSet())
+
             extent = Size(extent.width, heights.prefix(model.size))
             invalidate(Invalidation.MEASURE)
             val nextAnchor = positions[anchorKey] ?: anchorIndex.coerceAtMost(model.lastIndex).coerceAtLeast(0)

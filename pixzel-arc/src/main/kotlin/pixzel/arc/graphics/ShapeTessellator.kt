@@ -173,16 +173,19 @@ internal object ShapeTessellator {
         }
         if (edges.isEmpty()) return emptyList()
         require(edges.size <= 4096) { "A shape exceeds the 4096 flattened-edge budget" }
+
         val levels = TreeSet<Float>()
         fun level(y: Float) {
             levels += y
             require(levels.size <= MAX_LEVELS) { "A shape exceeds its $MAX_LEVELS tessellation-level budget" }
             require(levels.size.toLong() * edges.size <= MAX_SCAN_WORK) { "A shape exceeds its tessellation scan-work budget" }
         }
+
         edges.forEach {
             level(it.a.y)
             level(it.b.y)
         }
+
         // Intersection levels ensure that edge order remains stable inside every strip.
         for (i in edges.indices) for (j in i + 1 until edges.size) {
             val e = edges[i]
@@ -196,6 +199,7 @@ internal object ShapeTessellator {
             val y = (f.a.x - f.a.y * fSlope - e.a.x + e.a.y * eSlope) / (eSlope - fSlope)
             if (y > low + 1e-6f && y < high - 1e-6f) level(y)
         }
+
         val output = mutableListOf<Vec2>()
         fun triangle(a: Vec2, b: Vec2, c: Vec2) {
             require(output.size + 3 <= MAX_VERTICES) { "A shape exceeds its $MAX_VERTICES tessellation-vertex budget" }
@@ -203,12 +207,16 @@ internal object ShapeTessellator {
             output.add(b)
             output.add(c)
         }
+
+        // Between crossing levels, edge order is fixed. Each filled span is a trapezoid
+        // that can be split into two triangles without overdrawing holes or intersections.
         levels.zipWithNext().forEach { (top, bottom) ->
             if (bottom - top < 1e-6f) return@forEach
             val middle = (top + bottom) / 2
             val active = edges.filter { middle > it.minimum && middle < it.maximum }.sortedBy { it.x(middle) }
             var winding = 0
             var left: Edge? = null
+
             active.forEach { edge ->
                 val before = if (rule == FillRule.EVEN_ODD) winding % 2 != 0 else winding != 0
                 winding += if (rule == FillRule.EVEN_ODD) 1 else edge.winding

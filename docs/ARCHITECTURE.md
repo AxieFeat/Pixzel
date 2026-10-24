@@ -12,6 +12,8 @@ All library modules have Maven publications and source JARs. The example applica
 
 The DSL creates ordinary elements once. Direct factories create the same runtime types. Bindings explicitly track state dependencies; dynamic/keyed scopes update bounded regions. Per-key item state outlives VirtualList materialization. No compiler plugin, reflection-based recomposition or per-element coroutine is required. `Ui.post` is the worker-to-owner-thread boundary.
 
+`SimpleUi` coordinates frames, layout and lifetime. Its internal collaborators keep input/capture (`UiInput`), focus scopes/navigation (`UiFocus`), retained paint layers (`UiPainter`) and component construction (`DefaultComponents`) separate. The Arc adapter likewise separates the backend factory, rendering session, material/shader bindings, geometry cache and text raster cache. These are implementation details; public contracts remain in the independent modules.
+
 Each element owns one computed, read-only Surface. Logical parents determine ownership, inheritance, input routes and semantics. A portal changes geometric attachment only. Public `Measurable`, `Placeable`, `LayoutPolicy`, `Painter`, `InputBehavior`, `ComponentSkin`, text strategies and `AbstractElement` support external implementations. Renderers consume draw operations rather than switching on component classes.
 
 ## Coordinates and layout

@@ -16,6 +16,7 @@ object PathGeometry {
         val result = mutableListOf<List<Vec2>>()
         var current = mutableListOf<Vec2>()
         var total = 0
+
         fun append(point: Vec2) {
             require(current.size < 65536) { "A path contour exceeds 65536 flattened points" }
             if (current.lastOrNull() != point) {
@@ -29,6 +30,7 @@ object PathGeometry {
             if (current.size >= 2) result += current.toList()
             current = mutableListOf()
         }
+
         path.segments.forEach { segment ->
             when (segment) {
                 is MoveTo -> {
@@ -59,6 +61,7 @@ object PathGeometry {
                 else -> throw UnsupportedOperationException("Unsupported path segment ${segment::class.qualifiedName}")
             }
         }
+
         finish()
         return result
     }
@@ -96,10 +99,12 @@ object PathGeometry {
     }
 
     private fun quad(a: Vec2, b: Vec2, c: Vec2, t: Float, append: (Vec2) -> Unit, depth: Int) {
+        // Subdivide at the midpoint until the control point is close enough to the chord.
         if (depth >= 16 || distance(b, a, c) <= t) {
             append(c)
             return
         }
+
         val ab = midpoint(a, b)
         val bc = midpoint(b, c)
         val m = midpoint(ab, bc)

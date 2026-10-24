@@ -61,6 +61,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
     final override val generation = nextGeneration.incrementAndGet()
     final override var paintVersion = 0L
         private set
+
     private val mutableChildren = mutableListOf<Element>()
     private val readonlyChildren = unmodifiableList(mutableChildren)
     final override val children: List<Element> get() = readonlyChildren
@@ -68,6 +69,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
         private set
     final override var ui: Ui? = null
         private set
+
     final override val resources = ResourceScope()
     final override val attachments =
         resources.own(AttachmentScope { check(Thread.currentThread() === ownerThread) { "Attachment scope belongs to another thread" } })
@@ -75,12 +77,16 @@ abstract class AbstractElement(final override val id: String = "") : Element {
         resources.own(FrameUpdates { check(Thread.currentThread() === ownerThread) { "Element '$id' must be used on its owner thread" } })
     final override var isDisposed = false
         private set
+
     private val computed = SimpleSurface()
     final override val surface: Surface get() = computed
     final override val layout = LayoutConfig { invalidate(it) }
+
     protected fun <T> property(initial: T, reason: Invalidation = Invalidation.PAINT) = object : ReadWriteProperty<Any?, T> {
         private var value = initial
+
         override fun getValue(thisRef: Any?, property: KProperty<*>) = value
+
         override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             if (this.value != value) {
                 invalidate(reason)
@@ -113,6 +119,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
                 refreshInheritedStyles()
             }
         }
+
     override var pointerPolicy: PointerPolicy by property(PointerPolicy.PASS_THROUGH, Invalidation.INPUT)
     override var focusable: Boolean by property(false, Invalidation.INPUT)
     override var tabIndex: Int by property(0, Invalidation.INPUT)
@@ -121,16 +128,19 @@ abstract class AbstractElement(final override val id: String = "") : Element {
     override var clipPolicy: ClipPolicy by property(ClipPolicy.NONE, Invalidation.INPUT)
     override var clipShape: Shape by property(Rectangle, Invalidation.INPUT)
     override var hitShape: HitShape by property(RectangleHitShape, Invalidation.INPUT)
+
     override var semantics: Semantics by property(Semantics(), Invalidation.SEMANTICS)
     override var background: Painter? by property(null)
     override var foreground: Painter? by property(null)
     override var behavior: InputBehavior? by property(null, Invalidation.INPUT)
     final override var state = ElementState()
         private set
+
     private var tokenParent: ResolvedTokens? = null
     private var tokenScope: StyleScope? = null
     private var tokenState: ElementState? = null
     private var tokenResult: ResolvedTokens? = null
+
     override var styleScope = StyleScope()
         set(value) {
             if (field != value) {
@@ -144,12 +154,14 @@ abstract class AbstractElement(final override val id: String = "") : Element {
         get() {
             val inherited = parent?.resolvedTokens ?: ui?.theme?.tokens ?: Theme.DARK.tokens
             val effectiveState = if (state.disabled == !isEffectivelyEnabled) state else state.copy(disabled = !isEffectivelyEnabled)
+
             if (tokenParent !== inherited || tokenScope !== styleScope || tokenState != effectiveState || tokenResult == null) {
                 tokenResult = styleScope.resolve(inherited, effectiveState)
                 tokenParent = inherited
                 tokenScope = styleScope
                 tokenState = effectiveState
             }
+
             return tokenResult!!
         }
 
@@ -168,6 +180,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
 
     private val handlers = mutableListOf<Pair<EventPhase, (RoutedEvent) -> Unit>>()
     private val localStates = IdentityHashMap<StateKey<*>, MutableState<*>>()
+
     private var measuring = false
     private var committingPortal = false
     private var measureDirty = true
@@ -200,6 +213,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
         require(!child.isDisposed && child.parent == null && child.ui == null) { "Child '${child.id}' must be detached before adding to '$id'" }
         require(child !== this && ancestors().none { it === child }) { "Tree cycle at '$id'" }
         require(child.id.isEmpty() || children.none { it.id == child.id }) { "Duplicate key '${child.id}' at ${path()}" }
+
         mutableChildren += child
         child.attach(this, ui)
         return child
@@ -208,12 +222,14 @@ abstract class AbstractElement(final override val id: String = "") : Element {
     override fun remove(child: Element, dispose: Boolean): Boolean {
         invalidate(Invalidation.TREE)
         if (!mutableChildren.remove(child)) return false
+
         var failure: Throwable? = null
         try {
             child.attach(null, null)
         } catch (error: Throwable) {
             failure = error
         }
+
         if (dispose) try {
             child.close()
         } catch (error: Throwable) {
@@ -297,8 +313,10 @@ abstract class AbstractElement(final override val id: String = "") : Element {
 
     protected open fun intrinsic(constraints: Constraints): Size = Size.ZERO
     protected open fun intrinsicBaseline(contentSize: Size): Float? = null
+
     override fun measure(constraints: Constraints): Placeable {
         check(!measuring) { "Measurement cycle at ${path()}" }
+
         val constraints = portalTarget?.let { target ->
             val owner = ui
             val box = target.surface.contentBox
@@ -309,18 +327,21 @@ abstract class AbstractElement(final override val id: String = "") : Element {
         } ?: constraints
         val textScale = ui?.settings?.textScale ?: 1f
         if (ui != null && !measureDirty && cachedConstraints == constraints && cachedTextScale == textScale) return cachedPlaceable!!
+
         measuring = true
         measureCount++
         try {
             val pad = layout.padding
             require(layout.minWidth.value >= 0 && layout.minHeight.value >= 0)
             require(layout.aspectRatio == null || (layout.aspectRatio!!.isFinite() && layout.aspectRatio!! > 0))
+
             val minW = layout.minWidth.value.coerceIn(constraints.minWidth, constraints.maxWidth)
             val minH = layout.minHeight.value.coerceIn(constraints.minHeight, constraints.maxHeight)
             val maxW = (layout.maxWidth?.value ?: constraints.maxWidth).coerceIn(minW, constraints.maxWidth)
             val maxH = (layout.maxHeight?.value ?: constraints.maxHeight).coerceIn(minH, constraints.maxHeight)
             val bounded = Constraints(minW, maxW, minH, maxH)
             val intrinsic = intrinsic(bounded.inset(pad))
+
             fun axis(spec: SizeSpec, value: Float, max: Float, min: Float): Float? =
                 if (spec == WrapContent && min != max) null else resolveSize(spec, value, max).coerceIn(min, max)
 
@@ -333,6 +354,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
                 (fixedH ?: maxH).let { (it - pad.vertical).coerceAtLeast(0f) })
             val visible = children.filter { it.visibility != Visibility.COLLAPSED && it.portalTarget == null }
             val portals = children.filter { it.visibility != Visibility.COLLAPSED && it.portalTarget != null }
+
             val owner = ui
             val rootSize =
                 owner?.let { Size(it.host.metrics.logicalSize.width / it.settings.uiScale, it.host.metrics.logicalSize.height / it.settings.uiScale) }
@@ -347,6 +369,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
                 )
             }
             var plan = layoutPolicy.measure(visible, childConstraints, env)
+
             var size = bounded.constrain(
                 Size(
                     fixedW ?: maxOf(intrinsic.width, plan.size.width) + pad.horizontal,
