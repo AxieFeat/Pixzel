@@ -40,6 +40,18 @@ The showcase draws UI over an application scene and includes flat/nine-slice/cus
 
 `graphicsChecks` performs real OpenGL pixel/readback, exceptional state restoration, batching equivalence, context-generation and 1,000-session cleanup checks. `inputChecks` invokes installed real GLFW callback objects in a controlled fixture; it verifies Unicode commits, ordering, consumed/masked gameplay input and listener cleanup. This is automated native execution, not an OS keyboard/mouse automation claim.
 
+## Cristalix-inspired menu
+
+```powershell
+.\gradlew.bat :pixzel-demo:cristalix
+# Hidden native interaction checks and framebuffer captures:
+.\gradlew.bat :pixzel-demo:cristalix --args="--smoke --verify"
+```
+
+The standalone Pixzel demo recreates the supplied server-browser references with 24 illustrated game cards, search, category/language dropdowns, persistent favorites, hover descriptions and local review/game dialogs. Staggered entrances, spring transitions, animated filtering, floating items, favorite particles, smooth scrolling and background parallax can be disabled with the motion control. All controls are retained Pixzel elements rendered through Arc/OpenGL.
+
+See [controls, animation details and verification](docs/CRISTALIX_DEMO.md) and [asset sources and licenses](pixzel-demo/src/main/resources/cristalix/SOURCES.md). Counts and reviews are sample data; this demo does not connect to Cristalix servers.
+
 ## Benchmarks and local artifacts
 
 ```powershell
