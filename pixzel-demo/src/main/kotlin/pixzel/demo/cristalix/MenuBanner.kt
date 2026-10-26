@@ -1,25 +1,33 @@
-// Pixel geometry, palette and motion timings are authored as visual design data.
+// Reference coordinates and colors are visual design data.
 @file:Suppress("MagicNumber")
 
 package pixzel.demo.cristalix
 
 import pixzel.graphics.Canvas
-import pixzel.graphics.ColorStop
+import pixzel.graphics.Concat
 import pixzel.graphics.DrawImage
-import pixzel.graphics.LinearGradient
-import pixzel.graphics.RadialGradient
-import pixzel.graphics.Rectangle
 import pixzel.graphics.Sampling
 import pixzel.graphics.rgb
 import pixzel.graphics.rgba
+import pixzel.graphics.saved
+import pixzel.component.ClipPolicy
 import pixzel.surface.Rect
+import pixzel.surface.Transform
 import pixzel.surface.Vec2
-import kotlin.math.sin
+import pixzel.layout.unit.sp
+import pixzel.text.TextRequest
+import pixzel.text.TextStyle
 import kotlin.time.Duration
 
 internal class MenuBanner(model: MenuModel, private val art: MenuArt, action: () -> Unit) : MenuButton("banner", model, action = action) {
 
     private var clock = 0f
+    val slide get() = (clock / SLIDE_SECONDS).toInt() % 2
+    val progress get() = (clock % SLIDE_SECONDS) / SLIDE_SECONDS
+
+    init {
+        clipPolicy = ClipPolicy.BOUNDS
+    }
 
     override fun update(delta: Duration): Boolean {
         super.update(delta)
@@ -29,58 +37,41 @@ internal class MenuBanner(model: MenuModel, private val art: MenuArt, action: ()
     }
 
     override fun paint(canvas: Canvas) {
-        canvas.pixelPanel(bounds, 0x321D29.rgb, 0x80706A.rgb, 6f)
-        canvas.fill(
-            Rectangle, Rect(3f, 3f, bounds.width - 6f, bounds.height - 6f), LinearGradient(
-                Vec2(0f, 0f), Vec2(bounds.width, bounds.height * 0.2f),
-                listOf(ColorStop(0f, 0x2D1724.rgb), ColorStop(0.44f, 0x4E2D31.rgb), ColorStop(1f, 0xC1A222.rgb))
-            )
-        )
-        canvas.fill(
-            Rectangle, bounds, RadialGradient(
-                Vec2(bounds.width * 0.85f, 20f), 230f,
-                listOf(ColorStop(0f, 0xFFE52ABD.rgba), ColorStop(1f, 0xFFE52A00.rgba))
-            )
-        )
-
-        val right = bounds.width
+        canvas.pixelPanel(bounds, 0x343146.rgb, 0x79718A.rgb, 6f, 2f)
+        val transition = if (clock < SLIDE_SECONDS || model.reducedMotion) 1f else ((clock % SLIDE_SECONDS) / 0.4f).coerceIn(0f, 1f)
+        if (transition < 1f) paintSlide(canvas, 1 - slide, -bounds.width * transition)
+        paintSlide(canvas, slide, bounds.width * (1f - transition))
         with(canvas) {
-            polygon(
-                listOf(
-                    Vec2(right * 0.61f, 160f), Vec2(right * 0.78f, 100f), Vec2(right - 30f, 147f),
-                    Vec2(right * 0.82f, 195f)
-                ), 0xFFC53B.rgb
-            )
-            polygon(
-                listOf(
-                    Vec2(right * 0.61f, 155f), Vec2(right * 0.78f, 95f), Vec2(right - 30f, 142f),
-                    Vec2(right * 0.82f, 190f)
-                ), 0x3F3A3A.rgb
-            )
-            val bob = sin(clock * 1.5f) * 4f
-            fun sprite(key: String, x: Float, y: Float, size: Float) {
-                val image = art.icons.getValue(key)
-                emit(DrawImage(image, Rect(0f, 0f, 192f, 192f), Rect(x, y, size, size), sampling = Sampling.NEAREST))
+            repeat(2) { index ->
+                val x = bounds.width / 2f - 42f + index * 46f
+                rect(x, bounds.height - 17f, 39f, 4f, 0xFFFFFF40.rgba)
+                if (index == 1 - slide) rect(x, bounds.height - 17f, 39f * progress, 4f, 0xFFFFFF.rgb)
             }
-            sprite("avatar", right * 0.49f, -2f + bob, 192f)
-            sprite("avatar", right * 0.41f, 74f - bob, 141f)
-            sprite("chest", right * 0.66f, 18f - bob, 181f)
-            sprite("computer", right * 0.83f, 6f + bob, 113f)
-
-            repeat(10) { index ->
-                val x = right * 0.5f + ((index * 47f + clock * 13f) % (right * 0.47f))
-                val y = 17f + (index * 31f) % 150f + sin(clock + index) * 4f
-                rect(x, y, 2f, 2f, 0xFFEAA0FF.rgba.alpha(0.3f + sin(clock * 2f + index) * 0.15f))
-            }
-
-            val title = model.label("Новый кейс!\nРазработки Арасаки", "New case!\nArasaka technologies")
-            label(title, 24f, 20f, if (bounds.width < 800f) 28f else 34f, shadow = true)
-            val buttonWidth = if (model.english) 227f else 268f
-            pixelPanel(
-                Rect(28f, bounds.height - 65f, buttonWidth, 39f), 0x2862AD.rgb.shade(1f + hover.value * 0.25f),
-                0x6BA6F0.rgb, 4f
-            )
-            label(model.label("Приступить к взлому", "Start the heist"), Rect(28f, bounds.height - 65f, buttonWidth, 39f), 18f, shadow = true)
         }
+    }
+
+    private fun paintSlide(canvas: Canvas, index: Int, offset: Float) = canvas.saved {
+        emit(Concat(Transform.translation(offset, 0f)))
+        // Artwork contains no controls or lettering: both are real Pixzel drawing below.
+        val image = art.banners[index]
+        canvas.emit(
+            DrawImage(
+                image, Rect(0f, 0f, image.size.width, image.size.height),
+                Rect(2f, 2f, bounds.width - 4f, bounds.height - 4f), sampling = Sampling.LINEAR
+            )
+        )
+        with(canvas) {
+            val title = if (index == 0) "Новый кейс:\nНочь Кошмаров" else "Новый кейс:\nРазработки Арасаки"
+            text(ui!!.text.layout(TextRequest(title, TextStyle(size = 41.sp, lineHeight = 41f))), Vec2(25f, 24f), 0xFFFFFF.rgb)
+            val buttonWidth = if (index == 0) 265f else 263f
+            val button = Rect(29f, bounds.height - 65f, buttonWidth, 38f)
+            pixelPanel(button, 0x2362BE.rgb.shade(1f + hover.value * 0.18f), 0x5C9FF7.rgb, 4f, 2f)
+            label(if (index == 0) "Сладость или гадость!" else "Приступить к взлому", button, 20f)
+        }
+    }
+
+    companion object {
+
+        private const val SLIDE_SECONDS = 5f
     }
 }

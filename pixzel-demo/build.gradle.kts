@@ -16,6 +16,7 @@ dependencies {
     // The desktop showcase reads its own framebuffer for smoke-test captures.
     lwjgl(libs.lwjgl.lib)
     lwjgl(libs.lwjgl.opengl)
+    lwjgl(libs.lwjgl.glfw)
     testImplementation(libs.lwjgl.glfw)
 }
 application {

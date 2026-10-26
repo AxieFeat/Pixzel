@@ -48,9 +48,9 @@ The showcase draws UI over an application scene and includes flat/nine-slice/cus
 .\gradlew.bat :pixzel-demo:cristalix --args="--smoke --verify"
 ```
 
-The standalone Pixzel demo recreates the supplied server-browser references with 24 illustrated game cards, search, category/language dropdowns, persistent favorites, hover descriptions and local review/game dialogs. Staggered entrances, spring transitions, animated filtering, floating items, favorite particles, smooth scrolling and background parallax can be disabled with the motion control. All controls are retained Pixzel elements rendered through Arc/OpenGL.
+The standalone Pixzel demo follows the supplied 71-second video, using the original locally cached Cristalix illustrations and fonts. It includes the scrolling game catalogue, rotating banners, search, categories, language selection, persistent favorites and hover descriptions, plus a full reviews page and multiline rating form. All controls are retained Pixzel elements rendered through Arc/OpenGL.
 
-See [controls, animation details and verification](docs/CRISTALIX_DEMO.md) and [asset sources and licenses](pixzel-demo/src/main/resources/cristalix/SOURCES.md). Counts and reviews are sample data; this demo does not connect to Cristalix servers.
+See [controls and verification](docs/CRISTALIX_DEMO.md) and [asset provenance](pixzel-demo/src/main/resources/cristalix/SOURCES.md). Online counts, reviews and game activation are local demonstration data; this application does not connect to Cristalix services.
 
 ## Benchmarks and local artifacts
 

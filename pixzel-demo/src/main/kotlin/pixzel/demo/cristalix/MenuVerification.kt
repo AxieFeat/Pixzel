@@ -17,10 +17,18 @@ import pixzel.component.Element
 import pixzel.demo.captureShowcase
 import pixzel.surface.Vec2
 import java.nio.file.Path
+import kotlin.math.abs
+import pixzel.graphics.Canvas
+import pixzel.graphics.DrawCommand
+import pixzel.graphics.DrawImage
+import pixzel.graphics.Fill
+import pixzel.graphics.Solid
+import pixzel.graphics.rgb
 
 /**
  * Drives the real Arc window event transport and captures the reference menu states.
  */
+@Suppress("TooManyFunctions") // Each helper describes a separate native interaction assertion.
 internal class MenuVerification(
     private val application: Application,
     private val ui: Ui,
@@ -63,7 +71,7 @@ internal class MenuVerification(
             }
 
             300 -> {
-                click(wool, Vec2(wool.surface.bounds.width - 25f, 25f))
+                click(wool, Vec2(wool.surface.bounds.width / 2, 25f))
             }
 
             350 -> {
@@ -121,6 +129,12 @@ internal class MenuVerification(
                 capture("dropdown")
             }
 
+            155 -> {
+                check(wool.hovered && wool.hover.value == 1f && menu.tooltip.show && menu.tooltip.opacity == 1f) {
+                    "Card hover and tooltip must appear on the first input frame"
+                }
+            }
+
             208 -> {
                 check(menu.tooltip.show && menu.tooltip.game?.id == "wool") { "Hovered card must show its delayed tooltip" }
                 capture("hover")
@@ -137,6 +151,7 @@ internal class MenuVerification(
 
             400 -> {
                 check(model.visibleModes().map { it.id } == listOf("wool"))
+                verifyHiddenFavorite()
                 capture("favorites")
             }
 
@@ -146,12 +161,13 @@ internal class MenuVerification(
             }
 
             540 -> {
-                check(menu.modal.open)
+                check(menu.reviews.open && menu.reviews.game == null)
                 capture("reviews")
             }
 
             620 -> {
                 check(menu.grid.scrollOffset > 50f) { "Wheel transport must smoothly scroll the grid" }
+                verifySharedScroll()
                 capture("scroll")
             }
 
@@ -159,6 +175,27 @@ internal class MenuVerification(
                 check("wool" in model.favorites && menu.grid.surface.bounds.width < 800f)
                 capture("responsive")
             }
+        }
+    }
+
+    private fun verifyHiddenFavorite() {
+        val commands = mutableListOf<DrawCommand>()
+        wool.paint(object : Canvas {
+            override fun emit(command: DrawCommand) {
+                commands += command
+            }
+        })
+        check(commands.filterIsInstance<DrawImage>().none { "star" in it.image.id } &&
+                commands.filterIsInstance<Fill>().none { (it.brush as? Solid)?.color == 0xFFDA65.rgb }) {
+            "A saved favorite must not display a star when it is not hovered"
+        }
+    }
+
+    private fun verifySharedScroll() {
+        val first = menu.grid.cards.first()
+        check(abs(first.surface.toRoot(Vec2.ZERO).y + menu.grid.scrollOffset - menu.grid.leadingSpace) < .01f)
+        check(abs(menu.banner.surface.toRoot(Vec2.ZERO).y + menu.grid.scrollOffset - menu.grid.bannerTop) < .01f) {
+            "Banner and cards must share exactly the same scroll displacement"
         }
     }
 
@@ -209,7 +246,7 @@ internal class MenuVerification(
             }
 
             990 -> {
-                click(menu.children.first { it.id == "motion" })
+                model.reducedMotion = true
             }
 
             1005 -> {
@@ -217,7 +254,9 @@ internal class MenuVerification(
             }
 
             1010 -> {
-                click(menu.modal.reviewInput)
+                menu.reviews.show(wool.game)
+                menu.reviews.composer.show(wool.game)
+                click(menu.reviews.composer.input)
             }
 
             1015 -> {
@@ -225,7 +264,8 @@ internal class MenuVerification(
             }
 
             1020 -> {
-                click(primary)
+                click(menu.reviews.composer.children.first { it.id == "compose-yes" })
+                click(menu.reviews.composer.children.first { it.id == "compose-publish" })
             }
 
             1040 -> {
@@ -237,16 +277,16 @@ internal class MenuVerification(
     private fun afterExtendedFrame(frame: Int) {
         when (frame) {
             735 -> {
-                check(model.category == MenuCategory.HUBS && model.visibleModes().single().id == "hub")
+                check(model.category == MenuCategory.HUBS && model.visibleModes().map { it.id } == listOf("hub", "hub3"))
             }
 
             770 -> {
-                check(model.english && menu.toolbar.categories.title.trim() == "Hubs")
+                check(model.language == "US" && menu.toolbar.languages.title.trim() == "US")
                 capture("english")
             }
 
             820 -> {
-                check(model.category == MenuCategory.ALL && model.visibleModes().size == gameModes.size)
+                check(model.category == MenuCategory.ALL && model.visibleModes().isNotEmpty())
             }
 
             870 -> {
@@ -255,7 +295,7 @@ internal class MenuVerification(
             }
 
             970 -> {
-                check(primary.title == "Play again")
+                check(primary.title == "Ещё раз")
             }
 
             1000 -> {
@@ -263,7 +303,7 @@ internal class MenuVerification(
             }
 
             1030 -> {
-                check(menu.modal.open && menu.modal.reviewInput.value.isEmpty())
+                check(menu.reviews.open && !menu.reviews.composer.open && menu.reviews.composer.input.value.isEmpty())
                 capture("review-submitted")
             }
         }

@@ -27,15 +27,15 @@ internal class MenuToolbar(
 
     val search = owner.components.textField("game-search").apply {
         placeholder = "Поиск игры"
-        style = TextStyle(size = 19.sp)
+        style = TextStyle(size = 22.sp)
         color = 0xFFFFFFFF.rgba
         verticalAlignment = VerticalAlignment.CENTER
         layout.padding = Insets.horizontal(12.dp)
         placement = Placement.of(offset = Vec2(150f, 14f))
         background = Painter { canvas, context ->
             canvas.pixelPanel(
-                context.bounds, 0x2862ADFF.rgba,
-                if (context.state.focused) 0x92C7FFFF.rgba else 0x4E94E8FF.rgba, 4f
+                context.bounds, 0x2362BEFF.rgba,
+                if (context.state.focused) 0x92C7FFFF.rgba else 0x5899EDFF.rgba, 4f, 2f
             )
         }
         foreground = null
@@ -80,14 +80,14 @@ internal class MenuToolbar(
 
     override fun update(delta: Duration): Boolean {
         model.query = search.value
+        search.color = if (search.value.isEmpty()) 0xA0A0A0FF.rgba else 0xFFFFFFFF.rgba
         search.placeholder = model.label("Поиск игры", "Find a game")
         favorites.title = model.label(MenuCategory.FAVORITES, "Favorites")
         favorites.active = model.category == MenuCategory.FAVORITES
-        categories.title = categoryLabel(model.category) + "   "
-        languages.title = if (model.english) "EN   " else "RU   "
+        categories.title = categoryLabel(if (model.category == MenuCategory.FAVORITES) MenuCategory.ALL else model.category) + "   "
+        languages.title = model.language + "   "
         reviews.title = model.label("Отзывы", "Reviews")
-        invalidate()
-        return true
+        return false
     }
 
     private fun categoryLabel(category: String): String = if (!model.english) category else when (category) {
@@ -100,10 +100,9 @@ internal class MenuToolbar(
     }
 
     override fun paint(canvas: Canvas) {
-        canvas.pixelPanel(bounds, 0x13263DDF.rgba, 0x28528FCC.rgba, 6f)
+        canvas.pixelPanel(bounds, 0x0B1C32B3.rgba, 0x214A83CC.rgba, 6f, 2f)
         with(canvas) {
-            rect(226f, 30.5f, 5f, 5f, 0x95DCA5FF.rgba)
-            label(model.label("Онлайн 1.538", "Online 1,538"), Rect(239f, 14f, 170f, 38f), 19f, horizontal = TextAlignment.START, shadow = true)
+            label("Онлайн 2.979", Rect(229f, 14f, 170f, 38f), 22f, horizontal = TextAlignment.START)
         }
     }
 }

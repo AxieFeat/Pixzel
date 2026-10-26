@@ -52,7 +52,9 @@ internal class UiPainter(private val ui: SimpleUi) {
         var painted = 0
 
         fun paint(element: Element) {
-            if (!ui.visibleAttached(element)) return
+            // Transparent subtrees still update (so they can animate back in), but have no coverage.
+            // In particular, do not allocate composition groups for closed overlays.
+            if (!ui.visibleAttached(element) || element.opacity == 0f) return
             var cached = nodePaint[element]
             val previous = cached?.key
             val tokens = element.resolvedTokens

@@ -37,6 +37,8 @@ import pixzel.text.TextLayout
 import pixzel.text.TextRequest
 import pixzel.text.TextStyle
 import pixzel.text.VerticalAlignment
+import pixzel.text.FontFamily
+import pixzel.text.FontFace
 import pixzel.text.alignedOrigin
 import kotlin.math.roundToInt
 import kotlin.time.Duration
@@ -58,14 +60,15 @@ internal fun Canvas.polygon(points: List<Vec2>, color: Color) {
     fill(path, Rect.ZERO, Solid(color))
 }
 
-internal fun Canvas.pixelPanel(bounds: Rect, color: Color, edge: Color = color.shade(1.45f), cut: Float = 8f) {
+@Suppress("LongParameterList")
+internal fun Canvas.pixelPanel(bounds: Rect, color: Color, edge: Color = color.shade(1.45f), cut: Float = 8f, borderWidth: Float = 3f) {
     require(cut.isFinite() && cut >= 0f)
     val x = bounds.x
     val y = bounds.y
     val w = bounds.width
     val h = bounds.height
     if (w == 0f || h == 0f) return
-    val border = minOf(3f, w / 2f, h / 2f)
+    val border = minOf(borderWidth, w / 2f, h / 2f)
     val corner = cut.coerceAtMost((minOf(w, h) / 2f - border).coerceAtLeast(0f))
     fun outline(inset: Float): VectorPath {
         val left = x + inset
@@ -91,7 +94,7 @@ internal fun Canvas.pixelPanel(bounds: Rect, color: Color, edge: Color = color.s
     // Separate coverage keeps translucent fills from painting over the border or its corners.
     fill(VectorPath(outer.segments + inner.segments, FillRule.EVEN_ODD), Rect.ZERO, Solid(edge))
     fill(inner, Rect.ZERO, Solid(color))
-    if (h - border * 2f >= 2f) {
+    if (borderWidth >= 3f && h - border * 2f >= 2f) {
         val start = x + corner + border
         val width = w - 2f * (corner + border)
         rect(start, y + border, width, 1f, Color.WHITE.alpha(0.12f))
@@ -121,15 +124,28 @@ internal open class MenuElement(id: String, protected val model: MenuModel) : Ab
 
     protected val bounds get() = Rect(0f, 0f, surface.bounds.width, surface.bounds.height)
 
+    protected fun Canvas.smallLabel(value: String, x: Float, y: Float, size: Float = 11f, color: Color = Color.WHITE) {
+        val owner = ui ?: return
+        val shaped = owner.text.layout(
+            TextRequest(
+                value,
+                TextStyle(family = FontFamily(listOf(FontFace("minecraft-five"))), size = size.sp)
+            )
+        )
+        text(shaped, Vec2(x, y), color)
+    }
+
     @Suppress("LongParameterList")
     protected fun Canvas.label(
         value: String, x: Float, y: Float, size: Float = 20f, color: Color = Color.WHITE,
         centered: Boolean = false, width: Float = Float.POSITIVE_INFINITY, shadow: Boolean = false
     ) {
         val service = ui?.text ?: return
-        val shaped = service.layout(TextRequest(
-            value, TextStyle(size = size.sp), width = width, wrap = width.isFinite(), textScale = ui!!.settings.textScale
-        ))
+        val shaped = service.layout(
+            TextRequest(
+                value, TextStyle(size = size.sp), width = width, wrap = width.isFinite(), textScale = ui!!.settings.textScale
+            )
+        )
         val left = if (centered) x - shaped.size.width / 2 else x
         drawLabel(shaped, Vec2(left, y), color, shadow)
     }
@@ -166,6 +182,11 @@ internal open class MenuButton(
     protected val press = MenuSpring()
     var purple = false
     var active = false
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
     private var ripple = 1f
     private var rippleOrigin = Vec2.ZERO
     private var armed = false
@@ -231,8 +252,9 @@ internal open class MenuButton(
     }
 
     override fun paint(canvas: Canvas) {
-        val base = if (purple) 0x5924B7.rgb else 0x2862AD.rgb
-        canvas.pixelPanel(bounds, base.shade(1f + hover.value * 0.2f - press.value * 0.15f))
+        val base = if (purple) 0x5C30CE.rgb else 0x2362BE.rgb
+        val edge = if (purple) 0x9365EB.rgb else 0x5899ED.rgb
+        canvas.pixelPanel(bounds, base.shade(1f + hover.value * 0.2f - press.value * 0.15f), edge, 4f, 2f)
         if (state.focusVisible) canvas.stroke(Rectangle, Rect(4f, 4f, bounds.width - 8f, bounds.height - 8f), Solid(0xC8E8FFFF.rgba), 1f)
         if (ripple < 1f) {
             val band = bounds.width * ripple

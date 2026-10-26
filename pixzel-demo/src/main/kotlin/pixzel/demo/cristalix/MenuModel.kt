@@ -26,43 +26,126 @@ internal data class GameMode(
     val description: String = "Собери друзей, выбери свою тактику и отправляйся навстречу приключениям. Каждая игра — новая история!"
 )
 
-@Suppress("MagicNumber")
+@Suppress("MagicNumber", "StringLiteralDuplication")
 internal val gameModes = listOf(
-    GameMode("prison", "PrisonEvo", 74, 0x548C31, "pickaxe", badge = "ВАЙП"),
     GameMode(
-        "wool", "WoolWars", 9, 0x548C31, "duel", MenuCategory.ARCADE, "РЕЛИЗ",
-        "Выбирай любимый класс и его уникальные навыки. Сражайся за точку в центре! Побеждает команда, набравшая 3 очка за захват."
+        "prison", "PrisonEvo", 119, 0x527F2C, "pickaxe", badge = "ВАЙП",
+        description = "Выбери свой путь заключённого! Копай ресурсы, развивайся, открывай новые шахты и " +
+                "сражайся с боссами. Стань самым сильным игроком тюрьмы!"
     ),
-    GameMode("swords", "Мастера\nМечей", 454, 0x102D4D, "trophy"),
-    GameMode("chaos", "Custom\nSteveChaos", 277, 0xC96C43, "sword"),
-    GameMode("skyblock", "SkyBlock Old", 140, 0x28282D, "crate"),
-    GameMode("azerus", "Azerus", 61, 0x6C090B, "book"),
-    GameMode("space", "SpaceTycoon", 60, 0x1B3D7D, "server"),
-    GameMode("survival", "Выживание\nБомжа", 59, 0x1B3D7D, "box"),
-    GameMode("castle", "CastleFight", 45, 0x76090B, "tower", MenuCategory.ARCADE),
-    GameMode("arcade", MenuCategory.ARCADE, 40, 0x292063, "controller", MenuCategory.ARCADE),
-    GameMode("oldschool", "Prison\nOldSchool", 32, 0x6650D9, "bars"),
-    GameMode("classic", "Prison Classic", 28, 0xD98200, "cuffs"),
-    GameMode("computer", "Компьютерная\nИмперия", 26, 0x17114D, "computer"),
-    GameMode("anarchy", "Анархия", 26, 0x790A0C, "wither"),
-    GameMode("trigger", "TriggerRush", 22, 0x1B3D7D, "rifle", MenuCategory.TESTING, "ПРОТОТИП"),
-    GameMode("bingo", "Бинго", 21, 0x292063, "bingo", MenuCategory.TABLETOP),
-    GameMode("slime", "Slime RNG", 18, 0x274965, "slime"),
-    GameMode("food", "Foodcourt", 17, 0x17496C, "burger"),
-    GameMode("bedwars", "BedWars", 103, 0x1B3D7D, "bed", MenuCategory.ARCADE),
-    GameMode("skywars", "SkyWars", 88, 0x548C31, "island", MenuCategory.ARCADE),
-    GameMode("parkour", "Паркур", 34, 0x4696AB, "boots", MenuCategory.ARCADE),
-    GameMode("creative", "Творческий", 12, 0x7956AC, "pickaxe", MenuCategory.TESTING),
-    GameMode("chess", "Шахматы", 16, 0x292063, "tower", MenuCategory.TABLETOP),
-    GameMode("hub", "Главный хаб", 148, 0xC49800, "compass", MenuCategory.HUBS)
-)
+    GameMode(
+        "wool", "WoolWars", 16, 0x527F2C, "duel", MenuCategory.ARCADE, badge = "РЕЛИЗ",
+        description = "Выбирай любимый класс и его уникальные навыки. Сражайся за точку в центре! Побеждает команда, набравшая 3 очка за захват."
+    ),
+    GameMode("chaos", "Custom\nSteveChaos", 706, 0xD06C39, "sword"),
+    GameMode("swords", "Мастера\nМечей", 452, 0x0C2442, "master"),
+    GameMode("arcade", "Аркады", 333, 0x25205D, "controller", MenuCategory.ARCADE),
+    GameMode(
+        "skyblock", "SkyBlock Old", 178, 0x272726, "crate",
+        description = "Начните с небольшого острова и превратите его в настоящую империю. " +
+                "Добывайте ресурсы с генераторов, открывайте новые возможности для развития, " +
+                "побеждайте дракона края и поднимитесь в топ лучших игроков сервера."
+    ),
+    GameMode(
+        "castle", "CastleFight", 165, 0x700D00, "tower",
+        description = "Сражайся в командных поединках! Строй замки и башни, призывай воинов и сокруши вражескую крепость. Победит лучшая стратегия!"
+    ),
+    GameMode("gta", "GTM - ГТА", 105, 0x0C2442, "pistol"),
+    GameMode("azerus", "Azerus", 98, 0x700D00, "book"),
+    GameMode("bingo", "Бинго", 94, 0x25205D, "bingo"),
+    GameMode("trigger", "TriggerRush", 73, 0x133778, "rifle", badge = "ПРОТОТИП"),
+    GameMode("survival", "Выживание\nБомжа", 72, 0x133778, "box"),
+    GameMode("space", "SpaceTycoon", 54, 0x133778, "server"),
+    GameMode("oldschool", "Prison\nOldSchool", 46, 0x6053DE, "bars"),
+    GameMode("io", "IoGames", 41, 0x133778, "pacman"),
+    GameMode("computer", "Компьютерная\nИмперия", 39, 0x120E42, "computer"),
+    GameMode("classic", "Prison Classic", 38, 0xDF7D00, "cuffs"),
+    GameMode("lucky", "LuckyWars", 36, 0x25205D, "lucky", MenuCategory.ARCADE),
+    GameMode("words", "Слова", 34, 0x063535, "words", MenuCategory.ARCADE),
+    GameMode("slime", "Slime RNG", 28, 0x213E61, "slime"),
+    GameMode("tabletop", "Настолки", 25, 0x0C2442, "tabletop", MenuCategory.TABLETOP),
+    GameMode("food", "Foodcourt", 24, 0x06426A, "burger"),
+    GameMode("random", "RandomRush", 24, 0x408BB0, "random", MenuCategory.ARCADE),
+    GameMode("ladder", "Лесенка", 22, 0xDF8C00, "ladder"),
+    GameMode("creative", "Креатив", 20, 0x6A64BC, "lobby"),
+    GameMode("sims", "Sims", 18, 0x00442C, "leaf"),
+    GameMode("build", "Битва\nстроителей", 18, 0x063535, "build"),
+    GameMode("columns", "Столбы", 17, 0x25205D, "columns", MenuCategory.ARCADE),
+    GameMode("parade", "Парад Аркад", 16, 0x3676B4, "arcade-machine", MenuCategory.ARCADE),
+    GameMode("anarchy", "Анархия", 14, 0x700D00, "wither"),
+    GameMode("castles", "Castles", 12, 0x0C2442, "castles"),
+    GameMode("jedigen", "JediCraft\nNewGen", 10, 0x25205D, "jedi-gen"),
+    GameMode("farm", "MyLittleFarm", 9, 0x527F2C, "farm"),
+    GameMode("woolbattle", "WoolBattle", 8, 0x700D00, "woolbattle", MenuCategory.ARCADE),
+    GameMode("testing", "Тестовые", 8, 0x0C2442, "lobby"),
+    GameMode("bedrock", "Бедроковая\nКоробка", 8, 0x272726, "bedrock", MenuCategory.ARCADE),
+    GameMode("dungeons", "Dungeons", 7, 0x272726, "dungeon"),
+    GameMode("chess", "Шахматы", 6, 0x25205D, "chess", MenuCategory.TABLETOP),
+    GameMode("spread", "Spread", 6, 0x7560CD, "spread", MenuCategory.ARCADE),
+    GameMode("deathrun", "DeathRun", 6, 0x133778, "skull", MenuCategory.ARCADE),
+    GameMode("skycontrol", "SkyControl", 6, 0x162655, "skycontrol", MenuCategory.ARCADE),
+    GameMode("colonists", "Колонисты", 5, 0x121D79, "colonists", MenuCategory.TABLETOP),
+    GameMode("katana", "Симулятор\nКатаны", 5, 0x003D31, "katana"),
+    GameMode("monopoly", "Монополия", 4, 0x25205D, "monopoly", MenuCategory.TABLETOP),
+    GameMode("mind", "Игры Разума", 4, 0x25205D, "mind", MenuCategory.ARCADE),
+    GameMode("bedwars", "BedWars", 4, 0x700D00, "bed", MenuCategory.ARCADE),
+    GameMode("blockparty", "BlockParty", 4, 0xDF8C00, "record", MenuCategory.ARCADE),
+    GameMode("last", "Last Survivor", 3, 0x700D00, "bat"),
+    GameMode("spleef", "Spleef", 3, 0x408BB0, "spleef", MenuCategory.ARCADE),
+    GameMode("jedi", "JediCraft New", 3, 0x133778, "jedi"),
+    GameMode("garden", "Grow A\nGarden", 2, 0x00442C, "garden"),
+    GameMode("bridge", "TheBridge", 2, 0x25205D, "bridge", MenuCategory.ARCADE),
+    GameMode("events", "Ивенты", 2, 0xDF8C00, "trophy"),
+    GameMode("bee", "BeeSwarm", 1, 0x133778, "bee"),
+    GameMode("zombie", "ЗомбиМод", 1, 0x700D00, "zombie"),
+    GameMode("treasure", "Симулятор\nСокровищ", 0, 0x251B51, "treasure"),
+    GameMode("battleship", "Морской Бой", 0, 0x700D00, "battleship", MenuCategory.TABLETOP),
+    GameMode("backgammon", "Нарды", 0, 0x063535, "backgammon", MenuCategory.TABLETOP),
+    GameMode("checkers", "Шашки", 0, 0x133778, "checkers", MenuCategory.TABLETOP),
+    GameMode("uno", "UNO", 0, 0x25205D, "uno", MenuCategory.TABLETOP),
+    GameMode("lumber", "Симулятор\nЛесоруба", 0, 0xDF9800, "axe"),
+    GameMode("ant", "AntWars", 0, 0x00442C, "ant", MenuCategory.ARCADE),
+    GameMode("tnttag", "TntTag", 0, 0x0C2442, "dynamite", MenuCategory.ARCADE),
+    GameMode("flood", "FloodEscape", 0, 0x133778, "flood", MenuCategory.ARCADE),
+    GameMode("murder", "Murder\nMystery", 0, 0x700D00, "murder", MenuCategory.ARCADE),
+    GameMode("hide", "HideAndSeek", 0, 0x133778, "hide", MenuCategory.ARCADE),
+    GameMode(
+        "cube", "Куб Смерти", 0, 0x25205D, "deathcube", MenuCategory.ARCADE,
+        description = "Перемещайся по комнатам, подбирай ресурсы и бонусы, сражайся с другими игроками и " +
+                "стань последним выжившим в смертельной битве!"
+    ),
+    GameMode("tom", "Том и Джерри", 0, 0x004A75, "tom", MenuCategory.ARCADE),
+    GameMode("tntrun", "TntRun", 0, 0xDF7D00, "tnt", MenuCategory.ARCADE),
+    GameMode(
+        "bowspleef", "BowSpleef", 0, 0x700D00, "bow", MenuCategory.ARCADE,
+        description = "Огненные баталии за первенство. Докажи другим, что ты — мастер ловкости! Внимательно " +
+                "следи за игрой и выстреливай соперников стрелами."
+    ),
+    GameMode("makers", "MakersParty", 0, 0x133778, "makers", MenuCategory.ARCADE),
+    GameMode("hub", "Хаб #2", 36, 0x00442C, "hub", MenuCategory.HUBS),
+    GameMode("hub3", "Хаб #3", 32, 0x00442C, "hub", MenuCategory.HUBS)
+) + listOf(
+    "Симулятор\nШапок", "Duels - Лобби", "CactusFactory #112", "SCP лобби #300", "Вино друзей", "Evolve Lobby",
+    "Duels - FFA", "Azerus #322", "TEST-66", "Duels - Арена", "Cristalix", "CivCraft Lobby #12",
+    "CastleFight 2x2 #76", "Cristalix Personalization", "Steal An Egg", "CactusFactory #113", "JediCraft NewGen #446",
+    "DontLetThemIn Lobby #536", "Зоопарк", "Лобби Аркад #22", "One-Punch Man #4351", "Cristalix p13n",
+    "Настольные игры [ОБТ]", "WADA #123"
+).mapIndexed { index, name ->
+    GameMode("test-$index", name, if (index == 0) 4 else if (index < 5) 1 else 0, 0x0C2442, "lobby", MenuCategory.TESTING)
+}
 
 internal class MenuModel(private val favoritesFile: Path? = null) {
 
     val favorites = linkedSetOf<String>()
     var query = ""
     var category = MenuCategory.ALL
-    var english = false
+    var language = "RU"
+    var english: Boolean
+        get() = language == "US"
+        set(value) {
+            language = if (value) "US" else "RU"
+        }
+    var favoritesOnly = false
     var reducedMotion = false
     var revision = 0
         private set
@@ -75,11 +158,13 @@ internal class MenuModel(private val favoritesFile: Path? = null) {
 
     fun visibleModes(): List<GameMode> = gameModes.filter { game ->
         val inCategory = when (category) {
-            MenuCategory.ALL -> true
+            MenuCategory.ALL -> game.category != MenuCategory.TESTING && game.category != MenuCategory.HUBS
             MenuCategory.FAVORITES -> game.id in favorites
             else -> game.category == category
         }
-        inCategory && game.name.replace('\n', ' ').contains(query.trim(), ignoreCase = true)
+        val inLanguage = language == "RU" || game.id !in setOf("prison", "gta", "bingo", "oldschool", "io", "computer")
+        (inCategory && inLanguage && (!favoritesOnly || game.id in favorites)) &&
+                game.name.replace('\n', ' ').contains(query.trim(), ignoreCase = true)
     }
 
     fun toggleFavorite(id: String) {
@@ -93,7 +178,8 @@ internal class MenuModel(private val favoritesFile: Path? = null) {
         }
     }
 
-    fun label(russian: String, english: String) = if (this.english) english else russian
+    @Suppress("UnusedParameter")
+    fun label(russian: String, english: String) = russian
 }
 
 /**

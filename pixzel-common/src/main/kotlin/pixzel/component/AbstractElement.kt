@@ -109,6 +109,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
     override var opacity: Float = 1f
         set(value) {
             require(value in 0f..1f)
+            if (field == value) return
             invalidate()
             field = value
         }
@@ -430,7 +431,7 @@ abstract class AbstractElement(final override val id: String = "") : Element {
                     val parentTransform = (target ?: parent)?.surface?.localToRoot ?: Transform.IDENTITY
                     val boundsChanged =
                         computed.bounds.x != position.x || computed.bounds.y != position.y ||
-                        computed.bounds.width != size.width || computed.bounds.height != size.height
+                                computed.bounds.width != size.width || computed.bounds.height != size.height
                     if (boundsChanged) computed.bounds = Rect(position.x, position.y, size.width, size.height)
                     val contentWidth = (size.width - pad.horizontal).coerceAtLeast(0f)
                     val contentHeight = (size.height - pad.vertical).coerceAtLeast(0f)

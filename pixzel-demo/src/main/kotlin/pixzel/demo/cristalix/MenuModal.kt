@@ -138,7 +138,7 @@ internal class MenuModal(owner: Ui, model: MenuModel) : MenuElement("modal", mod
         val dt = delta.inWholeNanoseconds / 1_000_000_000f
         if (joining) elapsed += dt
         if (model.reducedMotion) opening.snap()
-        opening.step(dt)
+        val moving = opening.step(dt)
         opacity = opening.value.coerceIn(0f, 1f)
         val scale = 0.96f + opacity * 0.04f
         paintTransform = Transform.translation(
@@ -153,8 +153,7 @@ internal class MenuModal(owner: Ui, model: MenuModel) : MenuElement("modal", mod
         favorite.opacity = if (mode == Mode.REVIEWS || game == null) 0f else 1f
         reviewInput.opacity = if (mode == Mode.REVIEWS) 1f else 0f
         reviewInput.placeholder = model.label("Твой отзыв об игре…", "Your review of the game…")
-        invalidate()
-        return true
+        return moving || (joining && elapsed < 1.85f)
     }
 
     private fun dialog(width: Float, height: Float): Rect {
