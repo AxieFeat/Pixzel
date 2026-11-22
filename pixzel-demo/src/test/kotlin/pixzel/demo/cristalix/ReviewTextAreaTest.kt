@@ -21,13 +21,13 @@ class ReviewTextAreaTest {
     fun editsAndRestoresMultiline() {
         val host = TestHost.of()
         ui(host, RecordingBackend.of(), FixedFontTextService.of()).use { ui ->
-            val field = ReviewTextArea(MenuModel()).apply {
-                layout.width = 300.dp
-                layout.height = 150.dp
+            val field = MultilineEditor(ui).apply {
+                root.layout.width = 300.dp
+                root.layout.height = 150.dp
             }
-            ui.root.add(field)
+            ui.root.add(field.root)
             ui.frame(Duration.ZERO)
-            ui.focus.request(field)
+            ui.focus.request(field.root)
             host.queue(TextCommit("Первая строка"))
             host.queue(KeyEvent(Key.ENTER, KeyAction.DOWN))
             host.queue(TextCommit("Вторая строка"))
@@ -49,28 +49,32 @@ class ReviewTextAreaTest {
 
     @Test
     fun keepsWholeGraphemes() {
-        val field = ReviewTextArea(MenuModel())
-        field.insert("a".repeat(499))
-        field.insert("👩‍💻")
-        assertEquals(499, field.value.length)
-        field.insert("b")
-        field.insert("c")
-        assertEquals("a".repeat(499) + "b", field.value)
-        assertFalse(field.value.any { it.isSurrogate() })
-        field.close()
+        val host = TestHost.of()
+        ui(host, RecordingBackend.of(), FixedFontTextService.of()).use { ui ->
+            val field = MultilineEditor(ui)
+            ui.root.add(field.root)
+            field.insert("a".repeat(499))
+            field.insert("👩‍💻")
+            assertEquals(499, field.value.length)
+            field.insert("b")
+            field.insert("c")
+            assertEquals("a".repeat(499) + "b", field.value)
+            assertFalse(field.value.any { it.isSurrogate() })
+        }
+        host.close()
     }
 
     @Test
     fun deletesAndPastesGraphemes() {
         val host = TestHost.of()
         ui(host, RecordingBackend.of(), FixedFontTextService.of()).use { ui ->
-            val field = ReviewTextArea(MenuModel()).apply {
-                layout.width = 300.dp
-                layout.height = 150.dp
+            val field = MultilineEditor(ui).apply {
+                root.layout.width = 300.dp
+                root.layout.height = 150.dp
             }
-            ui.root.add(field)
+            ui.root.add(field.root)
             ui.frame(Duration.ZERO)
-            ui.focus.request(field)
+            ui.focus.request(field.root)
             host.queue(TextCommit("a👩‍💻"))
             host.queue(KeyEvent(Key.BACKSPACE, KeyAction.DOWN))
             ui.frame(Duration.ZERO)

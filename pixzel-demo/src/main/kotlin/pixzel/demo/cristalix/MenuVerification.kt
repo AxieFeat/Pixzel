@@ -18,12 +18,6 @@ import pixzel.demo.captureShowcase
 import pixzel.surface.Vec2
 import java.nio.file.Path
 import kotlin.math.abs
-import pixzel.graphics.Canvas
-import pixzel.graphics.DrawCommand
-import pixzel.graphics.DrawImage
-import pixzel.graphics.Fill
-import pixzel.graphics.Solid
-import pixzel.graphics.rgb
 
 /**
  * Drives the real Arc window event transport and captures the reference menu states.
@@ -39,7 +33,7 @@ internal class MenuVerification(
     private val events get() = application.window.events
     private val window get() = application.window.handle
     private val wool get() = menu.grid.cards.first { it.game.id == "wool" }
-    private val primary get() = menu.modal.children.first { it.id == "modal-primary" } as MenuButton
+    private val primary get() = menu.modal.root.children.first { it.id == "modal-primary" } as pixzel.component.Button
     private var captures = 0
 
     // Each branch is one scheduled interaction in the native verification fixture.
@@ -59,7 +53,7 @@ internal class MenuVerification(
             }
 
             155 -> {
-                move(wool)
+                move(wool.root)
             }
 
             210 -> {
@@ -71,7 +65,7 @@ internal class MenuVerification(
             }
 
             300 -> {
-                click(wool, Vec2(wool.surface.bounds.width / 2, 25f))
+                click(wool.favorite)
             }
 
             350 -> {
@@ -130,7 +124,7 @@ internal class MenuVerification(
             }
 
             155 -> {
-                check(wool.hovered && wool.hover.value == 1f && menu.tooltip.show && menu.tooltip.opacity == 1f) {
+                check(wool.hovered && menu.tooltip.show && menu.tooltip.root.opacity == 1f) {
                     "Card hover and tooltip must appear on the first input frame"
                 }
             }
@@ -172,28 +166,21 @@ internal class MenuVerification(
             }
 
             675 -> {
-                check("wool" in model.favorites && menu.grid.surface.bounds.width < 800f)
+                check("wool" in model.favorites && menu.grid.root.surface.bounds.width < 800f)
                 capture("responsive")
             }
         }
     }
 
     private fun verifyHiddenFavorite() {
-        val commands = mutableListOf<DrawCommand>()
-        wool.paint(object : Canvas {
-            override fun emit(command: DrawCommand) {
-                commands += command
-            }
-        })
-        check(commands.filterIsInstance<DrawImage>().none { "star" in it.image.id } &&
-                commands.filterIsInstance<Fill>().none { (it.brush as? Solid)?.color == 0xFFDA65.rgb }) {
+        check(wool.favorite.opacity == 0f) {
             "A saved favorite must not display a star when it is not hovered"
         }
     }
 
     private fun verifySharedScroll() {
         val first = menu.grid.cards.first()
-        check(abs(first.surface.toRoot(Vec2.ZERO).y + menu.grid.scrollOffset - menu.grid.leadingSpace) < .01f)
+        check(abs(first.root.surface.toRoot(Vec2.ZERO).y + menu.grid.scrollOffset - menu.grid.leadingSpace) < .01f)
         check(abs(menu.banner.surface.toRoot(Vec2.ZERO).y + menu.grid.scrollOffset - menu.grid.bannerTop) < .01f) {
             "Banner and cards must share exactly the same scroll displacement"
         }
@@ -234,7 +221,7 @@ internal class MenuVerification(
             }
 
             825 -> {
-                click(wool)
+                click(wool.root)
             }
 
             875 -> {
@@ -256,7 +243,7 @@ internal class MenuVerification(
             1010 -> {
                 menu.reviews.show(wool.game)
                 menu.reviews.composer.show(wool.game)
-                click(menu.reviews.composer.input)
+                click(menu.reviews.composer.input.root)
             }
 
             1015 -> {
@@ -264,8 +251,8 @@ internal class MenuVerification(
             }
 
             1020 -> {
-                click(menu.reviews.composer.children.first { it.id == "compose-yes" })
-                click(menu.reviews.composer.children.first { it.id == "compose-publish" })
+                click(menu.reviews.composer.root.children.first { it.id == "compose-yes" })
+                click(menu.reviews.composer.root.children.first { it.id == "compose-publish" })
             }
 
             1040 -> {
@@ -310,8 +297,8 @@ internal class MenuVerification(
     }
 
     private fun scrollGrid() {
-        move(menu.grid, Vec2(500f, 200f))
-        val point = menu.grid.surface.toRoot(Vec2(500f, 200f))
+        move(menu.grid.root, Vec2(500f, 200f))
+        val point = menu.grid.root.surface.toRoot(Vec2(500f, 200f))
         events.enqueue(
             PointerWheel(
                 (point.x * ui.settings.uiScale).toDouble(), (point.y * ui.settings.uiScale).toDouble(),

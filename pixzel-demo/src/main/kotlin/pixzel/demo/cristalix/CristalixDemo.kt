@@ -8,6 +8,7 @@ import arc.ArcObjectProvider
 import arc.font.NativeFontProvider
 import arc.gl.OpenGL
 import arc.input.GlfwInputEngine
+import org.lwjgl.glfw.GLFW
 import pixzel.UiSettings
 import pixzel.Ui
 import pixzel.arc.graphics.ArcUiBackend
@@ -31,11 +32,8 @@ fun main(args: Array<String>) {
     val application = Application.find()
     application.init()
     application.window.name = "Cristalix · Pixzel animated menu"
-//    // Remove the non-client frame so Windows does not clamp a 1440-pixel client to 1439 pixels.
-//    GLFW.glfwSetWindowAttrib(application.window.handle, GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE)
+    if (options.smoke) GLFW.glfwSetWindowAttrib(application.window.handle, GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE)
     application.window.resize(options.width, options.height)
-//    GLFW.glfwSetWindowPos(application.window.handle, 0, 0)
-//    application.window.isVsync = !options.smoke
     if (options.smoke) application.window.isHidden = true
     GlfwInputEngine.hook(application.window)
 
@@ -65,7 +63,8 @@ private fun createSession(application: Application, resources: ResourceScope, op
         fonts.load("minecraft-five", CristalixMenu::class.java.getResourceAsStream("/cristalix/MinecraftFive.otf")!!.use { it.readBytes() })
     val text = ArcTextService.of(listOf(pixelFont, headingFont, smallFont))
     val context = application.renderContext
-    val art = MenuArt(context, resources)
+    val data = MenuData.load()
+    val art = MenuArt.load(context, resources, data)
     val backend = MenuBackend(ArcUiBackend.of(context, text, supersampling = 1))
     val ui = resources.own(
         ui(
@@ -73,10 +72,10 @@ private fun createSession(application: Application, resources: ResourceScope, op
             CachingTextService.of(text), UiSettings(uiScale = options.scale)
         )
     )
-    val model = MenuModel(if (options.smoke) null else Path.of("build", "cristalix", "favorites.txt"))
+    val model = MenuModel(if (options.smoke) null else Path.of("build", "cristalix", "favorites.txt"), data)
     model.reducedMotion = options.reducedMotion
     val menu = CristalixMenu(ui, model, art)
-    ui.root.add(menu)
+    ui.root.add(menu.root)
     return MenuSession(application, ui, menu, model, backend)
 }
 
@@ -130,12 +129,15 @@ private fun showScenario(session: MenuSession, scenario: String) {
     val menu = session.menu
     when (scenario) {
         "dropdown" -> {
-            menu.dropdown.show(MenuDropdown.CATEGORIES, menu.toolbar.categories.surface.toRoot(Vec2(0f, 36f)))
+            menu.dropdown.show(
+                listOf(MenuCategory.ALL, MenuCategory.HUBS, MenuCategory.TESTING, MenuCategory.ARCADE, MenuCategory.TABLETOP),
+                session.model.category, menu.toolbar.categories.surface.toRoot(Vec2(0f, 36f)), 166f
+            ) { session.model.category = it }
         }
 
         "hover" -> {
             val card = menu.grid.cards.first { it.game.id == "skyblock" }
-            val point = card.surface.toRoot(Vec2(99f, 155f))
+            val point = card.root.surface.toRoot(Vec2(99f, 155f))
             session.application.window.events.let { events ->
                 events.enqueue(
                     arc.window.PointerMotion(
@@ -162,11 +164,11 @@ private fun showScenario(session: MenuSession, scenario: String) {
         }
 
         "game-reviews" -> {
-            menu.reviews.show(gameModes.first { it.id == "castle" })
+            menu.reviews.show(session.model.data.games.first { it.id == "castle" })
         }
 
         "review-compose" -> {
-            val game = gameModes.first { it.id == "castle" }
+            val game = session.model.data.games.first { it.id == "castle" }
             menu.reviews.show(game)
             menu.reviews.composer.show(game)
         }

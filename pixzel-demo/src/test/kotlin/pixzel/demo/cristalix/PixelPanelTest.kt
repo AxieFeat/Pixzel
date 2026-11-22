@@ -21,7 +21,9 @@ class PixelPanelTest {
         for (cut in listOf(0f, 3f, 5f)) {
             val commands = mutableListOf<DrawCommand>()
             val canvas = object : Canvas {
-                override fun emit(command: DrawCommand) { commands += command }
+                override fun emit(command: DrawCommand) {
+                    commands += command
+                }
             }
             canvas.pixelPanel(bounds, color, edge, cut)
             val fills = commands.filterIsInstance<Fill>()
@@ -49,7 +51,9 @@ class PixelPanelTest {
     fun emptyAndTinyPanels() {
         val commands = mutableListOf<DrawCommand>()
         val canvas = object : Canvas {
-            override fun emit(command: DrawCommand) { commands += command }
+            override fun emit(command: DrawCommand) {
+                commands += command
+            }
         }
         canvas.pixelPanel(Rect.ZERO, 0x112233FF.rgba)
         assertEquals(0, commands.size)

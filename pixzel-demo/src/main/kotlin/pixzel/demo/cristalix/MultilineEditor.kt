@@ -2,10 +2,11 @@
 
 package pixzel.demo.cristalix
 
+import pixzel.Ui
+import pixzel.component.Element
 import pixzel.component.ClipPolicy
 import pixzel.component.Role
 import pixzel.component.Semantics
-import pixzel.graphics.Canvas
 import pixzel.graphics.rgb
 import pixzel.graphics.rgba
 import pixzel.input.EventPhase
@@ -25,16 +26,21 @@ import pixzel.text.nextBoundary
 import pixzel.text.previousBoundary
 
 /**
- * Demo-local multiline editor: reuses Pixzel shaping, focus, input, clipping and grapheme boundaries.
+ * Demo-local multiline editor: composes a standard Surface with Pixzel shaping, focus, input and grapheme boundaries.
  */
-internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", model) {
+internal class MultilineEditor(
+    private val owner: Ui,
+    val root: Element = owner.compose("review-message"),
+    private val maximumLength: Int = 500,
+    private val placeholder: String = "Что зашло, что бесит, кому советуешь..."
+) {
 
     var value = ""
         set(value) {
-            field = value.take(500)
+            field = value.take(maximumLength)
             caret = caret.coerceAtMost(field.length)
             anchor = anchor.coerceAtMost(field.length)
-            invalidate()
+            root.invalidate()
         }
     private var caret = 0
     private var anchor = 0
@@ -43,11 +49,12 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
     private val redo = ArrayDeque<Triple<String, Int, Int>>()
 
     init {
-        pointerPolicy = PointerPolicy.AUTO
-        focusable = true
-        clipPolicy = ClipPolicy.BOUNDS
-        semantics = Semantics(Role.TEXT_FIELD, "Текст отзыва")
-        onEvent(EventPhase.TARGET) { routed ->
+        root.draw(owner) { render(this) }
+        root.pointerPolicy = PointerPolicy.AUTO
+        root.focusable = true
+        root.clipPolicy = ClipPolicy.BOUNDS
+        root.semantics = Semantics(Role.TEXT_FIELD, "Текст отзыва")
+        root.onEvent(EventPhase.TARGET) { routed ->
             when (val input = routed.event) {
                 is TextCommit -> {
                     replace(input.text)
@@ -64,17 +71,17 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
                 is PointerEvent -> {
                     when (input.action) {
                         PointerAction.DOWN -> if (input.button == 0) {
-                            ui?.focus?.request(this)
+                            owner.focus.request(root)
                             caret = shaped().hitTest((routed.localPosition ?: Vec2.ZERO) - Vec2(10f, 7f - offset)).index
                             anchor = caret
                             routed.capturePointer()
                             routed.consume()
-                            invalidate()
+                            root.invalidate()
                         }
 
-                        PointerAction.MOVE -> if (state.pressed) {
+                        PointerAction.MOVE -> if (root.state.pressed) {
                             caret = shaped().hitTest((routed.localPosition ?: Vec2.ZERO) - Vec2(10f, 7f - offset)).index
-                            invalidate()
+                            root.invalidate()
                         }
 
                         else -> {}
@@ -84,10 +91,10 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
         }
     }
 
-    private fun shaped() = ui!!.text.layout(
+    private fun shaped() = owner.text.layout(
         TextRequest(
             value, TextStyle(size = 15.2f.sp, lineHeight = 17f),
-            width = (bounds.width - 20f).coerceAtLeast(1f), wrap = true
+            width = (root.bounds.width - 20f).coerceAtLeast(1f), wrap = true
         )
     )
 
@@ -96,7 +103,7 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
         value = snapshot.first
         caret = snapshot.second
         anchor = snapshot.third
-        invalidate()
+        root.invalidate()
     }
 
     fun insert(text: String) {
@@ -106,7 +113,7 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
     private fun replace(text: String) {
         val start = minOf(caret, anchor)
         val end = maxOf(caret, anchor)
-        val available = (500 - value.length + end - start).coerceAtLeast(0)
+        val available = (maximumLength - value.length + end - start).coerceAtLeast(0)
         val segmenter = UnicodeGraphemeSegmenter
         val clean = text.replace("\r", "")
         val legalEnd = segmenter.segment(clean).lastOrNull { it.end <= available }?.end ?: 0
@@ -117,7 +124,7 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
         value = value.substring(0, start) + inserted + value.substring(end)
         caret = start + inserted.length
         anchor = caret
-        invalidate()
+        root.invalidate()
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -174,7 +181,7 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
             caret = next
             if (!event.modifiers.shift) anchor = caret
         }
-        invalidate()
+        root.invalidate()
         return true
     }
 
@@ -186,12 +193,12 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
             }
 
             Key.C, Key.X -> {
-                ui!!.host.writeClipboard(value.substring(minOf(caret, anchor), maxOf(caret, anchor)))
+                owner.host.writeClipboard(value.substring(minOf(caret, anchor), maxOf(caret, anchor)))
                 if (event.key == Key.X) replace("")
             }
 
             Key.V -> {
-                ui!!.host.readClipboard().onSuccess(::replace)
+                owner.host.readClipboard().onSuccess(::replace)
             }
 
             Key.Z -> {
@@ -206,7 +213,7 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
                 return false
             }
         }
-        invalidate()
+        root.invalidate()
         return true
     }
 
@@ -224,21 +231,20 @@ internal class ReviewTextArea(model: MenuModel) : MenuElement("review-message", 
         }
     }
 
-    override fun paint(canvas: Canvas) {
-        canvas.pixelPanel(bounds, 0x242424E5.rgba, if (state.focused) 0x4679B4.rgb else 0x484848.rgb, 3f, 1f)
+    private fun render(canvas: PixelCanvas) {
+        canvas.pixelPanel(root.bounds, 0x242424E5.rgba, if (root.state.focused) 0x4679B4.rgb else 0x484848.rgb, 3f, 1f)
         val layout = shaped()
         val position = layout.caret(caret)
-        if (position.position.y - offset > bounds.height - 35f) offset = position.position.y - bounds.height + 35f
+        if (position.position.y - offset > root.bounds.height - 35f) offset = position.position.y - root.bounds.height + 35f
         if (position.position.y < offset) offset = position.position.y
         val origin = Vec2(10f, 7f - offset)
-        if (state.focused && caret != anchor) {
+        if (root.state.focused && caret != anchor) {
             layout.clusters.filter { it.start >= minOf(caret, anchor) && it.end <= maxOf(caret, anchor) }.forEach {
                 canvas.rect(origin.x + it.bounds.x, origin.y + it.bounds.y, it.bounds.width, it.bounds.height, 0x3878BC80.rgba)
             }
         }
-        if (value.isEmpty()) with(canvas) { label("Что зашло, что бесит, кому советуешь...", 10f, 7f, 15.2f, 0xB9B9B9.rgb) }
+        if (value.isEmpty()) with(canvas) { label(placeholder, 10f, 7f, 15.2f, 0xB9B9B9.rgb) }
         else canvas.text(layout, origin, 0xD2D2D2.rgb)
-        if (state.focused) canvas.rect(origin.x + position.position.x, origin.y + position.position.y, 1f, position.height, 0xDDDDDD.rgb)
+        if (root.state.focused) canvas.rect(origin.x + position.position.x, origin.y + position.position.y, 1f, position.height, 0xDDDDDD.rgb)
     }
 }
-
