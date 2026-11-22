@@ -1,7 +1,7 @@
 [versions]
 
 kotlin = "2.4.10"
-arc = "229da48"
+arc = "c7bd861"
 lwjgl = "3.4.2"
 junit = "6.0.0"
 detekt = "1.23.8"

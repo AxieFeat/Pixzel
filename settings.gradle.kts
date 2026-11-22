@@ -22,18 +22,8 @@ dependencyResolutionManagement {
 
     repositories {
         mavenCentral()
-        maven("https://maven.pkg.github.com/AxieFeat/Arc") {
-            name = "ArcGitHubPackages"
-            credentials {
-                username = providers.gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
-                password = providers.gradleProperty("gpr.key")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
-            }
-            content {
-                includeGroup("arc.engine")
-            }
-        }
+        maven("https://repo.arial.su/snapshots/")
+        maven("https://repo.arial.su/releases/")
     }
 }
 
